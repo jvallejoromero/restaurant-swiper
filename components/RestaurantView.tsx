@@ -15,6 +15,17 @@ type Restaurant = {
     photoUrl: string | null;
 };
 
+// Define the type for Google Places API parameters
+type SearchPlacesParams = {
+    query: string;
+    latitude: number;
+    longitude: number;
+    radiusMeters?: number; // optional with a default
+    maxResults?: number; // optional with a default
+    minRating?: number; // optional with a default
+    openNow?: boolean; // optional with a default
+};
+
 const RestaurantView = () => {
     // use states for resetting the card stack
     const [cardIndex, setCardIndex] = useState(0);
@@ -22,17 +33,20 @@ const RestaurantView = () => {
 
     // use state for list of restaurants
     const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-    const [radius, setRadius] = useState(1500);
+    const [radius, setRadius] = useState(10000);
     const [latitude, setLatitude] = useState<number | null>(null);
     const [longitude, setLongitude] = useState<number | null>(null);
 
     const [nextPageToken, setNextPageToken] = useState<string | null>(null);
 
+    const [seenRestaurants, setSeenRestaurants] = useState<Set<string>>(new Set());  // Track seen restaurant IDs
+    const [isFetching, setIsFetching] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+
     // use states for updating latitude and longitude
     const [location, setLocation] = useState<LocationObject | null>(null);
 
     const resetCardStack = () => {
-        setCardIndex(0);
         setSwiperKey(prev => prev + 1);
     }
 
@@ -46,31 +60,82 @@ const RestaurantView = () => {
     };
 
     // Randomize coordinates by a few miles
-    const randomizeLocation = (latitude: number, longitude: number) => {
-        // Random offset between 1 to 2 miles (0.0145 to 0.029 degrees)
-        const minOffset = 0.0145; // 1 mile
-        const maxOffset = 0.029;  // 2 miles
-        const latOffset = (Math.random() * (maxOffset - minOffset) + minOffset) * (Math.random() < 0.5 ? 1 : -1); // Random offset between 1-2 miles, both positive and negative
-        const lonOffset = (Math.random() * (maxOffset - minOffset) + minOffset) * (Math.random() < 0.5 ? 1 : -1); // Random offset between 1-2 miles, both positive and negative
+    const randomizeLocation = (latitude: number, longitude: number, minMiles: number, maxMiles: number) => {
+        // Random distance in miles between minMiles and maxMiles
+        const randomDistanceInMiles = Math.random() * (maxMiles - minMiles) + minMiles;
 
-        const newLatitude = latitude + latOffset;
-        const newLongitude = longitude + lonOffset;
+        // Convert miles to degrees (1 degree latitude ~ 69 miles, longitude varies with latitude)
+        const latOffset = randomDistanceInMiles / 69;
+        const lngOffset = randomDistanceInMiles / (69 * Math.cos((latitude * Math.PI) / 180));
 
-        return { newLatitude, newLongitude };
+        // Random angle in radians (0 - 2*PI) to cover all directions uniformly
+        const randomAngle = Math.random() * 2 * Math.PI;
+
+        // Calculate offset using polar coordinates (angle and distance)
+        const randomLat = latitude + latOffset * Math.sin(randomAngle); // Use sin for latitude offset
+        const randomLng = longitude + lngOffset * Math.cos(randomAngle); // Use cos for longitude offset
+
+        return { newLatitude: randomLat, newLongitude: randomLng };
     };
+
+    async function searchPlaces({
+                                    query,
+                                    latitude,
+                                    longitude,
+                                    radiusMeters = 5000,
+                                    maxResults = 100,
+                                }: SearchPlacesParams) {
+        const url = 'https://places.googleapis.com/v1/places:searchText';
+        const headers = {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': GOOGLE_API_KEY,
+            'X-Goog-FieldMask': 'places.displayName,places.location,places.businessStatus',
+        };
+        const body = {
+            textQuery: query,
+            includedType: 'restaurant',
+            locationBias: {
+                circle: {
+                    center: {
+                        latitude,
+                        longitude,
+                    },
+                    radius: radiusMeters,
+                },
+            },
+            maxResultCount: maxResults,
+            languageCode: 'en-US',
+            regionCode: 'us',
+            strictTypeFiltering: false,
+        };
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(body),
+            });
+
+            const data = await res.json();
+            console.log(data.places);
+            return data.places ?? []; // or handle errors here
+        } catch (error) {
+            console.error('Error fetching places:', error);
+            return [];
+        }
+    }
 
     // get the user's location
     useEffect(() => {
         // Request permission to access location
         Location.requestForegroundPermissionsAsync().then((response) => {
             if (response.status !== 'granted') {
-                console.log("Location permission denied")
+                console.log("Location permission denied");
                 return;
             }
             return Location.getCurrentPositionAsync();
         }).then((location) => {
             if (location) {
-                console.log("--- Current location information ---")
+                console.log("--- Current location information ---");
                 console.log("Latitude: ", location.coords.latitude);
                 console.log("Latitude: ", location.coords.longitude);
                 setLocation(location);
@@ -81,69 +146,130 @@ const RestaurantView = () => {
         });
     }, []);
 
-    // fetch data from Google API
-    useEffect(() => {
-        if (location?.coords.latitude && location?.coords.longitude) {
-            const fetchRestaurants = (nextPageToken:string | null) => {
-                let apiUrl = "";
-                if (latitude && longitude) {
-                    console.log("--- Randomized Location ---");
-                    console.log('New Latitude: ', latitude);
-                    console.log('New Longitude: ', longitude);
+    // function to fetch restaurant data
+    const fetchRestaurants = (nextPageToken:string | null) => {
+        if (location?.coords.latitude && location.coords.longitude) {
+            setIsUpdating(true);
 
-                    apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=restaurant&key=${GOOGLE_API_KEY}`;
-                } else {
-                    apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.coords.latitude},${location.coords.longitude}&radius=${radius}&type=restaurant&key=${GOOGLE_API_KEY}`;
-                }
+            let apiUrl = "";
+            if (latitude && longitude) {
+                console.log("--- Randomizing Location ---");
+                console.log('New Location: ', latitude,",",longitude);
 
-                if (nextPageToken) {
-                    apiUrl += `&pagetoken=${nextPageToken}`;
-                }
-                fetch(apiUrl).
-                then((response) => response.json()).
-                then((data) => {
-                    if (data.results) {
-                        // Map the API data to match the Restaurant type
-                        const restaurants: Restaurant[] = data.results.map((item: any) => ({
-                            id: item.place_id, // unique ID from the API
-                            name: item.name,
-                            vicinity: item.vicinity,
-                            rating: item.rating,
-                            description: item.description || "No description available", // handle missing descriptions
-                            photoUrl: item.photos?.[0]
-                                ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1200&photo_reference=${item.photos[0].photo_reference}&key=${GOOGLE_API_KEY}`
-                                : null,
-
-                        }))
-                        setRestaurants((prevRestaurants) => {
-                            // Create a Set of place_ids to track which restaurants are already in the list
-                            const existingIds = new Set(prevRestaurants.map((restaurant) => restaurant.id));
-
-                            // Filter out restaurants that are already in the state
-                            const uniqueRestaurants = restaurants.filter((restaurant) => !existingIds.has(restaurant.id));
-
-                            const updatedRestaurants = [...prevRestaurants, ...uniqueRestaurants];
-                            return shuffleArray(updatedRestaurants);
-                        });
-
-                        if (data.next_page_token) {
-                            setNextPageToken(data.next_page_token);
-                        }
-
-                        console.log(restaurants.length, " restaurants found");
-                        // console.log("next page token is: " + nextPageToken);
-                        // console.log(data);
-                    } else {
-                        console.log("No restaurants found!")
-                    }
-                }).catch((error) => {
-                    console.log("Error fetching restaurants:");
-                    console.log(error);
-                });
+                apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=restaurant&key=${GOOGLE_API_KEY}`;
+            } else {
+                apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.coords.latitude},${location.coords.longitude}&radius=${radius}&type=restaurant&key=${GOOGLE_API_KEY}`;
             }
-            fetchRestaurants(nextPageToken);
+
+            if (nextPageToken) {
+                console.log("Has next page token: ", true);
+                apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=${GOOGLE_API_KEY}&pagetoken=${nextPageToken}`;
+            }
+
+            console.log("---- New API request ---- ");
+            console.log(apiUrl);
+            console.log("---- END New API request ---- ");
+
+            fetch(apiUrl).
+            then((response) => response.json()).
+            then((data) => {
+
+                console.log("---- New API Response ---- ");
+                console.log("RESPONSE: ", data.status, " LENGTH: " + data.results.length);
+                console.log("---- END New API Response ---- ");
+
+                if (data.results) {
+                    // Map the API data to match the Restaurant type
+                    const restaurants: Restaurant[] = data.results.map((item: any) => ({
+                        id: item.place_id, // unique ID from the API
+                        name: item.name,
+                        vicinity: item.vicinity,
+                        rating: item.rating,
+                        description: item.description || "No description available", // handle missing descriptions
+                        photoUrl: item.photos?.[0]
+                            ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1200&photo_reference=${item.photos[0].photo_reference}&key=${GOOGLE_API_KEY}`
+                            : null,
+
+                    }))
+                    // Filter out restaurants that the user has already seen
+                    const newRestaurants = restaurants.filter((restaurant) => !seenRestaurants.has(restaurant.id));
+
+
+                    // Update restaurants state
+                    setRestaurants((prevRestaurants) => [...prevRestaurants, ...shuffleArray(newRestaurants)]);
+                    // setRestaurants((prevRestaurants) => [...prevRestaurants, ...newRestaurants]);
+
+                    // Update seen restaurants by adding new restaurant IDs to the set
+                    setSeenRestaurants((prevSeen) => {
+                        const updatedSeen = new Set(prevSeen);
+                        newRestaurants.forEach((restaurant) => {
+                            updatedSeen.add(restaurant.id);
+                            console.log("Added: ", restaurant.name + " to seen restaurants.");
+                        });
+                        return updatedSeen;
+                    });
+
+                    if (data.next_page_token) {
+                        setNextPageToken(data.next_page_token);
+                    } else {
+                        setIsUpdating(false);
+                    }
+                    // console.log("next page token is: " + nextPageToken);
+                    // console.log(data);
+                } else {
+                    console.log("No restaurants found!")
+                }
+            }).catch((error) => {
+                console.log("Error fetching restaurants:");
+                console.log(error);
+            });
         }
-    }, [location, radius, longitude, latitude, nextPageToken]);
+    }
+
+
+    // fetch initial data from Google API
+    useEffect(() => {
+        if (location && !nextPageToken) {
+            fetchRestaurants(null);
+        }
+    }, [location]);
+
+    // fetch next page data from Google API
+    useEffect(() => {
+        if (nextPageToken) {
+            // Delay actual call if pagetoken is present
+            const delayFetch = setTimeout(() => {
+                fetchRestaurants(nextPageToken);
+            }, 2000);
+            return () => clearTimeout(delayFetch);
+        }
+    }, [nextPageToken]);
+
+    useEffect(() => {
+        if (latitude && longitude) {
+            console.log("--- Fetching restaurants based on new coordinates ---");
+            setIsFetching(true);
+            setNextPageToken(null); // Clear old token
+            fetchRestaurants(null); // This will use the updated latitude and longitude
+            setIsFetching(false);
+            resetCardStack();
+        }
+    }, [latitude, longitude]); // Dependency array now watches latitude and longitude
+
+    useEffect(() => {
+        if (cardIndex >= restaurants.length && restaurants.length > 0 && !isFetching && location?.coords.latitude && location?.coords.longitude) {
+            console.log("All cards swiped, fetching new location...");
+            if (!isFetching) {
+                const newLocation = randomizeLocation(location.coords.latitude, location.coords.longitude, 10, 15);
+                if (newLocation.newLatitude === location.coords.latitude && newLocation.newLongitude === location.coords.longitude) {
+                    console.log("Same location as last time — skipping");
+                    return;
+                }
+                setLatitude(newLocation.newLatitude);
+                setLongitude(newLocation.newLongitude);
+            }
+        }
+    }, [cardIndex]);
 
     // Render the Swiper only when data is available
     if (restaurants.length === 0) {
@@ -153,38 +279,56 @@ const RestaurantView = () => {
             </View>
         );
     }
+
     return (
         <View className="flex-1 justify-center items-center bg-primary">
             <View style={{flex: 1}}>
                 <Swiper
                     key={swiperKey}
                     cards={restaurants}
-                    renderCard={(restaurant: Restaurant) => (
-                        <View style={styles.card}>
-                            {restaurant.photoUrl && (
-                                <Image source={{ uri: restaurant.photoUrl }} style={styles.cardImage} />
-                            )}
-                            <View style={styles.textOverlay}>
-                                <Text style={styles.cardName}>{restaurant.name}</Text>
-                                <Text style={styles.cardText}>{restaurant.description}</Text>
-                                <Text style={styles.cardText}>{restaurant.vicinity}</Text>
-                                <Text style={styles.cardText}>Rating: {restaurant.rating}</Text>
-                            </View>
-                        </View>
-                    )}
-                    onSwiped={(index) => console.log('Swiped: ', index)}
-                    onSwipedLeft={(index) => console.log('Swiped Left: ', index)}
-                    onSwipedRight={(index) => console.log('Swiped Right: ', index)}
-                    cardIndex={cardIndex}
-                    onSwipedAll={() => {
-                        console.log('All cards swiped')
-                        if (location) {
-                            let newLocation = randomizeLocation(location?.coords.latitude, location?.coords.longitude);
-                            setLatitude(newLocation.newLatitude);
-                            setLongitude(newLocation.newLongitude);
+                    renderCard={(restaurant: Restaurant) => {
+                        if (restaurant != null && restaurant.photoUrl != null) {
+                            if (isUpdating) {
+                                return (
+                                    <View className="flex-1 justify-center items-center bg-primary">
+                                        <Text className="flex-1 justify-center items-center">SEARCHING FOR RESTAURANTS...</Text>
+                                    </View>
+                                );
+                            } else {
+                                return (
+                                    <View style={styles.card}>
+                                        {restaurant.photoUrl && (
+                                            <Image source={{ uri: restaurant.photoUrl }} style={styles.cardImage} />
+                                        )}
+                                        <View style={styles.textOverlay}>
+                                            <Text style={styles.cardName}>{restaurant.name}</Text>
+                                            <Text style={styles.cardText}>{restaurant.description}</Text>
+                                            <Text style={styles.cardText}>{restaurant.vicinity}</Text>
+                                            <Text style={styles.cardText}>Rating: {restaurant.rating}</Text>
+                                        </View>
+                                    </View>
+                                );
+                            }
+                        } else {
+                            return (
+                                <View className="flex-1 justify-center items-center bg-primary">
+                                    <Text className="flex-1 justify-center items-center">NO IMAGE FOUND</Text>
+                                </View>
+                            );
                         }
-                        resetCardStack();
                     }}
+                    onSwiped={(index) => {
+                        console.log('Swiped: ', index, "/", restaurants.length);
+                        setCardIndex(cardIndex + 1);
+                    }}
+                    onSwipedLeft={(index) => {
+                        console.log('<==== Swiped Left');
+                    }}
+                    onSwipedRight={(index) => {
+                        console.log('      Swiped Right ====>');
+                    }}
+                    cardIndex={cardIndex}
+                    onSwipedAll={() => {}}
                     animateCardOpacity={true}
                     overlayLabels={{
                         left: {
