@@ -1,29 +1,34 @@
-import {Text, StyleSheet, View, Image} from 'react-native'
-import React, {useEffect, useState} from 'react'
+import {
+    Text,
+    StyleSheet,
+    View,
+    Image,
+    Animated, SafeAreaView
+} from 'react-native'
+import React, {useEffect, useState, useRef} from 'react'
 import Swiper from 'react-native-deck-swiper'
 import * as Location from 'expo-location'
-import {GOOGLE_API_KEY} from '@env'
 import {LocationObject} from "expo-location";
+import CardActionButtons from "@/components/CardActionButtons";
+import {useRouter} from "expo-router";
+import {COLORS} from "@/constants/colors";
+import LottieView from 'lottie-react-native';
+import {IMAGES} from "@/constants/images";
+
+const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
 
 // Define the type for the Google Places API response
 type Restaurant = {
     id: string;
     name: string;
     vicinity: string;
-    rating: number;
-    description?: string; // You might not always have a description in the API
+    description?: string;
     photoUrl: string | null;
-};
-
-// Define the type for Google Places API parameters
-type SearchPlacesParams = {
-    query: string;
+    rating: number;
+    openNow: boolean;
     latitude: number;
     longitude: number;
-    radiusMeters?: number; // optional with a default
-    maxResults?: number; // optional with a default
-    minRating?: number; // optional with a default
-    openNow?: boolean; // optional with a default
+    distanceFromUser: number;
 };
 
 const RestaurantView = () => {
@@ -46,9 +51,26 @@ const RestaurantView = () => {
     // use states for updating latitude and longitude
     const [location, setLocation] = useState<LocationObject | null>(null);
 
+    // use state for keeping track of swipe progress
+    const [swipeProgressX] = useState(new Animated.Value(0));
+
+    // reference for the Swiper component
+    const swiperRef = useRef<Swiper<any> | null>(null);
+
+    // navigation hook
+    const router = useRouter();
+
+    // force Swiper refresh
     const resetCardStack = () => {
         setSwiperKey(prev => prev + 1);
     }
+
+    // handle swiping progress
+    const handleSwiping = (posX: number, _posY: number) => {
+        // Update swipeProgress value as the user swipes
+        // Clamp the progress value to ensure it stays within -1 to 1 range
+        swipeProgressX.setValue(posX);
+    };
 
     // Shuffle function to randomize the array
     const shuffleArray = (array: Restaurant[]) => {
@@ -78,50 +100,26 @@ const RestaurantView = () => {
         return { newLatitude: randomLat, newLongitude: randomLng };
     };
 
-    async function searchPlaces({
-                                    query,
-                                    latitude,
-                                    longitude,
-                                    radiusMeters = 5000,
-                                    maxResults = 100,
-                                }: SearchPlacesParams) {
-        const url = 'https://places.googleapis.com/v1/places:searchText';
-        const headers = {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': GOOGLE_API_KEY,
-            'X-Goog-FieldMask': 'places.displayName,places.location,places.businessStatus',
-        };
-        const body = {
-            textQuery: query,
-            includedType: 'restaurant',
-            locationBias: {
-                circle: {
-                    center: {
-                        latitude,
-                        longitude,
-                    },
-                    radius: radiusMeters,
-                },
-            },
-            maxResultCount: maxResults,
-            languageCode: 'en-US',
-            regionCode: 'us',
-            strictTypeFiltering: false,
-        };
-        try {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(body),
-            });
+    // get distance between two coordinates in kilometers
 
-            const data = await res.json();
-            console.log(data.places);
-            return data.places ?? []; // or handle errors here
-        } catch (error) {
-            console.error('Error fetching places:', error);
-            return [];
-        }
+    // convert degrees to radians
+    const toRad = (degrees: number) => {
+        return degrees * Math.PI / 180;
+    }
+
+    // get distance in kilometers between two coordinates using the Haversine formula
+     const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+        const R = 6371; // Radius of the Earth in kilometers
+        const dLat = toRad(lat2 - lat1);  // Difference in latitude
+        const dLon = toRad(lon2 - lon1);  // Difference in longitude
+
+         const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c; // Distance in kilometers
+        return distance.toFixed(2);
     }
 
     // get the user's location
@@ -148,7 +146,7 @@ const RestaurantView = () => {
 
     // function to fetch restaurant data
     const fetchRestaurants = (nextPageToken:string | null) => {
-        if (location?.coords.latitude && location.coords.longitude) {
+        if (location?.coords.latitude && location?.coords.longitude) {
             setIsUpdating(true);
 
             let apiUrl = "";
@@ -189,11 +187,16 @@ const RestaurantView = () => {
                         photoUrl: item.photos?.[0]
                             ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1200&photo_reference=${item.photos[0].photo_reference}&key=${GOOGLE_API_KEY}`
                             : null,
-
+                        images: item.photos?.map((photo: { photo_reference: string }) => `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1200&photo_reference=${photo.photo_reference}&key=${GOOGLE_API_KEY}`) ??
+                            [item.icon], // Fallback if no photos are available
+                        openNow: item.opening_hours?.open_now,
+                        latitude: item.geometry?.location.latitude,
+                        longitude: item.geometry?.location.longitude,
+                        distanceFromUser: haversine(location?.coords.latitude, location?.coords.longitude, item.geometry?.location.lat, item.geometry?.location.lng),
                     }))
+
                     // Filter out restaurants that the user has already seen
                     const newRestaurants = restaurants.filter((restaurant) => !seenRestaurants.has(restaurant.id));
-
 
                     // Update restaurants state
                     setRestaurants((prevRestaurants) => [...prevRestaurants, ...shuffleArray(newRestaurants)]);
@@ -204,7 +207,7 @@ const RestaurantView = () => {
                         const updatedSeen = new Set(prevSeen);
                         newRestaurants.forEach((restaurant) => {
                             updatedSeen.add(restaurant.id);
-                            console.log("Added: ", restaurant.name + " to seen restaurants.");
+                            // console.log("Added: ", restaurant.name + " to seen restaurants.");
                         });
                         return updatedSeen;
                     });
@@ -245,6 +248,7 @@ const RestaurantView = () => {
         }
     }, [nextPageToken]);
 
+    // Update restaurant date based on new coordinates
     useEffect(() => {
         if (latitude && longitude) {
             console.log("--- Fetching restaurants based on new coordinates ---");
@@ -254,8 +258,9 @@ const RestaurantView = () => {
             setIsFetching(false);
             resetCardStack();
         }
-    }, [latitude, longitude]); // Dependency array now watches latitude and longitude
+    }, [latitude, longitude]);
 
+    // Fetch new restaurant data once all cards are swiped
     useEffect(() => {
         if (cardIndex >= restaurants.length && restaurants.length > 0 && !isFetching && location?.coords.latitude && location?.coords.longitude) {
             console.log("All cards swiped, fetching new location...");
@@ -271,61 +276,124 @@ const RestaurantView = () => {
         }
     }, [cardIndex]);
 
-    // Render the Swiper only when data is available
-    if (restaurants.length === 0) {
+    if (isUpdating) {
+        // Choose a loading animation randomly
+        const random = Math.random();
+
+        let animationPath = '';
+        if (random < 0.5) {
+            animationPath = require('../assets/animations/red-fork-animation.json');
+        } else {
+            animationPath = require('../assets/animations/plate-animation.json');
+        }
         return (
             <View className="flex-1 justify-center items-center bg-primary">
-                <Text className="flex-1 justify-center items-center">Loading...</Text>
+                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                    <LottieView
+                        source={animationPath}
+                        autoPlay
+                        loop
+                        style={{ width: 200, height: 200 }}
+                    />
+                </View>
             </View>
         );
     }
 
+    // Render the Swiper only when data is available
+    if (restaurants.length === 0) {}
+
     return (
         <View className="flex-1 justify-center items-center bg-primary">
-            <View style={{flex: 1}}>
+            <View style={{flex: 1, backgroundColor: COLORS.background_color, zIndex: 9999}}>
+
+                {/*App Name On Top Of Card*/}
+                <SafeAreaView style={{ position: 'absolute', top: 0, left: 0}}>
+                    <Text style={{
+                        fontSize: 28,
+                        fontWeight: 'bold',
+                        color: COLORS.primary,
+                        paddingHorizontal: 20,
+                        paddingTop: 20,
+                        shadowColor: 'black',
+                        shadowOpacity: 0.15,
+                        shadowRadius: 5,
+                        elevation: 10,
+                    }}>
+                        🍽️ forked
+                    </Text>
+                </SafeAreaView>
+
                 <Swiper
+                    ref={swiperRef}
                     key={swiperKey}
                     cards={restaurants}
+                    showSecondCard={true}
+                    backgroundColor={"transparent"}
+                    stackSize={2}
+                    cardVerticalMargin={50}
+                    cardHorizontalMargin={15}
+                    stackSeparation={0}
+                    infinite={true}
+                    disableBottomSwipe={true}
+                    stackAnimationFriction={20}
+                    stackAnimationTension={25}
+                    childrenOnTop={false}
                     renderCard={(restaurant: Restaurant) => {
-                        if (restaurant != null && restaurant.photoUrl != null) {
-                            if (isUpdating) {
-                                return (
-                                    <View className="flex-1 justify-center items-center bg-primary">
-                                        <Text className="flex-1 justify-center items-center">SEARCHING FOR RESTAURANTS...</Text>
-                                    </View>
-                                );
-                            } else {
-                                return (
-                                    <View style={styles.card}>
-                                        {restaurant.photoUrl && (
-                                            <Image source={{ uri: restaurant.photoUrl }} style={styles.cardImage} />
-                                        )}
-                                        <View style={styles.textOverlay}>
-                                            <Text style={styles.cardName}>{restaurant.name}</Text>
-                                            <Text style={styles.cardText}>{restaurant.description}</Text>
-                                            <Text style={styles.cardText}>{restaurant.vicinity}</Text>
-                                            <Text style={styles.cardText}>Rating: {restaurant.rating}</Text>
-                                        </View>
-                                    </View>
-                                );
-                            }
-                        } else {
+
+                        // Return this component if restaraunt is undefined for some reason
+                        if (!restaurant) {
                             return (
-                                <View className="flex-1 justify-center items-center bg-primary">
-                                    <Text className="flex-1 justify-center items-center">NO IMAGE FOUND</Text>
+                                <View style={styles.card}>
+                                    <Image
+                                        source={IMAGES.no_image_found}
+                                        style={styles.cardImage}
+                                    />
+                                    <View style={styles.textOverlay}>
+                                        <Text style={styles.cardName}>Unknown</Text>
+                                        <Text style={styles.cardText}>We couldn't find any restaurants nearby..</Text>
+                                    </View>
                                 </View>
                             );
                         }
+
+                        // Render the restaurant card and description
+                        return (
+                            <View style={styles.card} key={restaurant.id}>
+                                <Image
+                                    source={{ uri: restaurant.photoUrl !== null ? restaurant.photoUrl :  IMAGES.no_image_found, }}
+                                    style={styles.cardImage}
+                                />
+                                <View style={styles.textOverlay}>
+                                    <Text style={styles.cardName}>{restaurant.name}</Text>
+                                    {restaurant?.openNow && (
+                                        <Text style={styles.cardTextGreen}>Open Now</Text>
+                                    )}
+                                    <Text style={styles.cardText}>{restaurant.vicinity}</Text>
+                                    <Text style={styles.cardText}>{restaurant.rating}/5 stars, {restaurant.distanceFromUser} km away</Text>
+                                </View>
+                            </View>
+                        );
+                    }}
+                    onSwiping={(x,y) => {
+                        handleSwiping(x,y);
                     }}
                     onSwiped={(index) => {
                         console.log('Swiped: ', index, "/", restaurants.length);
                         setCardIndex(cardIndex + 1);
+                        swipeProgressX.setValue(0); // reset swipe progress
                     }}
-                    onSwipedLeft={(index) => {
+                    onSwipedLeft={() => {
                         console.log('<==== Swiped Left');
                     }}
-                    onSwipedRight={(index) => {
+                    onSwipedRight={() => {
                         console.log('      Swiped Right ====>');
+                    }}
+                    onSwipedTop={(index) => {
+                        setCardIndex(cardIndex - 1);
+                        swiperRef.current?.swipeBack();
+                        router.push(`/restaurants/${restaurants[index].id}`);
+                        return false;
                     }}
                     cardIndex={cardIndex}
                     onSwipedAll={() => {}}
@@ -336,14 +404,19 @@ const RestaurantView = () => {
                             style: {
                                 label: {
                                     color: 'red',
-                                    fontSize: 30,
+                                    fontSize: 35,
                                     fontWeight: 'bold',
+                                    transform: [{ rotate: '30deg' }],
+                                    shadowOffset: {width: 0, height: 2},
+                                    shadowOpacity: 0.5,
+                                    shadowRadius: 15,
+                                    shadowColor: 'black',
                                 },
                                 wrapper: {
                                     flexDirection: 'column',
                                     alignItems: 'flex-end',
                                     justifyContent: 'flex-start',
-                                    marginTop: 20,
+                                    marginTop: 50,
                                     marginLeft: -20,
                                 },
                             },
@@ -352,24 +425,37 @@ const RestaurantView = () => {
                             title: 'LIKE',
                             style: {
                                 label: {
-                                    color: 'green',
-                                    fontSize: 30,
+                                    color: 'lightgreen',
+                                    fontSize: 35,
                                     fontWeight: 'bold',
+                                    transform: [{ rotate: '-30deg' }],
+                                    shadowOffset: {width: 0, height: 2},
+                                    shadowOpacity: 0.5,
+                                    shadowRadius: 15,
+                                    shadowColor: 'black',
                                 },
                                 wrapper: {
                                     flexDirection: 'column',
                                     alignItems: 'flex-start',
                                     justifyContent: 'flex-start',
-                                    marginTop: 20,
+                                    marginTop: 50,
                                     marginLeft: 20,
                                 },
                             },
                         },
                     }}
-                    backgroundColor={"transparent"}
-                    cardVerticalMargin={50}
-                    stackSize={3}
-                    stackSeparation={15}
+                />
+                <CardActionButtons
+                    onLike={() => {
+                        swiperRef.current?.swipeRight();
+                    }}
+                    onDislike={() => {
+                        swiperRef.current?.swipeLeft();
+                    }}
+                    onInfo={() => {
+                        swiperRef.current?.swipeTop();
+                    }}
+                    swipeProgressX={swipeProgressX}
                 />
             </View>
         </View>
@@ -379,7 +465,7 @@ const RestaurantView = () => {
 const styles = StyleSheet.create({
     textOverlay: {
         position: 'absolute',
-        bottom: 20,
+        bottom: 45,
         left: 20,
         right: 20,
         backgroundColor: 'rgba(140,140,140,0.37)',
@@ -388,8 +474,8 @@ const styles = StyleSheet.create({
     },
     card: {
         flex: 0.85,
-        marginTop: 15,
-        backgroundColor: "white",
+        marginTop: 40,
+        backgroundColor: "transparent",
         borderRadius: 10,
         justifyContent: "center",
         alignItems: "center",
@@ -400,13 +486,20 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     cardName: {
-        fontSize: 22,
+        fontFamily: 'Roboto',
+        fontSize: 25,
         fontWeight: "bold",
         color: "white",
     },
     cardText: {
-      fontSize: 13,
+      fontSize: 14,
+        fontStyle: 'italic',
       color: "white",
+    },
+    cardTextGreen: {
+        fontSize: 14,
+        color: 'lightgreen',
+        fontStyle: 'italic',
     },
     cardImage: {
         flex: 1,

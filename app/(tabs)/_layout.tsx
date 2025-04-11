@@ -10,8 +10,8 @@ const TabIcon= ({focused, icon}:{focused:any; icon:any}) => {
             <Image
                 source={icon}
                 style={{
-                    width:30,
-                    height:30,
+                    width:45,
+                    height:45,
                     tintColor: COLORS.primary,
                 }}
             />
@@ -21,8 +21,8 @@ const TabIcon= ({focused, icon}:{focused:any; icon:any}) => {
             <Image
                 source={icon}
                 style={{
-                    width:30,
-                    height:30,
+                    width:45,
+                    height:45,
                     tintColor: "black",
                 }}
             />
@@ -52,7 +52,7 @@ const _layout = () => {
                     headerShown: false,
                     tabBarShowLabel: false,
                     tabBarIcon: ({focused}) => (
-                        <TabIcon focused={focused} icon={IMAGES.home}/>
+                        <TabIcon focused={focused} icon={IMAGES.plate}/>
                     )
                 }}
             />
@@ -63,16 +63,8 @@ const _layout = () => {
                     headerShown: false,
                     tabBarShowLabel: false,
                     tabBarIcon: ({focused}) => (
-                        <TabIcon focused={focused} icon={IMAGES.restaurant}/>
+                        <TabIcon focused={focused} icon={IMAGES.earth}/>
                     )
-                }}
-            />
-            <Tabs.Screen
-                name="restaurants/{id}"
-                options={{
-                    title: 'Restaurants',
-                    headerShown: false,
-                    tabBarShowLabel: false,
                 }}
             />
             <Tabs.Screen
@@ -95,7 +87,7 @@ const _layout = () => {
                     tabBarIcon: ({focused}) => (
                         <TabIcon
                             focused={focused}
-                            icon={IMAGES.user}
+                            icon={IMAGES.user2}
                         />
                     )
                 }}
