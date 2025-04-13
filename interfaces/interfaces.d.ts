@@ -1,20 +1,13 @@
+// Define the type for the Google Places API response
 interface Restaurant {
+    id: string;
     name: string;
-    description: string;
-    distance: number;
+    vicinity: string;
+    description?: string;
+    photoUrl: string | null;
     rating: number;
+    openNow: boolean;
+    latitude: number;
+    longitude: number;
+    distanceFromUser: number;
 }
-interface RestaurantDetails {
-    name: string;
-    description: string;
-    menu_items: string;
-    distance: number;
-    rating: number;
-
-    reviews: string[];
-
-    background_path: string | null;
-    restaurant_url: string | null;
-    google_url: string | null;
-}
-

@@ -14,22 +14,10 @@ import {useRouter} from "expo-router";
 import {COLORS} from "@/constants/colors";
 import LottieView from 'lottie-react-native';
 import {IMAGES} from "@/constants/images";
+import { LinearGradient } from 'expo-linear-gradient';
+import ShineText from "@/components/ShineText";
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
-
-// Define the type for the Google Places API response
-type Restaurant = {
-    id: string;
-    name: string;
-    vicinity: string;
-    description?: string;
-    photoUrl: string | null;
-    rating: number;
-    openNow: boolean;
-    latitude: number;
-    longitude: number;
-    distanceFromUser: number;
-};
 
 const RestaurantView = () => {
     // use states for resetting the card stack
@@ -108,12 +96,12 @@ const RestaurantView = () => {
     }
 
     // get distance in kilometers between two coordinates using the Haversine formula
-     const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
         const R = 6371; // Radius of the Earth in kilometers
         const dLat = toRad(lat2 - lat1);  // Difference in latitude
         const dLon = toRad(lon2 - lon1);  // Difference in longitude
 
-         const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
             Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
@@ -156,7 +144,7 @@ const RestaurantView = () => {
 
                 apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=restaurant&key=${GOOGLE_API_KEY}`;
             } else {
-                apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.coords.latitude},${location.coords.longitude}&radius=${radius}&type=restaurant&key=${GOOGLE_API_KEY}`;
+                apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location?.coords.latitude},${location?.coords.longitude}&radius=${radius}&type=restaurant&key=${GOOGLE_API_KEY}`;
             }
 
             if (nextPageToken) {
@@ -213,12 +201,11 @@ const RestaurantView = () => {
                     });
 
                     if (data.next_page_token) {
-                        setNextPageToken(data.next_page_token);
+                        // setNextPageToken(data.next_page_token);
+                        setIsUpdating(false);
                     } else {
                         setIsUpdating(false);
                     }
-                    // console.log("next page token is: " + nextPageToken);
-                    // console.log(data);
                 } else {
                     console.log("No restaurants found!")
                 }
@@ -287,7 +274,7 @@ const RestaurantView = () => {
             animationPath = require('../assets/animations/plate-animation.json');
         }
         return (
-            <View className="flex-1 justify-center items-center bg-primary">
+            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background_color}}>
                 <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                     <LottieView
                         source={animationPath}
@@ -304,7 +291,7 @@ const RestaurantView = () => {
     if (restaurants.length === 0) {}
 
     return (
-        <View className="flex-1 justify-center items-center bg-primary">
+        <View style={{flex: 1, backgroundColor: COLORS.background_color}}>
             <View style={{flex: 1, backgroundColor: COLORS.background_color, zIndex: 9999}}>
 
                 {/*App Name On Top Of Card*/}
@@ -316,7 +303,7 @@ const RestaurantView = () => {
                         paddingHorizontal: 20,
                         paddingTop: 20,
                         shadowColor: 'black',
-                        shadowOpacity: 0.15,
+                        shadowOpacity: 0.25,
                         shadowRadius: 5,
                         elevation: 10,
                     }}>
@@ -339,6 +326,8 @@ const RestaurantView = () => {
                     stackAnimationFriction={20}
                     stackAnimationTension={25}
                     childrenOnTop={false}
+                    overlayOpacityHorizontalThreshold={50}
+                    animateOverlayLabelsOpacity={false}
                     renderCard={(restaurant: Restaurant) => {
 
                         // Return this component if restaraunt is undefined for some reason
@@ -349,10 +338,13 @@ const RestaurantView = () => {
                                         source={IMAGES.no_image_found}
                                         style={styles.cardImage}
                                     />
-                                    <View style={styles.textOverlay}>
+                                    <LinearGradient
+                                        colors={['transparent', 'rgba(0,0,0,0.8)']}
+                                        style={styles.gradientOverlay}
+                                    >
                                         <Text style={styles.cardName}>Unknown</Text>
                                         <Text style={styles.cardText}>We couldn't find any restaurants nearby..</Text>
-                                    </View>
+                                    </LinearGradient>
                                 </View>
                             );
                         }
@@ -364,14 +356,24 @@ const RestaurantView = () => {
                                     source={{ uri: restaurant.photoUrl !== null ? restaurant.photoUrl :  IMAGES.no_image_found, }}
                                     style={styles.cardImage}
                                 />
-                                <View style={styles.textOverlay}>
-                                    <Text style={styles.cardName}>{restaurant.name}</Text>
+                                <LinearGradient
+                                    // Fade from transparent to semi-opaque black
+                                    colors={['transparent', 'rgba(0,0,0,0.8)']}
+                                    // You can adjust the darkness (0.8) or add more stops for smoothness:
+                                    // colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.9)']}
+                                    style={styles.gradientOverlay} // Apply gradient styles
+                                >
+                                    {/* Text elements are now children of the gradient for positioning */}
+                                    <Text style={styles.cardName} numberOfLines={1} ellipsizeMode="tail">{restaurant.name}</Text>
                                     {restaurant?.openNow && (
-                                        <Text style={styles.cardTextGreen}>Open Now</Text>
+                                        <ShineText
+                                            text="Open Now"
+                                            style={styles.cardTextGreen} // Pass the original text style
+                                        />
                                     )}
-                                    <Text style={styles.cardText}>{restaurant.vicinity}</Text>
+                                    <Text style={styles.cardText} numberOfLines={1} ellipsizeMode="tail">{restaurant.vicinity}</Text>
                                     <Text style={styles.cardText}>{restaurant.rating}/5 stars, {restaurant.distanceFromUser} km away</Text>
-                                </View>
+                                </LinearGradient>
                             </View>
                         );
                     }}
@@ -400,18 +402,17 @@ const RestaurantView = () => {
                     animateCardOpacity={true}
                     overlayLabels={{
                         left: {
-                            title: 'NOPE',
+                            element: (
+                                <Image
+                                    source={IMAGES.nope_overlay}
+                                    style={{
+                                        width: 100,
+                                        height: 100,
+                                        transform: [{ rotate: '30deg' }],
+                                    }}
+                                />
+                            ),
                             style: {
-                                label: {
-                                    color: 'red',
-                                    fontSize: 35,
-                                    fontWeight: 'bold',
-                                    transform: [{ rotate: '30deg' }],
-                                    shadowOffset: {width: 0, height: 2},
-                                    shadowOpacity: 0.5,
-                                    shadowRadius: 15,
-                                    shadowColor: 'black',
-                                },
                                 wrapper: {
                                     flexDirection: 'column',
                                     alignItems: 'flex-end',
@@ -422,18 +423,17 @@ const RestaurantView = () => {
                             },
                         },
                         right: {
-                            title: 'LIKE',
+                            element: (
+                                <Image
+                                    source={IMAGES.like_overlay}
+                                    style={{
+                                        width: 100,
+                                        height: 100,
+                                        transform: [{ rotate: '-30deg' }],
+                                    }}
+                                />
+                            ),
                             style: {
-                                label: {
-                                    color: 'lightgreen',
-                                    fontSize: 35,
-                                    fontWeight: 'bold',
-                                    transform: [{ rotate: '-30deg' }],
-                                    shadowOffset: {width: 0, height: 2},
-                                    shadowOpacity: 0.5,
-                                    shadowRadius: 15,
-                                    shadowColor: 'black',
-                                },
                                 wrapper: {
                                     flexDirection: 'column',
                                     alignItems: 'flex-start',
@@ -465,25 +465,38 @@ const RestaurantView = () => {
 const styles = StyleSheet.create({
     textOverlay: {
         position: 'absolute',
-        bottom: 45,
+        bottom: 45, // Adjust positioning as needed
         left: 20,
         right: 20,
-        backgroundColor: 'rgba(140,140,140,0.37)',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Darker overlay for text contrast
         padding: 10,
         borderRadius: 8,
+    },
+    gradientOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '40%',              // Height of the gradient
+        borderBottomLeftRadius: 10, // Match card's border radius
+        borderBottomRightRadius: 10, // Match card's border radius
+        justifyContent: 'flex-end', // Push text content to the bottom
+        paddingHorizontal: 15, // Left/Right padding for text
+        paddingBottom: 55,    // Bottom padding for text
     },
     card: {
         flex: 0.85,
         marginTop: 40,
-        backgroundColor: "transparent",
+        backgroundColor: COLORS.background_color,
         borderRadius: 10,
         justifyContent: "center",
         alignItems: "center",
-        elevation: 10, // shadow for Android
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.5,
-        shadowRadius: 15,
-        overflow: 'hidden',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.50,
+        shadowRadius: 3.84,
+
+        elevation: 5,
     },
     cardName: {
         fontFamily: 'Roboto',
@@ -492,14 +505,15 @@ const styles = StyleSheet.create({
         color: "white",
     },
     cardText: {
-      fontSize: 14,
+        fontSize: 14,
         fontStyle: 'italic',
-      color: "white",
+        color: "white",
     },
     cardTextGreen: {
         fontSize: 14,
         color: 'lightgreen',
         fontStyle: 'italic',
+        fontWeight: 'bold'
     },
     cardImage: {
         flex: 1,
@@ -507,6 +521,7 @@ const styles = StyleSheet.create({
         height: 200,
         borderTopLeftRadius: 10,
         borderTopRightRadius: 10,
+        borderRadius: 10
     },
 });
 

@@ -1,5 +1,7 @@
-import { View, TouchableOpacity, StyleSheet , Animated} from 'react-native';
+import {View, TouchableOpacity, StyleSheet, Animated, Image} from 'react-native';
 import { XIcon, HeartIcon, HelpCircleIcon } from 'lucide-react-native';
+import React from "react";
+import {IMAGES} from "@/constants/images";
 
 
 type CardActionButtonProps = {
@@ -14,13 +16,13 @@ export default function CardActionButtons({ onDislike, onInfo, onLike, swipeProg
     // Button size animation (scale up when swiped)
     const dislikeButtonScale = swipeProgressX.interpolate({
         inputRange: [-350, 0], // Scale based on swipe progress
-        outputRange: [1.25, 1], // Scale factor for left, no swipe, and right
+        outputRange: [2, 1], // Scale factor for left, no swipe, and right
         extrapolate: 'clamp',
     });
 
     const likeButtonScale = swipeProgressX.interpolate({
         inputRange: [0, 350], // Scale based on swipe progress
-        outputRange: [1, 1.25], // Scale factor for left, no swipe, and right
+        outputRange: [1, 2.75], // Scale factor for left, no swipe, and right
         extrapolate: 'clamp',
     });
 
@@ -28,17 +30,29 @@ export default function CardActionButtons({ onDislike, onInfo, onLike, swipeProg
         <View style={styles.buttonsContainer}>
             <TouchableOpacity onPress={onDislike} style={styles.button} >
                 <Animated.View style={{ transform: [{ scale: dislikeButtonScale }]}}>
-                    <XIcon size={35} color="#FF006F" />
+                    <Image
+                        source={IMAGES.button_dislike}
+                        style={{width: 35, height: 35}}
+                        resizeMode="contain"
+                    />
                 </Animated.View>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={onInfo} style={styles.button}>
-                <HelpCircleIcon size={25} color="#FFA500" />
+                <Image
+                    source={IMAGES.button_info}
+                    style={{width: 25, height: 25}}
+                    resizeMode="contain"
+                />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={onLike} style={styles.button}>
                 <Animated.View style={{ transform: [{ scale: likeButtonScale }] }}>
-                    <HeartIcon size={35} color="#FF006F" />
+                    <Image
+                        source={IMAGES.button_heart_icon}
+                        style={{width: 35, height: 35}}
+                        resizeMode="contain"
+                    />
                 </Animated.View>
             </TouchableOpacity>
         </View>
@@ -62,13 +76,10 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 50,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.5,
-        shadowRadius: 4,
-        elevation: 5, // for Android shadow
-        borderWidth: 1,
-        borderColor: '#E5E5E5',
-        overflow: 'hidden',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 4, // for Android shadow
         position: 'relative',
     },
     button_fill: {

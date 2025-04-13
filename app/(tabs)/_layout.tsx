@@ -10,8 +10,8 @@ const TabIcon= ({focused, icon}:{focused:any; icon:any}) => {
             <Image
                 source={icon}
                 style={{
-                    width:45,
-                    height:45,
+                    width:30,
+                    height:30,
                     tintColor: COLORS.primary,
                 }}
             />
@@ -21,8 +21,8 @@ const TabIcon= ({focused, icon}:{focused:any; icon:any}) => {
             <Image
                 source={icon}
                 style={{
-                    width:45,
-                    height:45,
+                    width:30,
+                    height:30,
                     tintColor: "black",
                 }}
             />
@@ -63,7 +63,7 @@ const _layout = () => {
                     headerShown: false,
                     tabBarShowLabel: false,
                     tabBarIcon: ({focused}) => (
-                        <TabIcon focused={focused} icon={IMAGES.earth}/>
+                        <TabIcon focused={focused} icon={IMAGES.traveler_icon}/>
                     )
                 }}
             />
@@ -74,7 +74,7 @@ const _layout = () => {
                     headerShown: false,
                     tabBarShowLabel: false,
                     tabBarIcon: ({focused}) => (
-                        <TabIcon focused={focused} icon={IMAGES.like}/>
+                        <TabIcon focused={focused} icon={IMAGES.heart}/>
                     )
                 }}
             />

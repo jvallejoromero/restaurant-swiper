@@ -4,6 +4,7 @@ import React, {useRef, useState, useEffect} from 'react'
 import {useLocalSearchParams, useRouter} from "expo-router";
 import {COLORS} from "@/constants/colors";
 import {ChevronLeft, ChevronRight, LinkIcon} from 'lucide-react-native';
+import LottieView from "lottie-react-native";
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
 const width = Dimensions.get("window").width;
@@ -235,12 +236,25 @@ const RestaurantDetails = () => {
 
     // Render loading state or error state when fetching
     if (isFetchingData) {
+        // Choose a loading animation randomly
+        const random = Math.random();
+
+        let animationPath = '';
+        if (random < 0.5) {
+            animationPath = require('../../assets/animations/red-fork-animation.json');
+        } else {
+            animationPath = require('../../assets/animations/plate-animation.json');
+        }
         return (
-            <View style={styles.detailsContainer}>
-                <Text>Loading Restaurant Data...</Text>
-                <TouchableOpacity style={styles.continueSwipingButton} onPress={handleBack}>
-                    <Text style={styles.buttonText}>Go Back</Text>
-                </TouchableOpacity>
+            <View className="flex-1 justify-center items-center bg-primary">
+                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                    <LottieView
+                        source={animationPath}
+                        autoPlay
+                        loop
+                        style={{ width: 200, height: 200 }}
+                    />
+                </View>
             </View>
         );
     }
