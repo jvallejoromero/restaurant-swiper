@@ -1,5 +1,4 @@
 import {View, TouchableOpacity, StyleSheet, Animated, Image} from 'react-native';
-import { XIcon, HeartIcon, HelpCircleIcon } from 'lucide-react-native';
 import React from "react";
 import {IMAGES} from "@/constants/images";
 
@@ -16,13 +15,13 @@ export default function CardActionButtons({ onDislike, onInfo, onLike, swipeProg
     // Button size animation (scale up when swiped)
     const dislikeButtonScale = swipeProgressX.interpolate({
         inputRange: [-350, 0], // Scale based on swipe progress
-        outputRange: [2, 1], // Scale factor for left, no swipe, and right
+        outputRange: [1.4, 1], // Scale factor for left, no swipe, and right
         extrapolate: 'clamp',
     });
 
     const likeButtonScale = swipeProgressX.interpolate({
         inputRange: [0, 350], // Scale based on swipe progress
-        outputRange: [1, 2.75], // Scale factor for left, no swipe, and right
+        outputRange: [1, 1.4], // Scale factor for left, no swipe, and right
         extrapolate: 'clamp',
     });
 
@@ -32,7 +31,7 @@ export default function CardActionButtons({ onDislike, onInfo, onLike, swipeProg
                 <Animated.View style={{ transform: [{ scale: dislikeButtonScale }]}}>
                     <Image
                         source={IMAGES.button_dislike}
-                        style={{width: 35, height: 35}}
+                        style={{width: 35, height: 35, shadowOpacity: 0.1, shadowRadius: 0.25, shadowOffset: { width: 1, height: 2 }}}
                         resizeMode="contain"
                     />
                 </Animated.View>
@@ -50,7 +49,7 @@ export default function CardActionButtons({ onDislike, onInfo, onLike, swipeProg
                 <Animated.View style={{ transform: [{ scale: likeButtonScale }] }}>
                     <Image
                         source={IMAGES.button_heart_icon}
-                        style={{width: 35, height: 35}}
+                        style={{width: 35, height: 35, shadowOpacity: 0.1, shadowRadius: 0.25, shadowOffset: { width: 1, height: 2 }}}
                         resizeMode="contain"
                     />
                 </Animated.View>
@@ -81,6 +80,7 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
         elevation: 4, // for Android shadow
         position: 'relative',
+        overflow: 'hidden',
     },
     button_fill: {
         position: 'absolute',

@@ -5,6 +5,7 @@ import {useLocalSearchParams, useRouter} from "expo-router";
 import {COLORS} from "@/constants/colors";
 import {ChevronLeft, ChevronRight, LinkIcon} from 'lucide-react-native';
 import LottieView from "lottie-react-native";
+import {IMAGES} from "@/constants/images";
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
 const width = Dimensions.get("window").width;
@@ -330,7 +331,7 @@ const RestaurantDetails = () => {
             <ScrollView style={styles.imageGalleryWrapper}>
                 <View>
                     {/* Left Button */}
-                    {currentImageIndex >= 1 && (
+                    {(placeDetails.photos && placeDetails.photos.length > 0) && (currentImageIndex >= 1) && (
                         <>
                             <TouchableOpacity
                                 onPress={() => scrollToIndex(currentImageIndex - 1)}
@@ -342,7 +343,7 @@ const RestaurantDetails = () => {
                     )}
 
                     {/* Right Button */}
-                    {currentImageIndex < (placeDetails.photos.length-1) && (
+                    {(placeDetails.photos && placeDetails.photos.length > 0) && (currentImageIndex < (placeDetails.photos.length-1)) && (
                         <TouchableOpacity
                             onPress={() => scrollToIndex(currentImageIndex + 1)}
                             style={[styles.galleryButton, { right: 10 }]}
@@ -363,9 +364,16 @@ const RestaurantDetails = () => {
                             setCurrentImageIndex(newIndex);
                         }}
                     >
-                        {placeDetails.photos.map((uri, index) => (
-                            <Image key={index} source={{ uri }} style={styles.image} />
-                        ))}
+                        {placeDetails.photos && placeDetails.photos.length > 0 ? (
+                            placeDetails.photos.map((uri, index) => (
+                                <Image key={index} source={{ uri }} style={styles.image} />
+                            ))
+                        ) : (
+                            <Image
+                                source={IMAGES.no_image_found}  // assuming this is a local asset imported via require()
+                                style={[styles.image, {resizeMode: "contain"}]}
+                            />
+                        )}
                     </ScrollView>
 
                     {/* Image Counter */}
@@ -416,8 +424,14 @@ const RestaurantDetails = () => {
                     )}
 
                     {/*Rating*/}
-                    <Text style={[styles.subheading, {paddingTop: 10}]}>Rating ({placeDetails.rating} / 5)</Text>
-                    <Text style={styles.text}>{starRating}</Text>
+                    {placeDetails.rating ? (
+                        <>
+                            <Text style={[styles.subheading, {paddingTop: 10}]}>Rating ({placeDetails.rating} / 5)</Text>
+                            <Text style={styles.text}>{starRating}</Text>
+                        </>
+                    ) : (
+                        <Text style={[styles.subheading, {paddingTop: 10}]}>No rating available</Text>
+                    )}
 
                     {/*Price*/}
                     <Text style={styles.subheading}>Price ({getStringPriceLevel()})</Text>
@@ -494,7 +508,7 @@ const RestaurantDetails = () => {
 
                     {/*Reviews*/}
                     <View style={{paddingTop:5}}>
-                        <Text style={styles.subheading}>Reviews ({placeDetails.user_ratings_total})</Text>
+                        <Text style={styles.subheading}>Reviews ({placeDetails.user_ratings_total ? placeDetails.user_ratings_total : 0})</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.reviewsContainer}>
                             {placeDetails.reviews.map((review, index) => (
                                 <View key={index} style={styles.reviewCard}>

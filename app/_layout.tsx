@@ -4,7 +4,7 @@ import './globals.css';
 export default function RootLayout() {
   return <Stack >
     <Stack.Screen
-        name="restaurants/[id]"
+        name="restaurant/[id]"
         options={{
           headerShown: false,
           animation: 'slide_from_right',
