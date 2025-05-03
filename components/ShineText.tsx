@@ -125,7 +125,7 @@ const ShineTextComponent: React.FC<ShineTextProps> = ({
 
 const styles = StyleSheet.create({
     rootContainer: {
-        alignSelf: 'flex-start',
+        // alignSelf: 'flex-start',
         marginBottom: 2,
         overflow: 'hidden', // ADDED THIS
     },

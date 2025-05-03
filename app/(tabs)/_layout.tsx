@@ -57,9 +57,9 @@ const _layout = () => {
                 }}
             />
             <Tabs.Screen
-                name="restaurants"
+                name="attractions"
                 options={{
-                    title: 'Restaurants',
+                    title: 'Attractions',
                     headerShown: false,
                     tabBarShowLabel: false,
                     tabBarIcon: ({focused}) => (

@@ -16,4 +16,6 @@ export const IMAGES = {
     nope_overlay: require("@/assets/overlay-icons/nope2.png"),
     like_overlay: require("@/assets/overlay-icons/like4.png"),
     info_overlay: require("@/assets/overlay-icons/thinking.png"),
+    auth_bg: require("@/assets/images/signup-bg.png"),
+    forked_logo: require("@/assets/images/forked-icon.png"),
 } as const;

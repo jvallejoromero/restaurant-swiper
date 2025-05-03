@@ -149,7 +149,6 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
                 apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
             } else {
                 apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location?.coords.latitude},${location?.coords.longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
-                setIsUpdating(false);
             }
 
             if (nextPageToken) {
@@ -215,8 +214,7 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
                     });
 
                     if (data.next_page_token) {
-                        // setNextPageToken(data.next_page_token);
-                        setIsUpdating(false);
+                        setNextPageToken(data.next_page_token);
                     } else {
                         setIsUpdating(false);
                     }
@@ -234,7 +232,7 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
     // fetch initial data from Google API
     useEffect(() => {
         if (location && !nextPageToken) {
-            fetchPlaces(null);
+            // fetchPlaces(null);
         }
     }, [location]);
 
@@ -337,7 +335,7 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
                     cardVerticalMargin={50}
                     cardHorizontalMargin={15}
                     stackSeparation={0}
-                    infinite={true}
+                    infinite={false}
                     disableBottomSwipe={true}
                     stackAnimationFriction={20}
                     stackAnimationTension={25}
@@ -407,7 +405,7 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
                         handleSwiping(x,y);
                     }}
                     onSwiped={(index) => {
-                        console.log('Swiped: ', index, "/", places.length);
+                        console.log('Swiped: ', (index + 1), "/", places.length);
                         setCardIndex(cardIndex + 1);
                         swipeProgressX.setValue(0); // reset swipe progress
                     }}
@@ -426,7 +424,12 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
                                 pathname: '/restaurant/[id]',
                                 params: { id: places[index].id },
                             });
-                        } else if (type === 'attraction') {}
+                        } else if (type === 'tourist_attraction') {
+                            router.push({
+                                pathname: '/attraction/[id]',
+                                params: {id: places[index].id}
+                            });
+                        }
                         return false;
                     }}
                     cardIndex={cardIndex}
