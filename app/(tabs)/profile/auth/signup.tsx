@@ -64,6 +64,8 @@ export default function SignupScreen() {
                 setErr("Please enter a password!");
             } else if (msg.includes("weak-password")) {
                 setErr("Please enter a stronger password!");
+            }else if (msg.includes("email-already-in-use")) {
+                setErr("This email is already being used!");
             } else {
                 setErr(msg);
             }

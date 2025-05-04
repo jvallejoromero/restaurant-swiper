@@ -48,11 +48,10 @@ export default function LoginScreen() {
 
     const handleSignout = async () => {
         setLoading(true);
-        await auth.signOut();
-        setTimeout(() => {
-            router.replace("/profile");
+        setTimeout(async () => {
+            await auth.signOut();
             setLoading(false);
-        }, 1250);
+        }, 850);
     }
 
     const handleResend = async () => {
