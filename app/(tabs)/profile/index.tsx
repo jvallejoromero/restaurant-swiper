@@ -2,7 +2,6 @@ import React, {useEffect, useState} from "react";
 import {
     ActivityIndicator,
     Dimensions,
-    Image,
     ImageBackground,
     SafeAreaView,
     StyleSheet,
@@ -13,10 +12,10 @@ import {
 import {COLORS} from "@/constants/colors";
 import {IMAGES} from "@/constants/images";
 import {authStyles} from "@/styles/AuthStyles"
-import ShineText from "@/components/ShineText";
 import {useServices} from "@/context/ServicesContext";
 import {useRouter} from "expo-router";
 import {getAuth, sendEmailVerification} from "firebase/auth";
+import {User} from "@/services/AuthService";
 
 const { width } = Dimensions.get("window");
 
@@ -27,7 +26,7 @@ export default function LoginScreen() {
     const [initializing, setInitializing] = useState(true);
     const [loading, setLoading] = useState(false);
 
-    const [user, setUser] = useState<{ uid: string; email: string; username: string, emailVerified: boolean } | null>(null);
+    const [user, setUser] = useState<User | null>(null);
 
 
     useEffect(() => {
@@ -38,7 +37,7 @@ export default function LoginScreen() {
                     setUser(u);
                 } else {
                     setUser(null);
-                    router.replace("/profile/onboarding");
+                    // router.replace("/profile/auth");
                 }
             })
             .catch(console.warn)

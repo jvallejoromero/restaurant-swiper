@@ -8,7 +8,7 @@ import {useRouter} from "expo-router";
 
 const { width } = Dimensions.get("window");
 
-export default function Onboarding() {
+export default function Index() {
     const router = useRouter();
 
     return (
@@ -26,12 +26,12 @@ export default function Onboarding() {
                     <ShineText style={styles.welcome} text="Forked" delay={3000} duration={1500} slantAngle={75}/>
 
                     {/* Sign In Button */}
-                    <TouchableOpacity style={styles.signInButton} onPress={() => router.push("/profile/login")}>
+                    <TouchableOpacity style={styles.signInButton} onPress={() => router.replace("/profile/auth/login")}>
                         <Text style={styles.signInText}>SIGN IN</Text>
                     </TouchableOpacity>
 
                     {/* Sign Up Button Outline */}
-                    <TouchableOpacity style={styles.signUpButton} onPress={() => router.push("/profile/signup")}>
+                    <TouchableOpacity style={styles.signUpButton} onPress={() => router.replace("/profile/auth/signup")}>
                         <Text style={styles.signUpText}>SIGN UP</Text>
                     </TouchableOpacity>
 

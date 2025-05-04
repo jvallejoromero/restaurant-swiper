@@ -1,72 +1,46 @@
 import React, { useState } from "react";
 import {
-    ImageBackground,
     View,
     Text,
     TextInput,
-    TouchableOpacity, ActivityIndicator,
-    TouchableWithoutFeedback, Keyboard, Pressable,
+    TouchableOpacity,
+    ImageBackground, ActivityIndicator, TouchableWithoutFeedback, Keyboard,
 } from "react-native";
 import { useServices } from "@/context/ServicesContext";
-import { useRouter } from "expo-router";
-import { Coffee, Mail, Lock } from "lucide-react-native";
-import {COLORS} from "@/constants/colors";
-import {IMAGES} from "@/constants/images";
+import { useRouter }    from "expo-router";
 import {authStyles} from "@/styles/AuthStyles";
+import {IMAGES} from "@/constants/images";
+import {Lock, Mail} from "lucide-react-native";
+import {COLORS} from "@/constants/colors";
 import PasswordInput from "@/components/PasswordInput";
 
-export default function SignupScreen() {
-    const { auth } = useServices();
+export default function LoginScreen() {
+    const { auth, user } = useServices();
     const router = useRouter();
 
     const [loading, setLoading] = useState(false);
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
+    const [idOrEmail, setIdOrEmail] = useState("");
     const [pass, setPass] = useState("");
     const [err, setErr] = useState("");
 
-    const canSubmit = username.trim() && email.trim() && pass.trim();
+    const canSubmit = idOrEmail.trim() && pass.trim();
 
-    // go back to profile index
-    const goToProfile = () => {
-        while (router.canGoBack()) {
-            router.back();
-        }
-        router.replace("/profile");
-    };
-
-    const handleSignup = async () => {
+    const handleLogin = async () => {
         // clear old errors
         setErr("");
         setLoading(true);
 
         try {
-            if (!username.trim()) {
-                setErr("Please enter a username!");
-                return;
-            }
-            if (username.length < 3) {
-                setErr("Please enter a longer username!");
-                return;
-            }
-            // check if username is valid
-            const re = /^[a-zA-Z0-9._]+$/;
-            if (!re.test(username.trim())) {
-                setErr("Please enter a valid username!\n (only _ and . are allowed as special characters)");
-                return;
-            }
-            await auth.signUp(email.trim(), pass, username.trim().toLowerCase());
+            await auth.signIn(idOrEmail.trim(), pass);
 
-            // successful sign up
-            goToProfile();
+            // successful login
+            router.replace("/profile");
         } catch (e: any) {
             let msg = e.message;
-            if (msg.includes("invalid-email")) {
-                setErr("Please enter a valid email!");
-            } else if (msg.includes("missing-password")) {
-                setErr("Please enter a password!");
-            } else if (msg.includes("weak-password")) {
-                setErr("Please enter a stronger password!");
+            if (msg.includes("invalid-credential")) {
+                setErr("Incorrect username or password!");
+            } else if (msg.includes("too-many-requests")) {
+                setErr("Slow down! Try again in a few seconds!");
             } else {
                 setErr(msg);
             }
@@ -86,8 +60,10 @@ export default function SignupScreen() {
                 blurRadius={5}
             >
                 <View style={authStyles.container}>
-                    <View style={authStyles.card}>
-                        <Text style={authStyles.title}>Create an Account</Text>
+                    <View
+                        style={authStyles.card}
+                    >
+                        <Text style={authStyles.title}>Welcome Back</Text>
                         {
                             loading
                                 ? (
@@ -97,28 +73,16 @@ export default function SignupScreen() {
                                 )
                         }
 
-                        {/* Display Name */}
-                        <View style={authStyles.inputWrapper}>
-                            <Coffee size={20} color={COLORS.primary} style={authStyles.icon} />
-                            <TextInput
-                                placeholder="Username"
-                                placeholderTextColor="#aaa"
-                                value={username}
-                                onChangeText={setUsername}
-                                style={authStyles.input}
-                            />
-                        </View>
-
                         {/* Email */}
                         <View style={authStyles.inputWrapper}>
                             <Mail size={20} color={COLORS.primary} style={authStyles.icon} />
                             <TextInput
-                                placeholder="Email"
+                                placeholder="Email or Username"
                                 placeholderTextColor="#aaa"
                                 keyboardType="email-address"
                                 autoCapitalize="none"
-                                value={email}
-                                onChangeText={setEmail}
+                                value={idOrEmail}
+                                onChangeText={setIdOrEmail}
                                 style={authStyles.input}
                             />
                         </View>
@@ -138,17 +102,17 @@ export default function SignupScreen() {
 
                         <TouchableOpacity
                             style={[authStyles.button, !canSubmit && {opacity: 0.5}]}
-                            onPress={handleSignup}
+                            onPress={handleLogin}
                             disabled={!canSubmit}
                         >
-                            <Text style={authStyles.buttonText}>Sign Up</Text>
+                            <Text style={authStyles.buttonText}>Sign In</Text>
                         </TouchableOpacity>
 
                         <Text
                             style={authStyles.link}
-                            onPress={() => router.push("/profile/login")}
+                            onPress={() => router.replace("/profile/auth/signup")}
                         >
-                            Already have an account? Sign In
+                            Don’t have an account? Sign Up
                         </Text>
                     </View>
                 </View>
@@ -156,3 +120,4 @@ export default function SignupScreen() {
         </TouchableWithoutFeedback>
     );
 }
+

@@ -26,7 +26,7 @@ export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) 
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // subscribe to Firebase’s auth-state changes
+        // subscribe to Firebase’s profile-state changes
         return onAuthStateChanged(auth, async fbUser => {
             if (!fbUser) {
                 setUser(null);
@@ -39,6 +39,7 @@ export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) 
                         uid: fbUser.uid,
                         email: fbUser.email!,
                         username: profile?.username ?? "",
+                        emailVerified: fbUser.emailVerified,
                     });
                 } catch (err) {
                     console.warn("Failed to load profile:", err);
@@ -47,6 +48,7 @@ export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) 
                         uid: fbUser.uid,
                         email: fbUser.email!,
                         username: "",
+                        emailVerified: fbUser.emailVerified,
                     });
                 }
             }

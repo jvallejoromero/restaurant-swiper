@@ -54,7 +54,7 @@ export class FirebaseAuthService implements AuthService {
             throw new Error("Username already taken!");
         }
 
-        // create auth user
+        // create profile user
         const cred = await createUserWithEmailAndPassword(auth, email, pass);
         const { uid } = cred.user;
 
