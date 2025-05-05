@@ -3,7 +3,7 @@ import {
     signInWithEmailAndPassword,
     signOut as fbSignOut,
     onAuthStateChanged,
-    sendEmailVerification,
+    sendEmailVerification, signInWithCredential, GoogleAuthProvider,
 } from "firebase/auth";
 import {
     doc,
@@ -116,6 +116,17 @@ export class FirebaseAuthService implements AuthService {
             emailVerified: cred.user.emailVerified,
         };
     }
+
+    async signInWithGoogle(idToken: string, accessToken: string): Promise<User> {
+        await signInWithCredential(auth, GoogleAuthProvider.credential(idToken, accessToken));
+        const appUser = await this.getCurrentUser();
+
+        if (!appUser) {
+            throw new Error("Google sign-in succeeded but no user profile found");
+        }
+        return appUser;
+    }
+
 
     async signOut(): Promise<void> {
         await fbSignOut(auth);

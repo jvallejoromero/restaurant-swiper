@@ -13,14 +13,12 @@ import {COLORS} from "@/constants/colors";
 import {IMAGES} from "@/constants/images";
 import {authStyles} from "@/styles/AuthStyles"
 import {useServices} from "@/context/ServicesContext";
-import {useRouter} from "expo-router";
 import {getAuth, sendEmailVerification} from "firebase/auth";
 import {User} from "@/services/AuthService";
 
 const { width } = Dimensions.get("window");
 
-export default function LoginScreen() {
-    const router = useRouter();
+export default function ProfileScreen() {
 
     const { auth } = useServices();
     const [initializing, setInitializing] = useState(true);
@@ -37,7 +35,6 @@ export default function LoginScreen() {
                     setUser(u);
                 } else {
                     setUser(null);
-                    // router.replace("/profile/auth");
                 }
             })
             .catch(console.warn)

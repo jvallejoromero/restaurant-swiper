@@ -1,15 +1,55 @@
 import {Dimensions, Image, ImageBackground, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
-import React from 'react'
+import React, {useEffect} from 'react'
 import {IMAGES} from "@/constants/images";
 import {authStyles} from "@/styles/AuthStyles";
 import ShineText from "@/components/ShineText";
 import {COLORS} from "@/constants/colors";
 import {useRouter} from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithCredential
+} from "firebase/auth";
 
 const { width } = Dimensions.get("window");
 
-export default function Index() {
+// let the proxy complete any in-app redirects
+WebBrowser.maybeCompleteAuthSession();
+
+export default function OnboardingScreen() {
     const router = useRouter();
+
+    // setup Google auth request
+    const [request, response, promptAsync] = Google.useAuthRequest({
+        iosClientId:     "246037100548-r5h4hsvam917nthd914ei12fhh1crpod.apps.googleusercontent.com",
+        androidClientId: "246037100548-g6r0kkh32cbbdv28t677qd5nljoqe03a.apps.googleusercontent.com",
+        webClientId:     "246037100548-vamnjkedbotg00vmsn8crbhju4gjrdbt.apps.googleusercontent.com",
+        clientId:    "246037100548-vamnjkedbotg00vmsn8crbhju4gjrdbt.apps.googleusercontent.com",
+        scopes: ["profile", "email"],
+    });
+
+    if (request) {
+        console.log("proxy redirectUri =", request.redirectUri);
+    }
+
+    // listen for Google auth request response
+    useEffect(() => {
+        if (response?.type === "success") {
+            const { id_token, access_token } = response.params;
+            const credential = GoogleAuthProvider.credential(id_token, access_token);
+
+            // send credentials to Firebase
+            signInWithCredential(getAuth(), credential)
+                .then(() => {
+                    router.replace("/profile");
+                })
+                .catch(err => {
+                    console.error("Firebase sign-in error:", err);
+                });
+        }
+    }, [response, router]);
 
     return (
         <ImageBackground
@@ -36,8 +76,17 @@ export default function Index() {
                     </TouchableOpacity>
 
                     {/* Social Login */}
-                    <Text style={styles.socialLabel}>Or sign in with Google</Text>
+                    <Text style={styles.socialLabel}>Or sign in with</Text>
                     <View style={styles.socialRow}>
+                        <TouchableOpacity
+                            style={styles.socialButton}
+                            onPress={() => promptAsync()}
+                        >
+                            <Image
+                                source={require('../../../../assets/google-assets/signin/google_logo.png')}
+                                style={{ width:44, height:44 }}
+                            />
+                        </TouchableOpacity>
                     </View>
                 </View>
             </SafeAreaView>
@@ -87,7 +136,7 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         justifyContent: "center",
         alignItems: "center",
-        marginBottom: 32,
+        marginBottom: 25,
     },
     signUpText: {
         color: "#fff",
@@ -102,7 +151,15 @@ const styles = StyleSheet.create({
     socialRow: {
         flexDirection: "row",
     },
+    socialButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        padding: 12,
+        borderRadius: 4,
+        elevation: 2,
+    },
     socialIcon: {
-        marginHorizontal: 12,
+        marginRight: 8
     },
 })

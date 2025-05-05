@@ -42,13 +42,17 @@ export default function SignupScreen() {
                 setErr("Please enter a username!");
                 return;
             }
-            if (username.length < 3) {
+            if (username.length < 4) {
                 setErr("Please enter a longer username!");
                 return;
             }
             // check if username is valid
+            if (username.trim().endsWith(".") || username.trim().startsWith(".")) {
+                setErr("Username may not start or end with a period!");
+                return;
+            }
             const re = /^[a-zA-Z0-9._]+$/;
-            if (!re.test(username.trim())) {
+            if (!re.test(username.trim().normalize("NFC"))) {
                 setErr("Please enter a valid username!\n (only _ and . are allowed as special characters)");
                 return;
             }
