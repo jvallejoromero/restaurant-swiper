@@ -4,10 +4,12 @@ import {
     Dimensions,
     ImageBackground,
     SafeAreaView,
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
+    Image,
 } from "react-native";
 import {COLORS} from "@/constants/colors";
 import {IMAGES} from "@/constants/images";
@@ -15,6 +17,8 @@ import {authStyles} from "@/styles/AuthStyles"
 import {useServices} from "@/context/ServicesContext";
 import {getAuth, sendEmailVerification} from "firebase/auth";
 import {User} from "@/services/AuthService";
+import {Ionicons, MaterialIcons} from "@expo/vector-icons";
+import {LinearGradient} from "expo-linear-gradient";
 
 const { width } = Dimensions.get("window");
 
@@ -71,15 +75,7 @@ export default function ProfileScreen() {
         setLoading(false);
     };
 
-    if (initializing) {
-        return (
-            <View style={[StyleSheet.absoluteFillObject, authStyles.loadingIndicator]}>
-                <ActivityIndicator size={24} />
-            </View>
-        )
-    }
-
-    if (loading) {
+    if (initializing || loading) {
         return (
             <View style={[StyleSheet.absoluteFillObject, authStyles.loadingIndicator]}>
                 <ActivityIndicator size={24} />
@@ -121,13 +117,96 @@ export default function ProfileScreen() {
 
     // user is valid
     return (
-        <SafeAreaView style={styles.container}>
-            <Text style={{ fontSize: 24 }}>Hello, {user?.username}!</Text>
-            <Text>Email: {user?.email}</Text>
-            <TouchableOpacity onPress={ handleSignout }>
-                <Text style={{ color: "red", marginTop: 20 }}>Sign Out</Text>
-            </TouchableOpacity>
-        </SafeAreaView>
+        <View style={styles.container}>
+            {/* Header with decorative food shapes */}
+            <ImageBackground
+                source={IMAGES.profile_header_bg}
+                style={styles.header}
+                blurRadius={5}
+            >
+                <LinearGradient
+                    // fade from fully transparent at the top to a tiny bit darker at the bottom
+                    colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.22)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                    style={StyleSheet.absoluteFillObject}    // absolutely cover the header
+                >
+                    <View style={styles.avatarContainer}>
+                        <Image
+                            source={IMAGES.default_avatar}
+                            style={styles.avatar}
+                        />
+                    </View>
+                    <TouchableOpacity style={styles.editButton}>
+                        <Ionicons name="create-outline" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    <Text style={styles.displayName}>{user.username}</Text>
+                </LinearGradient>
+            </ImageBackground>
+
+            <View style={styles.content}>
+                <Text style={styles.name}>{"Account Information"}</Text>
+
+                <View style={styles.row}>
+                    <Ionicons name="mail-outline" size={20} color="#555" />
+                    <Text style={styles.label}>Email</Text>
+                    <Text style={styles.value}>{user.email}</Text>
+                </View>
+
+                <View style={styles.row}>
+                    <Ionicons name="person-outline" size={20} color="#555" />
+                    <Text style={styles.label}>Username</Text>
+                    <Text style={styles.value}>{user.username}</Text>
+                </View>
+
+                {/* Menu Actions */}
+                <TouchableOpacity
+                    style={[styles.menuItem, { borderBottomColor: "#eee" }]}
+                >
+                    <Ionicons
+                        name="settings-outline"
+                        size={20}
+                        color="#555"
+                        style={styles.menuIcon}
+                    />
+                    <Text style={styles.menuText}>Settings</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#999" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.menuItem, { borderBottomColor: "#eee" }]}
+                >
+                    <Ionicons
+                        name="rocket-outline"
+                        size={20}
+                        color="#555"
+                        style={styles.menuIcon}
+                    />
+                    <Text style={styles.menuText}>Sessions</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#999"/>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.menuItem} onPress={handleSignout}>
+                    <MaterialIcons
+                        name="logout"
+                        size={20}
+                        color="#555"
+                        style={styles.menuIcon}
+                    />
+                    <Text style={[styles.menuText, { color: COLORS.primary }]}>Log Out</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+                    <Ionicons
+                        name="person-remove-outline"
+                        size={20}
+                        color="#555"
+                        style={styles.menuIcon}
+                    />
+                    <Text style={[styles.menuText, { color: COLORS.primary }]}>Delete Account</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
     );
 }
 
@@ -136,8 +215,6 @@ const BUTTON_WIDTH = width * 0.75;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
     },
     background: {
         flex: 1,
@@ -180,5 +257,78 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 16,
         fontWeight: "600",
+    },
+    header: {
+        flexBasis: '37%',       // take roughly 37% of the screen height
+        maxHeight: 300,
+        justifyContent: "center",
+        alignItems: "center",
+        position: "relative",
+    },
+    avatarContainer: {
+        paddingTop: "15%",
+        justifyContent: "center",
+        alignItems: "center",
+        position: "relative",
+        padding: 10,
+    },
+    avatar: {
+        width: 144,
+        height: 144,
+        borderRadius: 75,
+        borderWidth: 0.5,
+        borderColor: "#fff",
+    },
+    editButton: {
+        position: "absolute",
+        top: "15%",
+        right: "5%",
+        padding: 8
+    },
+    content: {
+        padding: 24,
+        flex: 1,
+        backgroundColor: COLORS.background_color,
+    },
+    name: {
+        fontSize: 26,
+        fontWeight: "700",
+        textAlign: "center",
+        marginBottom: 24
+    },
+    displayName: {
+        fontSize: 26,
+        fontWeight: "700",
+        textAlign: "center",
+        color: "white",
+    },
+    row: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    label: {
+        flex: 1,
+        marginLeft: 12,
+        fontSize: 16,
+        color: "#555"
+    },
+    value: {
+        fontSize: 16,
+        fontWeight: "500",
+        color: "#000"
+    },
+    menuItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 10,
+    },
+    menuIcon: {
+        marginRight: 12
+    },
+    menuText: {
+        flex: 1,
+        fontSize: 16,
+        color: "#000"
     },
 });
