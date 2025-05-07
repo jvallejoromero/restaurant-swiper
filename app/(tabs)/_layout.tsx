@@ -34,17 +34,18 @@ const _layout = () => {
     return (
         <Tabs
             screenOptions={{
-            tabBarShowLabel: false,
-            tabBarStyle: {
-                height: 100,
-                paddingBottom: 10,
-                paddingTop: 10,
-                width: '100%',
-                alignSelf: 'center',
-                flexDirection: 'row',
-                justifyContent: "space-between",
-            },
-        }}>
+                tabBarShowLabel: false,
+                tabBarStyle: {
+                    height: 100,
+                    paddingBottom: 10,
+                    paddingTop: 10,
+                    width: '100%',
+                    alignSelf: 'center',
+                    flexDirection: 'row',
+                    justifyContent: "space-between",
+                },
+            }}
+        >
             <Tabs.Screen
                 name="index"
                 options={{

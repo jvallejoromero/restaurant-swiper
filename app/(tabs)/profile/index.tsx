@@ -4,7 +4,6 @@ import {
     Dimensions,
     ImageBackground,
     SafeAreaView,
-    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -19,17 +18,19 @@ import {getAuth, sendEmailVerification} from "firebase/auth";
 import {User} from "@/services/AuthService";
 import {Ionicons, MaterialIcons} from "@expo/vector-icons";
 import {LinearGradient} from "expo-linear-gradient";
+import {router} from "expo-router";
 
 const { width } = Dimensions.get("window");
 
 export default function ProfileScreen() {
 
-    const { auth } = useServices();
+    const { auth, database } = useServices();
+
     const [initializing, setInitializing] = useState(true);
     const [loading, setLoading] = useState(false);
 
     const [user, setUser] = useState<User | null>(null);
-
+    const [displayName, setDisplayName] = useState<string | null>(null);
 
     useEffect(() => {
         // 1) check current user once
@@ -46,6 +47,15 @@ export default function ProfileScreen() {
                 setInitializing(false);
             });
     }, []);
+
+    useEffect(() => {
+        if (!user?.uid) return;
+
+        return database.onUserProfile(user.uid, (profile) => {
+                setDisplayName(profile?.displayName ?? null);
+            }
+        );
+    }, [database, user]);
 
     const handleSignout = async () => {
         setLoading(true);
@@ -137,10 +147,10 @@ export default function ProfileScreen() {
                             style={styles.avatar}
                         />
                     </View>
-                    <TouchableOpacity style={styles.editButton}>
+                    <TouchableOpacity style={styles.editButton} onPress={() => router.push("/profile/edit-profile")}>
                         <Ionicons name="create-outline" size={24} color="#fff" />
                     </TouchableOpacity>
-                    <Text style={styles.displayName}>{user.username}</Text>
+                    <Text style={styles.displayName}>{displayName}</Text>
                 </LinearGradient>
             </ImageBackground>
 

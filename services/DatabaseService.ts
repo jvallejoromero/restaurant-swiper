@@ -11,16 +11,23 @@ export interface Session {
     createdAt:    Date;
 }
 
+export interface UserProfile {
+    displayName?: string;
+    photoURL?: string;
+    username: string;
+}
+
 export interface DatabaseService {
     createSession(userId: string): Promise<Session>;
     joinSession(sessionId: string, userId: string): Promise<void>;
     recordSwipe(sessionId: string, swipe: Swipe): Promise<void>;
 
     /** Subscribe to all swipes in session (fires on any add/update) */
-    onSessionSwipes(
-        sessionId: string,
-        callback: (swipes: Swipe[]) => void
-    ): () => void; // returns unsubscribe
+    onSessionSwipes(sessionId: string, callback: (swipes: Swipe[]) => void): () => void;
 
-    // …any other methods: fetchMatches, fetchUserSettings, etc.
+    onUserProfile(uid: string, callback: (profile: UserProfile | null) => void): () => void;
+
+    // other methods: fetchMatches, fetchUserSettings, etc.
+    getUserProfile(uid: string): Promise<UserProfile | null>;
+    updateUserProfile(uid: string, data: Partial<UserProfile>): Promise<void>;
 }

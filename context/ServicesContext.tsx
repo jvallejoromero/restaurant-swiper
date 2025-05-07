@@ -1,13 +1,16 @@
 // context/ServicesContext.tsx
 import React, {createContext, ReactNode, useContext, useEffect, useState} from "react";
 import {AuthService, User} from "@/services/AuthService"
+import {DatabaseService} from "@/services/DatabaseService";
 import {FirebaseAuthService} from "@/services/FirebaseAuthService";
+import {FirebaseDatabaseService} from "@/services/FirebaseDatabaseService";
 import {onAuthStateChanged} from "firebase/auth";
 import {auth, firestore} from "@/firebase";
 import {doc, getDoc} from "firebase/firestore";
 
 interface ServicesContextProps {
     auth:    AuthService;
+    database: DatabaseService;
     user:    User | null;
     loading: boolean;
 }
@@ -20,9 +23,10 @@ export const ServicesContext = createContext<ServicesContextProps>(null!);
 
 export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) => {
     const authService = new FirebaseAuthService();
+    const dbService   = new FirebaseDatabaseService();
 
     // track the signed-in user & loading state once
-    const [user, setUser]       = useState<User | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -57,7 +61,7 @@ export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) 
     }, []);
 
     return (
-        <ServicesContext.Provider value={{ auth: authService, user, loading }}>
+        <ServicesContext.Provider value={{ auth: authService, database: dbService, user, loading }}>
             {children}
         </ServicesContext.Provider>
     );

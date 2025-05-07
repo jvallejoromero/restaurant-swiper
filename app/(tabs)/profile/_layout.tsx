@@ -34,6 +34,12 @@ export default function ProfileLayout() {
                 name="index"
                 options={{ gestureEnabled: false }}
             />
+            <Stack.Screen
+                name="edit-profile"
+            />
+            <Stack.Screen
+                name="edit-displayname"
+            />
         </Stack>
     );
 }
