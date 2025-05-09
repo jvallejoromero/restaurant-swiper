@@ -1,33 +1,96 @@
-import {View, StyleSheet, SafeAreaView, Text, TouchableOpacity, Image, ActivityIndicator, TextInput} from "react-native";
+import {
+    ActivityIndicator,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from "react-native";
 import {COLORS} from "@/constants/colors";
 import {Ionicons} from "@expo/vector-icons";
-import {useRouter} from "expo-router";
-import React, {useEffect, useState} from "react";
+import {useNavigation, useRouter} from "expo-router";
+import React, {useEffect, useLayoutEffect, useRef, useState} from "react";
 import {useServices} from "@/context/ServicesContext";
 import {authStyles} from "@/styles/AuthStyles";
 import FloatingLabelInput from "@/components/FloatingLabelInput";
+import { usePreventRemove } from '@react-navigation/native';
+import ConfirmChangesModal from "@/components/ConfirmChangesModal";
 
 
 export default function EditDisplayNameScreen() {
     const router = useRouter();
+    const navigation = useNavigation();
+
     const {user, database} = useServices();
     const userUid = user?.uid;
 
+    const [isFocused, setIsFocused] = useState<boolean>(false);
+    const [isEdited, setIsEdited] = useState(false);
+    const [pressedDone, setPressedDone] = useState(false);
+
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const pendingBackAction = useRef<() => void>(() => {});
+
+    const [loading, setLoading] = useState(true)
+
     const [displayName, setDisplayName] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [displayNameLength, setDisplayNameLength] = useState(0);
+
+    const textInputRef = useRef<TextInput>(null);
+    
+    const maxNameLength = 32;
+
+    // prevent gesture swiping when there are unsaved changes
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            gestureEnabled: !isEdited,
+        });
+    }, [navigation, isEdited]);
+
+    // prevent back navigation if there are unsaved changes
+    usePreventRemove((isEdited && !pressedDone), (e) => {
+        pendingBackAction.current = () => navigation.dispatch(e.data.action);
+        setShowConfirmModal(true);
+    });
+
 
     const updateDisplayName = () => {
         if (!userUid) return;
+        setPressedDone(true);
+
+        if (!isEdited) {
+            router.back();
+            return;
+        }
+        if (displayName?.trim() === '') {
+            database.updateUserProfile(userUid, {displayName: user?.username ?? ""})
+                .then(() => {
+                    router.back();
+                })
+            return;
+        }
         database.updateUserProfile(userUid, {displayName: displayName?.trim()})
             .then(() => {
                 router.back();
             })
     }
 
+    // auto focus floating label input
+    useEffect(() => {
+        if (!loading) {
+            setTimeout(() => {
+                textInputRef.current?.focus();
+            }, 500);
+        }
+    }, [loading]);
+
+    // get and set current display name
     useEffect(() => {
         if (!userUid) return;
         database.getUserProfile(userUid).then(profile => {
-            setDisplayName(profile?.displayName ?? null);
+            setDisplayName(profile?.displayName ?? "");
+            setDisplayNameLength(profile?.displayName?.length ?? 0);
         }).finally(() => setLoading(false));
     }, []);
 
@@ -41,6 +104,15 @@ export default function EditDisplayNameScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <ConfirmChangesModal
+                visible={showConfirmModal}
+                onCancel={() => {
+                    setShowConfirmModal(false);
+                    pendingBackAction.current();
+                }}
+                onConfirm={updateDisplayName}
+            />
+
             <View style={styles.header}>
                 <TouchableOpacity style={styles.headerGoBack} onPress={() => router.back()}>
                     <Ionicons name="chevron-back" size={24}/>
@@ -53,17 +125,30 @@ export default function EditDisplayNameScreen() {
             <View style={styles.separator} />
             <View style={styles.content}>
                 <FloatingLabelInput
+                    ref={textInputRef}
                     label="Display Name"
                     value={displayName ?? ""}
-                    onChangeText={setDisplayName}
-                    clearIconColor={COLORS.primary}
+                    onChangeText={(newName) => {
+                        setDisplayName(newName);
+                        setDisplayNameLength(newName.trim().length);
+                        setIsEdited(displayName !== newName);
+                    }}
+                    clearIconColor={isFocused ? COLORS.primary : "black"}
                     labelStyle={{
-                        color: COLORS.primary,
+                        color: isFocused ? COLORS.primary : "black"
                     }}
                     wrapperStyle={{
-                        borderColor: COLORS.primary,
+                        borderColor: isFocused ? COLORS.primary : "black"
                     }}
+                    maxLength={maxNameLength}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
                 />
+                <Text style={[styles.lengthChecker, {color: (displayNameLength >= (maxNameLength)) ? COLORS.primary : "black"}]}>Allowed length: {displayNameLength}/{maxNameLength}</Text>
+                <View style={styles.descriptionContainer}>
+                    <Text style={styles.description}>Pick a display name (letters, numbers, emojis)—up to 32 characters. Your display name will be visible to others.</Text>
+                    <Text style={styles.description}></Text>
+                </View>
             </View>
         </SafeAreaView>
     )
@@ -109,5 +194,17 @@ const styles = StyleSheet.create({
         padding: 24,
         flex: 1,
         backgroundColor: COLORS.background_color,
+    },
+    lengthChecker: {
+        flexDirection: "row",
+        textAlign: "right",
+        color: COLORS.primary,
+    },
+    description: {
+        fontStyle: "italic",
+        color: "#484848",
+    },
+    descriptionContainer: {
+        paddingTop: 16,
     },
 });

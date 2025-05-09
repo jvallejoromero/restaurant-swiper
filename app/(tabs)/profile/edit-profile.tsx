@@ -77,8 +77,8 @@ export default function EditProfileScreen() {
                         <Ionicons name="person-outline" size={20} color="#555" />
                         <Text style={styles.label}>Display Name</Text>
                         <View style={{ flex: 1 }}>
-                            <Text numberOfLines={1} ellipsizeMode="tail" style={styles.value}>
-                                {displayName}
+                            <Text numberOfLines={1} ellipsizeMode="tail" style={displayName ? styles.value : styles.emptyValue}>
+                                {displayName ? displayName : "None set"}
                             </Text>
                         </View>
                         <Ionicons
@@ -188,6 +188,12 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 16,
         fontWeight: "500",
+        color: "#000",
+        textAlign: "right",
+    },
+    emptyValue: {
+        flex: 1,
+        fontSize: 16,
         color: "#000",
         textAlign: "right",
     },

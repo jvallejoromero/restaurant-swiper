@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {forwardRef} from 'react';
 import {
     View,
     Text,
@@ -21,14 +21,15 @@ export interface FloatingLabelInputProps extends TextInputProps {
     clearIconColor?: string;
 }
 
-export default function FloatingLabelInput({label, value, onChangeText, containerStyle,
-                                               wrapperStyle,labelStyle,clearIconColor = '#000', style, ...textInputProps}: FloatingLabelInputProps) {
+const FloatingLabelInput = forwardRef<TextInput, FloatingLabelInputProps>(({label, value, onChangeText, containerStyle,
+                                               wrapperStyle,labelStyle,clearIconColor = '#000', style, ...textInputProps}: FloatingLabelInputProps, ref) => {
     return (
         <View style={[styles.container, containerStyle]}>
             <View style={[styles.inputWrapper, wrapperStyle]}>
                 <Text style={[styles.label, labelStyle]}>{label}</Text>
 
                 <TextInput
+                    ref={ref}
                     value={value}
                     onChangeText={onChangeText}
                     style={[styles.input, style]}
@@ -48,7 +49,9 @@ export default function FloatingLabelInput({label, value, onChangeText, containe
             </View>
         </View>
     );
-}
+});
+
+export default FloatingLabelInput;
 
 const styles = StyleSheet.create({
     container: {

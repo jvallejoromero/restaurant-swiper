@@ -32,6 +32,8 @@ export default function ProfileScreen() {
     const [user, setUser] = useState<User | null>(null);
     const [displayName, setDisplayName] = useState<string | null>(null);
 
+    const [isMultilineDisplayName, setMultilineDisplayName] = useState(false);
+
     useEffect(() => {
         // 1) check current user once
         auth.getCurrentUser()
@@ -52,7 +54,7 @@ export default function ProfileScreen() {
         if (!user?.uid) return;
 
         return database.onUserProfile(user.uid, (profile) => {
-                setDisplayName(profile?.displayName ?? null);
+                setDisplayName(profile?.displayName ?? profile?.username ?? "");
             }
         );
     }, [database, user]);
@@ -131,7 +133,7 @@ export default function ProfileScreen() {
             {/* Header with decorative food shapes */}
             <ImageBackground
                 source={IMAGES.profile_header_bg}
-                style={styles.header}
+                style={[styles.header, isMultilineDisplayName && { flexBasis: '41%' }]}
                 blurRadius={5}
             >
                 <LinearGradient
@@ -150,7 +152,16 @@ export default function ProfileScreen() {
                     <TouchableOpacity style={styles.editButton} onPress={() => router.push("/profile/edit-profile")}>
                         <Ionicons name="create-outline" size={24} color="#fff" />
                     </TouchableOpacity>
-                    <Text style={styles.displayName}>{displayName}</Text>
+                    <Text style={styles.displayName}
+                          onTextLayout={(e) => {
+                              if (e.nativeEvent.lines.length > 1) {
+                                  setMultilineDisplayName(true);
+                              } else {
+                                  setMultilineDisplayName(false);
+                              }
+                          }}
+                    >
+                        {displayName}</Text>
                 </LinearGradient>
             </ImageBackground>
 
@@ -307,6 +318,7 @@ const styles = StyleSheet.create({
         marginBottom: 24
     },
     displayName: {
+        padding: 10,
         fontSize: 26,
         fontWeight: "700",
         textAlign: "center",
