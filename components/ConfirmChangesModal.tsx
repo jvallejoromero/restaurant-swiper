@@ -1,4 +1,3 @@
-import React from 'react';
 import Modal  from 'react-native-modal';
 import {
     View,
@@ -15,6 +14,7 @@ type ConfirmChangesModalProps = {
 };
 
 export default function ConfirmChangesModal({ visible, onConfirm, onCancel }: ConfirmChangesModalProps) {
+
     return (
         <Modal isVisible={visible}>
             <View style={styles.modalContainer}>

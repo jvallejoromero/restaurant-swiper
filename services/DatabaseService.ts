@@ -30,4 +30,6 @@ export interface DatabaseService {
     // other methods: fetchMatches, fetchUserSettings, etc.
     getUserProfile(uid: string): Promise<UserProfile | null>;
     updateUserProfile(uid: string, data: Partial<UserProfile>): Promise<void>;
+    updateUsernameDoc(userId: string, oldUsername: string, newUsername: string, email: string): Promise<void>;
+    usernameExists(username: string): Promise<boolean>;
 }

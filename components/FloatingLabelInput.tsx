@@ -35,6 +35,9 @@ const FloatingLabelInput = forwardRef<TextInput, FloatingLabelInputProps>(({labe
                     style={[styles.input, style]}
                     placeholder="Placeholder"
                     placeholderTextColor="transparent"
+                    scrollEnabled={true}
+                    textAlign={"left"}
+                    multiline={false}
                     {...textInputProps}
                 />
 
@@ -75,6 +78,8 @@ const styles = StyleSheet.create({
     },
     input: {
         height: 32,
+        width: '90%',
+        paddingHorizontal: 4,
         color: "black",
         fontSize: 16,
     },

@@ -5,8 +5,7 @@ import {DatabaseService} from "@/services/DatabaseService";
 import {FirebaseAuthService} from "@/services/FirebaseAuthService";
 import {FirebaseDatabaseService} from "@/services/FirebaseDatabaseService";
 import {onAuthStateChanged} from "firebase/auth";
-import {auth, firestore} from "@/firebase";
-import {doc, getDoc} from "firebase/firestore";
+import {auth} from "@/firebase";
 
 interface ServicesContextProps {
     auth:    AuthService;
@@ -35,26 +34,22 @@ export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) 
             if (!fbUser) {
                 setUser(null);
             } else {
-                try {
-                    // fetch the profile doc we wrote at sign-up
-                    const snap = await getDoc(doc(firestore, "users", fbUser.uid));
-                    const profile = snap.data();
-                    setUser({
-                        uid: fbUser.uid,
-                        email: fbUser.email!,
-                        username: profile?.username ?? "",
-                        emailVerified: fbUser.emailVerified,
-                    });
-                } catch (err) {
-                    console.warn("Failed to load profile:", err);
-                    // fallback to empty username
-                    setUser({
-                        uid: fbUser.uid,
-                        email: fbUser.email!,
-                        username: "",
-                        emailVerified: fbUser.emailVerified,
-                    });
-                }
+                return dbService.onUserProfile(fbUser.uid, (profile) => {
+                    setUser(profile
+                        ? {
+                            uid: fbUser.uid,
+                            email: fbUser.email!,
+                            username: profile.username,
+                            emailVerified: fbUser.emailVerified,
+                        }
+                        : {
+                            uid: fbUser.uid,
+                            email: fbUser.email!,
+                            username: '',
+                            emailVerified: fbUser.emailVerified,
+                        }
+                    );
+                });
             }
             setLoading(false);
         });

@@ -40,6 +40,9 @@ export default function ProfileLayout() {
             <Stack.Screen
                 name="edit-displayname"
             />
+            <Stack.Screen
+                name="edit-username"
+            />
         </Stack>
     );
 }

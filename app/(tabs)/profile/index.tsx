@@ -31,6 +31,7 @@ export default function ProfileScreen() {
 
     const [user, setUser] = useState<User | null>(null);
     const [displayName, setDisplayName] = useState<string | null>(null);
+    const [username, setUsername] = useState<string | null>(null);
 
     const [isMultilineDisplayName, setMultilineDisplayName] = useState(false);
 
@@ -55,6 +56,7 @@ export default function ProfileScreen() {
 
         return database.onUserProfile(user.uid, (profile) => {
                 setDisplayName(profile?.displayName ?? profile?.username ?? "");
+                setUsername(profile?.username ?? "");
             }
         );
     }, [database, user]);
@@ -177,7 +179,7 @@ export default function ProfileScreen() {
                 <View style={styles.row}>
                     <Ionicons name="person-outline" size={20} color="#555" />
                     <Text style={styles.label}>Username</Text>
-                    <Text style={styles.value}>{user.username}</Text>
+                    <Text style={styles.value}>{username}</Text>
                 </View>
 
                 {/* Menu Actions */}

@@ -130,7 +130,7 @@ export default function EditDisplayNameScreen() {
                     value={displayName ?? ""}
                     onChangeText={(newName) => {
                         setDisplayName(newName);
-                        setDisplayNameLength(newName.trim().length);
+                        setDisplayNameLength(newName.length);
                         setIsEdited(displayName !== newName);
                     }}
                     clearIconColor={isFocused ? COLORS.primary : "black"}

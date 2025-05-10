@@ -1,5 +1,11 @@
-import {doc, getDoc, onSnapshot, setDoc} from 'firebase/firestore';
-import {firestore} from '@/firebase'; // your initialized Firestore instance
+import {
+    doc,
+    getDoc,
+    onSnapshot,
+    setDoc,
+    deleteDoc,
+} from 'firebase/firestore';
+import {firestore} from '@/firebase';
 import {DatabaseService, Swipe, UserProfile, Session} from './DatabaseService';
 
 export class FirebaseDatabaseService implements DatabaseService {
@@ -14,6 +20,22 @@ export class FirebaseDatabaseService implements DatabaseService {
     async updateUserProfile(uid: string, data: Partial<UserProfile>): Promise<void> {
         const ref = doc(firestore, 'users', uid);
         await setDoc(ref, data, { merge: true });
+    }
+
+    async updateUsernameDoc(userId: string, oldUsername: string, newUsername: string, email: string): Promise<void> {
+        // delete old username doc
+        await deleteDoc(doc(firestore, 'usernames', oldUsername));
+        // set new username
+        await setDoc(doc(firestore, 'usernames', newUsername), {
+            uid: userId,
+            email: email
+        });
+    }
+
+    async usernameExists(username: string): Promise<boolean> {
+        const ref = doc(firestore, 'usernames', username);
+        const docSnap = await getDoc(ref);
+        return docSnap.exists();
     }
 
     // real time updates

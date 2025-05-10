@@ -89,7 +89,7 @@ export default function EditProfileScreen() {
                         />
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => console.log("change username")}>
+                <TouchableOpacity onPress={() => router.push("/profile/edit-username")}>
                     <View style={styles.row}>
                         <Ionicons name="at-outline" size={20} color="#333" />
                         <Text style={styles.label}>Username</Text>
