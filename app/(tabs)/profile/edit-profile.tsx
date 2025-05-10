@@ -10,31 +10,8 @@ import {authStyles} from "@/styles/AuthStyles";
 
 export default function EditProfileScreen() {
     const router = useRouter();
-    const {user, database} = useServices();
-    const userUid = user?.uid;
+    const {user, userProfile} = useServices();
 
-    const [username, setUsername] = useState<string | null>(null);
-    const [displayName, setDisplayName] = useState<string | null>(null);
-    const [loading, setLoading]   = useState(true);
-
-    useEffect(() => {
-        if (!userUid) return;
-
-        return database.onUserProfile(userUid, (profile) => {
-                setUsername(profile?.username ?? null);
-                setDisplayName(profile?.displayName ?? null);
-                setLoading(false);
-            }
-        );
-    }, [database]);
-
-    if (loading) {
-        return (
-            <View style={[StyleSheet.absoluteFillObject, authStyles.loadingIndicator]}>
-                <ActivityIndicator size={24} />
-            </View>
-        )
-    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -77,8 +54,8 @@ export default function EditProfileScreen() {
                         <Ionicons name="person-outline" size={20} color="#555" />
                         <Text style={styles.label}>Display Name</Text>
                         <View style={{ flex: 1 }}>
-                            <Text numberOfLines={1} ellipsizeMode="tail" style={displayName ? styles.value : styles.emptyValue}>
-                                {displayName ? displayName : "None set"}
+                            <Text numberOfLines={1} ellipsizeMode="tail" style={userProfile?.displayName ? styles.value : styles.emptyValue}>
+                                {userProfile?.displayName ? userProfile.displayName : "None set"}
                             </Text>
                         </View>
                         <Ionicons
@@ -95,7 +72,7 @@ export default function EditProfileScreen() {
                         <Text style={styles.label}>Username</Text>
                         <View style={{ flex: 1 }}>
                             <Text numberOfLines={1} ellipsizeMode="tail" style={styles.value}>
-                                {username}
+                                {userProfile?.username}
                             </Text>
                         </View>
                         <Ionicons

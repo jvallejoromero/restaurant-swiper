@@ -1,7 +1,7 @@
 // context/ServicesContext.tsx
 import React, {createContext, ReactNode, useContext, useEffect, useState} from "react";
 import {AuthService, User} from "@/services/AuthService"
-import {DatabaseService} from "@/services/DatabaseService";
+import {DatabaseService, UserProfile} from "@/services/DatabaseService";
 import {FirebaseAuthService} from "@/services/FirebaseAuthService";
 import {FirebaseDatabaseService} from "@/services/FirebaseDatabaseService";
 import {onAuthStateChanged} from "firebase/auth";
@@ -11,6 +11,7 @@ interface ServicesContextProps {
     auth:    AuthService;
     database: DatabaseService;
     user:    User | null;
+    userProfile: UserProfile | null;
     loading: boolean;
 }
 
@@ -26,6 +27,7 @@ export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) 
 
     // track the signed-in user & loading state once
     const [user, setUser] = useState<User | null>(null);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -35,6 +37,7 @@ export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) 
                 setUser(null);
             } else {
                 return dbService.onUserProfile(fbUser.uid, (profile) => {
+                    setUserProfile(profile);
                     setUser(profile
                         ? {
                             uid: fbUser.uid,
@@ -56,7 +59,7 @@ export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) 
     }, []);
 
     return (
-        <ServicesContext.Provider value={{ auth: authService, database: dbService, user, loading }}>
+        <ServicesContext.Provider value={{ auth: authService, database: dbService, user, userProfile, loading }}>
             {children}
         </ServicesContext.Provider>
     );

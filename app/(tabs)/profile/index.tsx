@@ -24,14 +24,12 @@ const { width } = Dimensions.get("window");
 
 export default function ProfileScreen() {
 
-    const { auth, database } = useServices();
+    const { auth, userProfile } = useServices();
 
     const [initializing, setInitializing] = useState(true);
     const [loading, setLoading] = useState(false);
 
     const [user, setUser] = useState<User | null>(null);
-    const [displayName, setDisplayName] = useState<string | null>(null);
-    const [username, setUsername] = useState<string | null>(null);
 
     const [isMultilineDisplayName, setMultilineDisplayName] = useState(false);
 
@@ -50,16 +48,6 @@ export default function ProfileScreen() {
                 setInitializing(false);
             });
     }, []);
-
-    useEffect(() => {
-        if (!user?.uid) return;
-
-        return database.onUserProfile(user.uid, (profile) => {
-                setDisplayName(profile?.displayName ?? profile?.username ?? "");
-                setUsername(profile?.username ?? "");
-            }
-        );
-    }, [database, user]);
 
     const handleSignout = async () => {
         setLoading(true);
@@ -163,7 +151,7 @@ export default function ProfileScreen() {
                               }
                           }}
                     >
-                        {displayName}</Text>
+                        {userProfile?.displayName}</Text>
                 </LinearGradient>
             </ImageBackground>
 
@@ -179,7 +167,7 @@ export default function ProfileScreen() {
                 <View style={styles.row}>
                     <Ionicons name="person-outline" size={20} color="#555" />
                     <Text style={styles.label}>Username</Text>
-                    <Text style={styles.value}>{username}</Text>
+                    <Text style={styles.value}>{userProfile?.username}</Text>
                 </View>
 
                 {/* Menu Actions */}
