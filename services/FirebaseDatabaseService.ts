@@ -6,18 +6,17 @@ import {
     deleteDoc,
 } from 'firebase/firestore';
 import {firestore} from '@/firebase';
-import {DatabaseService, Swipe, UserProfile, Session} from './DatabaseService';
+import {DatabaseService, Swipe, AppUserProfile, Session} from './DatabaseService';
 
 export class FirebaseDatabaseService implements DatabaseService {
 
-
-    async getUserProfile(uid: string): Promise<UserProfile | null> {
+    async getUserProfile(uid: string): Promise<AppUserProfile | null> {
         const ref = doc(firestore, 'users', uid);
         const snap = await getDoc(ref);
-        return snap.exists() ? (snap.data() as UserProfile) : null;
+        return snap.exists() ? (snap.data() as AppUserProfile) : null;
     }
 
-    async updateUserProfile(uid: string, data: Partial<UserProfile>): Promise<void> {
+    async updateUserProfile(uid: string, data: Partial<AppUserProfile>): Promise<void> {
         const ref = doc(firestore, 'users', uid);
         await setDoc(ref, data, { merge: true });
     }
@@ -39,10 +38,10 @@ export class FirebaseDatabaseService implements DatabaseService {
     }
 
     // real time updates
-    onUserProfile(uid: string, callback: (profile: UserProfile | null) => void): () => void {
+    onUserProfile(uid: string, callback: (profile: AppUserProfile | null) => void): () => void {
         const ref = doc(firestore, 'users', uid);
         return onSnapshot(ref, snap => {
-            callback(snap.exists() ? (snap.data() as UserProfile) : null);
+            callback(snap.exists() ? (snap.data() as AppUserProfile) : null);
         });
     }
 

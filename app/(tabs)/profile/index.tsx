@@ -34,19 +34,21 @@ export default function ProfileScreen() {
     const [isMultilineDisplayName, setMultilineDisplayName] = useState(false);
 
     useEffect(() => {
-        // 1) check current user once
-        auth.getCurrentUser()
-            .then(u => {
-                if (u) {
-                    setUser(u);
-                } else {
-                    setUser(null);
+        (async () => {
+            try {
+                const fbUser = getAuth().currentUser;
+                if (fbUser) {
+                    await fbUser.reload();
                 }
-            })
-            .catch(console.warn)
-            .finally(() => {
+                const appUser = await auth.getCurrentUser();
+                setUser(appUser ?? null);
+            } catch (err) {
+                console.warn('failed to refresh user:', err);
+                setUser(null);
+            } finally {
                 setInitializing(false);
-            });
+            }
+        })();
     }, []);
 
     const handleSignout = async () => {
@@ -59,11 +61,16 @@ export default function ProfileScreen() {
 
     const handleResend = async () => {
         setLoading(true);
-        const fbUser = getAuth().currentUser;
-        if (fbUser) {
-            await sendEmailVerification(fbUser);
+        try {
+            const fbUser = getAuth().currentUser;
+            if (fbUser) {
+                await sendEmailVerification(fbUser);
+            }
+        } catch (err) {
+            console.warn('failed to send email verification:', err);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const handleRefresh = async () => {
@@ -92,7 +99,7 @@ export default function ProfileScreen() {
                 style={authStyles.background}
                 blurRadius={5}
             >
-                <SafeAreaView style={styles.container}>
+                <SafeAreaView style={styles.emailVerificationContainer}>
                     <View style={[authStyles.card, styles.cardInner]}>
                         <Text style={styles.title}>Verify Your Email</Text>
                         <Text style={styles.message}>
@@ -161,7 +168,7 @@ export default function ProfileScreen() {
                 <View style={styles.row}>
                     <Ionicons name="mail-outline" size={20} color="#555" />
                     <Text style={styles.label}>Email</Text>
-                    <Text style={styles.value}>{user.email}</Text>
+                    <Text style={styles.value}>{user?.email}</Text>
                 </View>
 
                 <View style={styles.row}>
@@ -226,6 +233,8 @@ const BUTTON_WIDTH = width * 0.75;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    emailVerificationContainer: {
     },
     background: {
         flex: 1,

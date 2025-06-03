@@ -25,7 +25,6 @@ export class FirebaseAuthService implements AuthService {
                     resolve(null);
                     return;
                 }
-
                 try {
                     // fetch profile doc under /users/{uid}
                     const userRef = doc(firestore, "users", fbUser.uid);

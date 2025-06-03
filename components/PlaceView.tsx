@@ -232,7 +232,7 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
     // fetch initial data from Google API
     useEffect(() => {
         if (location && !nextPageToken) {
-            // fetchPlaces(null);
+            fetchPlaces(null);
         }
     }, [location]);
 

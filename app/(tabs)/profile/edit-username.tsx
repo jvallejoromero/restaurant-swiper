@@ -161,6 +161,7 @@ export default function EditDisplayNameScreen() {
                 onConfirm={() => {
                     if (!isValidUsername) {
                         setShowConfirmModal(false);
+                        triggerShake();
                         setError("Could not save changes, please enter a valid username!");
                         return;
                     }
@@ -197,6 +198,7 @@ export default function EditDisplayNameScreen() {
                             onChangeText={(newUsername) => {
                                 setError("");
                                 setVerifyingUsername(true);
+
                                 if (newUsername.length <= 0) {
                                     setUsername("");
                                     setIsValidUsername(false);

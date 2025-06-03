@@ -11,7 +11,7 @@ export interface Session {
     createdAt:    Date;
 }
 
-export interface UserProfile {
+export interface AppUserProfile {
     displayName?: string;
     photoURL?: string;
     username: string;
@@ -25,11 +25,11 @@ export interface DatabaseService {
     /** Subscribe to all swipes in session (fires on any add/update) */
     onSessionSwipes(sessionId: string, callback: (swipes: Swipe[]) => void): () => void;
 
-    onUserProfile(uid: string, callback: (profile: UserProfile | null) => void): () => void;
+    onUserProfile(uid: string, callback: (profile: AppUserProfile | null) => void): () => void;
 
     // other methods: fetchMatches, fetchUserSettings, etc.
-    getUserProfile(uid: string): Promise<UserProfile | null>;
-    updateUserProfile(uid: string, data: Partial<UserProfile>): Promise<void>;
+    getUserProfile(uid: string): Promise<AppUserProfile | null>;
+    updateUserProfile(uid: string, data: Partial<AppUserProfile>): Promise<void>;
     updateUsernameDoc(userId: string, oldUsername: string, newUsername: string, email: string): Promise<void>;
     usernameExists(username: string): Promise<boolean>;
 }
