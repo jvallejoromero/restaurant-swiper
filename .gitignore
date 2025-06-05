@@ -40,5 +40,7 @@ app-example
 # API Keys
 .env
 
-firebase.ts
 eas.json
+
+/ios/
+/android/
