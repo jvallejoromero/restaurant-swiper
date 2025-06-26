@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Stack, useRouter} from 'expo-router';
+import {Stack} from 'expo-router';
+
 export default function AuthLayout() {
 
     return (
