@@ -8,9 +8,9 @@ import {onAuthStateChanged} from "firebase/auth";
 import {auth} from "@/firebase";
 
 interface ServicesContextProps {
-    auth:    AuthService;
+    auth: AuthService;
     database: DatabaseService;
-    user:    User | null;
+    user: User | null;
     userProfile: AppUserProfile | null;
     loading: boolean;
 }
@@ -19,7 +19,7 @@ interface ServicesProviderProps {
     children: ReactNode;
 }
 
-export const ServicesContext = createContext<ServicesContextProps>(null!);
+export const ServicesContext = createContext<ServicesContextProps | null>(null);
 
 export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) => {
     const authService = new FirebaseAuthService();

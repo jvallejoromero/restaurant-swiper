@@ -1,32 +1,33 @@
 import {Tabs} from "expo-router";
-import {Image} from 'react-native';
+import {Image, ImageSourcePropType} from 'react-native';
 import {IMAGES} from "@/constants/images";
 import {COLORS} from "@/constants/colors";
 
-const TabIcon= ({focused, icon}:{focused:any; icon:any}) => {
-    if (focused) {
-        return (
-            <Image
-                source={icon}
-                style={{
-                    width:30,
-                    height:30,
-                    tintColor: COLORS.primary,
-                }}
-            />
-        )
-    } else {
-        return (
-            <Image
-                source={icon}
-                style={{
-                    width:30,
-                    height:30,
-                    tintColor: "black",
-                }}
-            />
-        )
-    }
+const TabIcon= ({ focused, iconSrc }:{ focused: boolean, iconSrc: ImageSourcePropType }) => {
+    return (
+        <>
+            {focused ? (
+                <Image
+                    source={iconSrc}
+                    style={{
+                        width:30,
+                        height:30,
+                        tintColor: COLORS.primary,
+                    }}
+                />
+
+            ) : (
+                <Image
+                    source={iconSrc}
+                    style={{
+                        width:30,
+                        height:30,
+                        tintColor: "black",
+                    }}
+                />
+            )}
+        </>
+    );
 }
 
 
@@ -53,7 +54,7 @@ const _layout = () => {
                     headerShown: false,
                     tabBarShowLabel: false,
                     tabBarIcon: ({focused}) => (
-                        <TabIcon focused={focused} icon={IMAGES.plate}/>
+                        <TabIcon focused={focused} iconSrc={IMAGES.plate}/>
                     )
                 }}
             />
@@ -64,7 +65,7 @@ const _layout = () => {
                     headerShown: false,
                     tabBarShowLabel: false,
                     tabBarIcon: ({focused}) => (
-                        <TabIcon focused={focused} icon={IMAGES.traveler_icon}/>
+                        <TabIcon focused={focused} iconSrc={IMAGES.traveler_icon}/>
                     )
                 }}
             />
@@ -75,7 +76,7 @@ const _layout = () => {
                     headerShown: false,
                     tabBarShowLabel: false,
                     tabBarIcon: ({focused}) => (
-                        <TabIcon focused={focused} icon={IMAGES.heart}/>
+                        <TabIcon focused={focused} iconSrc={IMAGES.heart}/>
                     )
                 }}
             />
@@ -88,7 +89,7 @@ const _layout = () => {
                     tabBarIcon: ({focused}) => (
                         <TabIcon
                             focused={focused}
-                            icon={IMAGES.user2}
+                            iconSrc={IMAGES.user2}
                         />
                     )
                 }}
@@ -97,4 +98,4 @@ const _layout = () => {
     )
 }
 
-export default _layout
+export default _layout;
