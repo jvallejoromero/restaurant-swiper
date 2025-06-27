@@ -3,7 +3,7 @@ import {Image, ImageSourcePropType} from 'react-native';
 import {IMAGES} from "@/constants/images";
 import {COLORS} from "@/constants/colors";
 
-const TabIcon= ({ focused, iconSrc }:{ focused: boolean, iconSrc: ImageSourcePropType }) => {
+const TabIcon= ({ focused, iconSrc }: { focused: boolean, iconSrc: ImageSourcePropType }) => {
     return (
         <>
             {focused ? (

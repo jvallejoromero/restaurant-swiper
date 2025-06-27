@@ -3,9 +3,10 @@ import {useLocalSearchParams} from "expo-router";
 import PlaceDetailsView from "@/components/PlaceDetailsView";
 
 const AttractionDetails = () => {
-    const params = useLocalSearchParams<{id: string}>();
+    const params = useLocalSearchParams<{ id: string }>();
+
     return (
-        <PlaceDetailsView id={params.id}/>
+        <PlaceDetailsView id={params.id} />
     );
 }
 
