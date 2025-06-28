@@ -13,7 +13,7 @@ import { Coffee, Mail, Lock } from "lucide-react-native";
 import {COLORS} from "@/constants/colors";
 import {IMAGES} from "@/constants/images";
 import {authStyles} from "@/styles/AuthStyles";
-import PasswordInput from "@/components/PasswordInput";
+import PasswordInput from "@/components/inputs/PasswordInput";
 
 export default function SignupScreen() {
     const { auth } = useServices();

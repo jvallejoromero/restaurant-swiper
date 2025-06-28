@@ -13,7 +13,7 @@ type ConfirmChangesModalProps = {
     onCancel: () => void;
 };
 
-export default function ConfirmChangesModal({ visible, onConfirm, onCancel }: ConfirmChangesModalProps) {
+export const ConfirmChangesModal = ({ visible, onConfirm, onCancel }: ConfirmChangesModalProps) => {
 
     return (
         <Modal isVisible={visible}>
@@ -35,7 +35,7 @@ export default function ConfirmChangesModal({ visible, onConfirm, onCancel }: Co
             </View>
         </Modal>
     );
-}
+};
 
 const styles = StyleSheet.create({
     modalSeparator: {

@@ -4,19 +4,19 @@ import {LinkIcon} from "lucide-react-native";
 import {PlaceDetails} from "@/utils/GoogleResponseTypes";
 import {fetchPlaceDetails} from "@/utils/GoogleAPIUtils";
 import {ForkAnimation} from "@/components/animations/LoadingAnimations";
-import GenericErrorScreen from "@/components/GenericErrorScreen";
+import GenericErrorScreen from "@/components/screens/GenericErrorScreen";
 import {GoBackButton} from "@/components/buttons/GoBackButton";
 import ScrollableImageGallery from "@/components/image/ScrollableImageGallery";
-import TitleText from "./headers/TitleText";
+import TitleText from "../headers/TitleText";
 import TitleSubheader from "@/components/headers/TitleSubheader";
 import BusinessStatusMessage from "@/components/status/BusinessStatusMessage";
 import Subheader from "@/components/headers/Subheader";
 import {getDollarsFromPriceLevel, getStringPriceLevel} from "@/utils/GoogleResponseUtils";
 import {getStarsFromRating} from "@/utils/GoogleResponseUtils";
 import BusinessOpeningHours from "@/components/status/BusinessOpeningHours";
-import ReviewCard from "@/components/ReviewCard";
-import PlaceDetailsMap from "@/components/PlaceDetailsMap";
-import MapLink from "./buttons/MapLink";
+import ReviewCard from "@/components/cards/ReviewCard";
+import PlaceDetailsMap from "@/components/maps/PlaceDetailsMap";
+import MapLink from "../buttons/MapLink";
 import {FONTS} from "@/constants/fonts";
 
 type PlaceDetailsProps = {

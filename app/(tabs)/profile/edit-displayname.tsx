@@ -13,9 +13,9 @@ import {useNavigation, useRouter} from "expo-router";
 import React, {useEffect, useLayoutEffect, useRef, useState} from "react";
 import {useServices} from "@/context/ServicesContext";
 import {authStyles} from "@/styles/AuthStyles";
-import FloatingLabelInput from "@/components/FloatingLabelInput";
+import FloatingLabelInput from "@/components/inputs/FloatingLabelInput";
 import { usePreventRemove } from '@react-navigation/native';
-import ConfirmChangesModal from "@/components/ConfirmChangesModal";
+import {ConfirmChangesModal} from "@/components/modals/ConfirmChangesModal";
 
 
 export default function EditDisplayNameScreen() {

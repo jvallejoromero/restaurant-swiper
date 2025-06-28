@@ -2,7 +2,7 @@ import {Dimensions, Image, ImageBackground, SafeAreaView, StyleSheet, Text, Touc
 import React, {useEffect} from 'react'
 import {IMAGES} from "@/constants/images";
 import {authStyles} from "@/styles/AuthStyles";
-import ShineText from "@/components/ShineText";
+import ShineText from "@/components/text/ShineText";
 import {COLORS} from "@/constants/colors";
 import {useRouter} from "expo-router";
 import * as WebBrowser from "expo-web-browser";

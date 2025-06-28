@@ -1,6 +1,6 @@
 import {View} from "react-native";
 import React from "react";
-import TouristAttractionView from "@/components/TouristAttractionView";
+import TouristAttractionView from "@/components/screens/TouristAttractionView";
 
 const Attractions = () => {
     return(

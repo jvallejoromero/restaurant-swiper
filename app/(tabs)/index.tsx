@@ -1,5 +1,5 @@
 import {View} from "react-native";
-import RestaurantView from "@/components/RestaurantView";
+import RestaurantView from "@/components/screens/RestaurantView";
 
 export default function Index() {
   return (

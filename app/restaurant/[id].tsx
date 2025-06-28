@@ -1,5 +1,5 @@
 import React from "react";
-import PlaceDetailsView from "@/components/PlaceDetailsView";
+import PlaceDetailsView from "@/components/screens/PlaceDetailsView";
 import {useLocalSearchParams} from "expo-router";
 
 const RestaurantDetails = () => {

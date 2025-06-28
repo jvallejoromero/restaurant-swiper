@@ -14,17 +14,17 @@ interface ShineTextProps {
     slantAngle?: number;
 }
 
-// Define the component implementation
-const ShineTextComponent: React.FC<ShineTextProps> = ({
-                                                          text,
-                                                          style,
-                                                          containerStyle,
-                                                          enabled = true,
-                                                          shineColor = 'rgba(255, 255, 255, 0.6)',
-                                                          duration = 1000,
-                                                          delay = 1500,
-                                                          slantAngle = 20,
-                                                      }) => {
+const ShineTextComponent = (
+    {
+        text,
+        style,
+        containerStyle,
+        enabled = true,
+        shineColor = 'rgba(255, 255, 255, 0.6)',
+        duration = 1000,
+        delay = 1500,
+        slantAngle = 20,
+    }: ShineTextProps) => {
     const shineAnim = useRef(new Animated.Value(0)).current;
     const [viewWidth, setViewWidth] = useState<number | null>(null);
 
@@ -125,9 +125,8 @@ const ShineTextComponent: React.FC<ShineTextProps> = ({
 
 const styles = StyleSheet.create({
     rootContainer: {
-        // alignSelf: 'flex-start',
         marginBottom: 2,
-        overflow: 'hidden', // ADDED THIS
+        overflow: 'hidden',
     },
     maskElementWrapper: {
         backgroundColor: 'transparent',
@@ -140,5 +139,4 @@ const styles = StyleSheet.create({
     },
 });
 
-// Export the memoized component
 export default memo(ShineTextComponent);

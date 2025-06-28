@@ -9,13 +9,13 @@ import React, {useEffect, useState, useRef} from 'react'
 import Swiper from 'react-native-deck-swiper'
 import * as Location from 'expo-location';
 import {LocationObject} from "expo-location";
-import {CardActionButtons} from "@/components/CardActionButtons";
+import {CardActionButtons} from "@/components/buttons/CardActionButtons";
 import {useRouter} from "expo-router";
 import {COLORS} from "@/constants/colors";
 import LottieView from 'lottie-react-native';
 import {IMAGES} from "@/constants/images";
 import { LinearGradient } from 'expo-linear-gradient';
-import ShineText from "@/components/ShineText";
+import ShineText from "@/components/text/ShineText";
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
 
@@ -283,9 +283,9 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
 
         let animationPath = '';
         if (random < 0.5) {
-            animationPath = require('../assets/animations/red-fork-animation.json');
+            animationPath = require('../../assets/animations/red-fork-animation.json');
         } else {
-            animationPath = require('../assets/animations/plate-animation.json');
+            animationPath = require('../../assets/animations/plate-animation.json');
         }
         return (
             <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background_color}}>

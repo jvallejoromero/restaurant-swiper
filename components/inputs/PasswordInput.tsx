@@ -12,12 +12,10 @@ import { Feather } from "@expo/vector-icons";
 
 interface PasswordInputProps extends TextInputProps {
     placeholder?: string;
-    /** Style for the outer container */
     containerStyle?: StyleProp<ViewStyle>;
 }
 
 export default function PasswordInput({placeholder = "Password", containerStyle, style: inputStyle, ...props}: PasswordInputProps) {
-    // password is hidden by default (visible=false)
     const [visible, setVisible] = useState(false);
 
     return (

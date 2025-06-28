@@ -6,7 +6,7 @@ import React, {useEffect, useLayoutEffect, useRef, useState} from "react";
 import {useServices} from "@/context/ServicesContext";
 import {authStyles} from "@/styles/AuthStyles";
 import {usePreventRemove} from '@react-navigation/native';
-import ConfirmChangesModal from "@/components/ConfirmChangesModal";
+import {ConfirmChangesModal} from "@/components/modals/ConfirmChangesModal";
 
 
 export default function EditDisplayNameScreen() {
@@ -34,7 +34,7 @@ export default function EditDisplayNameScreen() {
     const [error, setError] = useState<string | null>(null);
 
     const textInputRef = useRef<TextInput>(null);
-    const debounceRef = useRef<NodeJS.Timeout | null>(null);
+    const debounceRef = useRef<number | null>(null);
     const pressedDoneRef = useRef(false);
     const shakeAnimation = useRef(new Animated.Value(0)).current;
 

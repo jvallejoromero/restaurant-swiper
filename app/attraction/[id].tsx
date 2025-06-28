@@ -1,6 +1,6 @@
 import React from "react";
 import {useLocalSearchParams} from "expo-router";
-import PlaceDetailsView from "@/components/PlaceDetailsView";
+import PlaceDetailsView from "@/components/screens/PlaceDetailsView";
 
 const AttractionDetails = () => {
     const params = useLocalSearchParams<{ id: string }>();

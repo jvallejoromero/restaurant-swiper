@@ -12,7 +12,7 @@ import {authStyles} from "@/styles/AuthStyles";
 import {IMAGES} from "@/constants/images";
 import {Lock, Mail} from "lucide-react-native";
 import {COLORS} from "@/constants/colors";
-import PasswordInput from "@/components/PasswordInput";
+import PasswordInput from "@/components/inputs/PasswordInput";
 
 export default function LoginScreen() {
     const { auth, user } = useServices();
