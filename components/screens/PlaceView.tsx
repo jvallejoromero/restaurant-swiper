@@ -422,8 +422,7 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
                         if (type === 'restaurant') {
                             router.push({
                                 pathname: '/restaurant/[id]',
-                                // specific place id for testing
-                                params: { id: "ChIJ-4LSeCLNj4ARs3J4uLRnZaI" },
+                                params: { id: places[index].id },
                             });
                         } else if (type === 'tourist_attraction') {
                             router.push({

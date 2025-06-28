@@ -223,7 +223,7 @@ const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
     );
 };
 
-export default PlaceDetailsView
+export default PlaceDetailsView;
 
 const styles = StyleSheet.create({
     text: {
