@@ -2,7 +2,7 @@ import {Image, StyleSheet, Text, View} from "react-native";
 import React from "react";
 import {PlaceReview} from "@/utils/GoogleResponseTypes";
 
-const ReviewCard = ({ review }: {review: PlaceReview}) => {
+const ReviewCard = ({ review }: { review: PlaceReview }) => {
     return (
         <>
             <View style={styles.reviewCard}>

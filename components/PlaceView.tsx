@@ -9,7 +9,7 @@ import React, {useEffect, useState, useRef} from 'react'
 import Swiper from 'react-native-deck-swiper'
 import * as Location from 'expo-location';
 import {LocationObject} from "expo-location";
-import CardActionButtons from "@/components/CardActionButtons";
+import {CardActionButtons} from "@/components/CardActionButtons";
 import {useRouter} from "expo-router";
 import {COLORS} from "@/constants/colors";
 import LottieView from 'lottie-react-native';
