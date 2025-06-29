@@ -4,141 +4,67 @@ import {
     View,
     Image,
     Animated, SafeAreaView
-} from 'react-native'
-import React, {useEffect, useState, useRef} from 'react'
-import Swiper from 'react-native-deck-swiper'
-import * as Location from 'expo-location';
-import {LocationObject} from "expo-location";
+} from "react-native";
+import React, {useEffect, useState, useRef, useContext} from "react";
+import Swiper from "react-native-deck-swiper";
 import {CardActionButtons} from "@/components/buttons/CardActionButtons";
 import {useRouter} from "expo-router";
 import {COLORS} from "@/constants/colors";
 import LottieView from 'lottie-react-native';
 import {IMAGES} from "@/constants/images";
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from "expo-linear-gradient";
 import ShineText from "@/components/text/ShineText";
+import {haversine, randomizeLocation} from "@/utils/LocationUtils";
+import { UserLocationContext } from '@/context/UserLocationContext';
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
 
 interface PlaceViewProps {
-    type: string;
+    type: PlaceViewType;
 }
 
-const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
-    // use states for resetting the card stack
-    const [cardIndex, setCardIndex] = useState(0);
-    const [swiperKey, setSwiperKey] = useState(0);
+type PlaceViewType = "restaurant" | "tourist_attraction";
 
-    // use state for list of places
+const shuffleArray = (array: Place[]) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+};
+
+const PlaceView = ({ type }: PlaceViewProps) => {
+    const router = useRouter();
+
+    const [cardIndex, setCardIndex] = useState<number>(0);
+    const [swiperKey, setSwiperKey] = useState<number>(0);
+
     const [places, setPlaces] = useState<Place[]>([]);
-    const [radius, setRadius] = useState(10000);
+    const [radius, setRadius] = useState<number>(10000);
     const [latitude, setLatitude] = useState<number | null>(null);
     const [longitude, setLongitude] = useState<number | null>(null);
 
+    const [seenPlaces, setSeenPlaces] = useState<Set<string>>(new Set());
+    const [isFetching, setIsFetching] = useState<boolean>(false);
+    const [isUpdating, setIsUpdating] = useState<boolean>(false);
+
     const [nextPageToken, setNextPageToken] = useState<string | null>(null);
-
-    const [seenPlaces, setSeenPlaces] = useState<Set<string>>(new Set());  // Track seen place IDs
-    const [isFetching, setIsFetching] = useState(false);
-    const [isUpdating, setIsUpdating] = useState(false);
-
-    // use states for updating latitude and longitude
-    const [location, setLocation] = useState<LocationObject | null>(null);
-
-    // use state for keeping track of swipe progress
     const [swipeProgressX] = useState(new Animated.Value(0));
-
-    // reference for the Swiper component
     const swiperRef = useRef<Swiper<any> | null>(null);
 
-    // navigation hook
-    const router = useRouter();
+    const { userLocation } = useContext(UserLocationContext);
 
-    // force Swiper refresh
     const resetCardStack = () => {
         setSwiperKey(prev => prev + 1);
     }
 
-    // handle swiping progress
     const handleSwiping = (posX: number, _posY: number) => {
-        // Update swipeProgress value as the user swipes
-        // Clamp the progress value to ensure it stays within -1 to 1 range
         swipeProgressX.setValue(posX);
     };
 
-    // Shuffle function to randomize the array
-    const shuffleArray = (array: Place[]) => {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]]; // Swap elements
-        }
-        return array;
-    };
-
-    // Randomize coordinates by a few miles
-    const randomizeLocation = (latitude: number, longitude: number, minMiles: number, maxMiles: number) => {
-        // Random distance in miles between minMiles and maxMiles
-        const randomDistanceInMiles = Math.random() * (maxMiles - minMiles) + minMiles;
-
-        // Convert miles to degrees (1 degree latitude ~ 69 miles, longitude varies with latitude)
-        const latOffset = randomDistanceInMiles / 69;
-        const lngOffset = randomDistanceInMiles / (69 * Math.cos((latitude * Math.PI) / 180));
-
-        // Random angle in radians (0 - 2*PI) to cover all directions uniformly
-        const randomAngle = Math.random() * 2 * Math.PI;
-
-        // Calculate offset using polar coordinates (angle and distance)
-        const randomLat = latitude + latOffset * Math.sin(randomAngle); // Use sin for latitude offset
-        const randomLng = longitude + lngOffset * Math.cos(randomAngle); // Use cos for longitude offset
-
-        return { newLatitude: randomLat, newLongitude: randomLng };
-    };
-
-    // get distance between two coordinates in kilometers
-
-    // convert degrees to radians
-    const toRad = (degrees: number) => {
-        return degrees * Math.PI / 180;
-    }
-
-    // get distance in kilometers between two coordinates using the Haversine formula
-    const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-        const R = 6371; // Radius of the Earth in kilometers
-        const dLat = toRad(lat2 - lat1);  // Difference in latitude
-        const dLon = toRad(lon2 - lon1);  // Difference in longitude
-
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = R * c; // Distance in kilometers
-        return parseFloat(distance.toFixed(2));
-    }
-
-    // get the user's location
-    useEffect(() => {
-        // Request permission to access location
-        Location.requestForegroundPermissionsAsync().then((response) => {
-            if (response.status !== 'granted') {
-                console.log("Location permission denied");
-                return;
-            }
-            return Location.getCurrentPositionAsync();
-        }).then((location) => {
-            if (location) {
-                console.log("--- Current location information ---");
-                console.log("Latitude: ", location.coords.latitude);
-                console.log("Latitude: ", location.coords.longitude);
-                setLocation(location);
-            }
-        }).catch((error) => {
-            console.log("Could not fetch location:");
-            console.log(error);
-        });
-    }, []);
-
     // function to fetch place data
     const fetchPlaces = (nextPageToken:string | null) => {
-        if (location?.coords.latitude && location?.coords.longitude) {
+        if (userLocation?.coords.latitude && userLocation?.coords.longitude) {
             setIsUpdating(true);
 
             let apiUrl = "";
@@ -148,7 +74,7 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
 
                 apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
             } else {
-                apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location?.coords.latitude},${location?.coords.longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
+                apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${userLocation?.coords.latitude},${userLocation?.coords.longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
             }
 
             if (nextPageToken) {
@@ -194,7 +120,7 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
                         openNow: item.opening_hours?.open_now,
                         latitude: item.geometry?.location.latitude,
                         longitude: item.geometry?.location.longitude,
-                        distanceFromUser: haversine(location?.coords.latitude, location?.coords.longitude, item.geometry?.location.lat, item.geometry?.location.lng),
+                        distanceFromUser: haversine(userLocation?.coords.latitude, userLocation?.coords.longitude, item.geometry?.location.lat, item.geometry?.location.lng),
                     }))
 
                     // Filter out places that the user has already seen
@@ -231,10 +157,10 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
 
     // fetch initial data from Google API
     useEffect(() => {
-        if (location && !nextPageToken) {
+        if (userLocation && !nextPageToken) {
             // fetchPlaces(null);
         }
-    }, [location]);
+    }, [userLocation]);
 
     // fetch next page data from Google API
     useEffect(() => {
@@ -261,12 +187,12 @@ const PlaceView: React.FC<PlaceViewProps> = ({ type }) => {
 
     // Fetch new place data once all cards are swiped
     useEffect(() => {
-        if (cardIndex >= places.length && places.length > 0 && !isFetching && location?.coords.latitude && location?.coords.longitude) {
+        if (cardIndex >= places.length && places.length > 0 && !isFetching && userLocation?.coords.latitude && userLocation?.coords.longitude) {
             console.log("All cards swiped, fetching new location...");
             if (!isFetching) {
-                const newLocation = randomizeLocation(location.coords.latitude, location.coords.longitude, 5, 10);
+                const newLocation = randomizeLocation(userLocation.coords.latitude, userLocation.coords.longitude, 5, 10);
 
-                if (newLocation.newLatitude === location.coords.latitude && newLocation.newLongitude === location.coords.longitude) {
+                if (newLocation.newLatitude === userLocation.coords.latitude && newLocation.newLongitude === userLocation.coords.longitude) {
                     console.log("Same location as last time — skipping");
                     return;
                 }

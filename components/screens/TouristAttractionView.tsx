@@ -7,4 +7,4 @@ const TouristAttractionView = () => {
     );
 }
 
-export default TouristAttractionView
+export default TouristAttractionView;
