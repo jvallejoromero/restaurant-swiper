@@ -3,6 +3,7 @@ import {UserLocationContext} from "@/context/UserLocationContext";
 import { fetchPlaces } from "@/utils/GoogleAPIUtils";
 import {PlaceViewType} from "@/components/screens/PlaceView";
 import {LocationObject} from "expo-location";
+import {createMockLocation, randomizeLocation} from "@/utils/LocationUtils";
 
 
 const shuffleArray = (array: Place[]) => {
@@ -23,6 +24,7 @@ export function useGooglePlacesAPI(type: PlaceViewType, pagination: boolean = tr
 
     const [radius, setRadius] = useState<number>(10_000);
     const [nextPageToken, setNextPageToken] = useState<string | null>(null);
+    const [lastLocationUsed, setLastLocationUsed] = useState<LocationObject | null>(null);
 
     const didFetchInitial = useRef<boolean>(false);
 
@@ -33,14 +35,34 @@ export function useGooglePlacesAPI(type: PlaceViewType, pagination: boolean = tr
         });
     };
 
+    const loadMorePlaces = () => {
+        if (!userLocation) {
+            setError("User location is required.");
+            setLoading(false);
+            return;
+        }
+
+        let newCoords;
+        if (!userLocation?.coords.latitude || !userLocation?.coords.latitude) {
+            newCoords = { newLatitude: 0, newLongitude: 0 };
+        } else {
+            newCoords = randomizeLocation(userLocation.coords.latitude, userLocation.coords.longitude, 5, 10);
+        }
+
+        const newLocation = createMockLocation(newCoords.newLatitude, newCoords.newLongitude);
+        void loadPlacesFromLocation(newLocation);
+    }
+
     const loadPlacesFromLocation = async (newLocation: LocationObject) => {
         if (!newLocation) {
             setError("User location is required.");
             setLoading(false);
             return;
         }
+
         setLoading(true);
         setError(null);
+        setLastLocationUsed(newLocation);
 
         try {
             const { places: fetched, nextPageToken: newPageToken } = await fetchPlaces(newLocation, radius, type, nextPageToken);
@@ -71,6 +93,7 @@ export function useGooglePlacesAPI(type: PlaceViewType, pagination: boolean = tr
         }
 
         didFetchInitial.current = true;
+        setLastLocationUsed(userLocation);
         setLoading(true);
         setError(null);
 
@@ -121,5 +144,5 @@ export function useGooglePlacesAPI(type: PlaceViewType, pagination: boolean = tr
         return () => clearTimeout(delayFetch);
     }, [nextPageToken]);
 
-    return { places, loadingPlaces: loading, errorLoading: error, setRadius, loadPlacesFromLocation };
+    return { places, loadingPlaces: loading, errorLoading: error, lastLocationUsed, setRadius, loadMorePlaces };
 }

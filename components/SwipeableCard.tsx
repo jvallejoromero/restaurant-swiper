@@ -69,7 +69,6 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
                 onSwipedLeft={onSwipeLeft}
                 onSwipedRight={onSwipeRight}
                 onSwipedTop={(index) => {
-                    onCardIndexChange(cardIndex - 1);
                     onSwipeUp(index);
                 }}
                 cardIndex={cardIndex}

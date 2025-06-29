@@ -1,14 +1,11 @@
 import { View } from "react-native";
-import React, {useEffect, useState, useRef, useContext} from "react";
+import React, {useState, useRef} from "react";
 import Swiper from "react-native-deck-swiper";
 import {useRouter} from "expo-router";
 import {COLORS} from "@/constants/colors";
-import {createMockLocation, randomizeLocation} from "@/utils/LocationUtils";
-import { UserLocationContext } from '@/context/UserLocationContext';
 import { ForkAnimation } from "../animations/LoadingAnimations";
 import {useGooglePlacesAPI} from "@/hooks/GooglePlacesAPIHook";
 import GenericErrorScreen from "@/components/screens/GenericErrorScreen";
-import {LocationObject} from "expo-location";
 import AppLogoHeader from "@/components/headers/AppLogoHeader";
 import SwipeableCard from "@/components/SwipeableCard";
 
@@ -20,16 +17,16 @@ interface PlaceViewProps {
 
 const PlaceView = ({ type }: PlaceViewProps) => {
     const router = useRouter();
-    const [lastLocation, setLastLocation] = useState<LocationObject | null>(null);
     const [cardIndex, setCardIndex] = useState<number>(0);
 
-    const { places, loadingPlaces, errorLoading, loadPlacesFromLocation } = useGooglePlacesAPI(type, false);
-    const { userLocation: currentLocation } = useContext(UserLocationContext);
+    const { places, loadingPlaces, errorLoading, lastLocationUsed, loadMorePlaces } = useGooglePlacesAPI(type, false);
 
     const swiperRef = useRef<Swiper<Place> | null>(null);
 
     const handleTopSwipe = (index: number) => {
         swiperRef.current?.swipeBack();
+        setCardIndex(cardIndex - 1);
+
         if (type === 'restaurant') {
             router.push({
                 pathname: '/restaurant/[id]',
@@ -44,24 +41,6 @@ const PlaceView = ({ type }: PlaceViewProps) => {
         return false;
     }
 
-    const refetchData = async () => {
-        let newCoords;
-        if (!lastLocation?.coords.latitude || !lastLocation?.coords.latitude) {
-            newCoords = { newLatitude: 0, newLongitude: 0 };
-        } else {
-            newCoords = randomizeLocation(lastLocation.coords.latitude, lastLocation.coords.longitude, 5, 10);
-        }
-
-        const newLocation = createMockLocation(newCoords.newLatitude, newCoords.newLongitude);
-        setLastLocation(newLocation);
-
-        void loadPlacesFromLocation(newLocation);
-    }
-
-    useEffect(() => {
-        setLastLocation(currentLocation);
-    }, [currentLocation]);
-
     if (loadingPlaces) {
         return <ForkAnimation />;
     }
@@ -70,8 +49,8 @@ const PlaceView = ({ type }: PlaceViewProps) => {
         return <GenericErrorScreen message={errorLoading} />;
     }
 
-    if (lastLocation && (lastLocation.coords.latitude === 0 && lastLocation.coords.longitude === 0)) {
-        if (lastLocation.mocked) {
+    if (lastLocationUsed && (lastLocationUsed.coords.latitude === 0 && lastLocationUsed.coords.longitude === 0)) {
+        if (!lastLocationUsed.mocked) {
             return;
         }
 
@@ -89,10 +68,8 @@ const PlaceView = ({ type }: PlaceViewProps) => {
                 onSwipeRight={() => console.log("Swiped right ====>")}
                 onSwipeUp={(index) => {handleTopSwipe(index)}}
                 cardIndex={cardIndex}
-                onCardIndexChange={(index) => {
-                    setCardIndex(index);
-                }}
-                onExhaustOptions={refetchData}
+                onCardIndexChange={(index) => {setCardIndex(index)}}
+                onExhaustOptions={loadMorePlaces}
             />
         </View>
     );
