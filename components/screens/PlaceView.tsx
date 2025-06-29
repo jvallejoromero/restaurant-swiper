@@ -20,7 +20,6 @@ const PlaceView = ({ type }: PlaceViewProps) => {
     const [cardIndex, setCardIndex] = useState<number>(0);
 
     const { places, loadingPlaces, errorLoading, lastLocationUsed, loadMorePlaces } = useGooglePlacesAPI(type, false);
-
     const swiperRef = useRef<Swiper<Place> | null>(null);
 
     const handleTopSwipe = (index: number) => {
@@ -38,7 +37,6 @@ const PlaceView = ({ type }: PlaceViewProps) => {
                 params: {id: places[index].id}
             });
         }
-        return false;
     }
 
     if (loadingPlaces) {
@@ -46,6 +44,7 @@ const PlaceView = ({ type }: PlaceViewProps) => {
     }
 
     if (errorLoading) {
+        // TODO: Show popup warning instead, depending on error message
         return <GenericErrorScreen message={errorLoading} />;
     }
 
@@ -53,7 +52,6 @@ const PlaceView = ({ type }: PlaceViewProps) => {
         if (!lastLocationUsed.mocked) {
             return;
         }
-
         return <GenericErrorScreen message={"No places found on null island."} />
     }
 

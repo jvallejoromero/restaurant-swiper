@@ -77,6 +77,7 @@ export function useGooglePlacesAPI(type: PlaceViewType, pagination: boolean = tr
         } catch (error) {
             setError(String(error));
             setLoading(false);
+            setNextPageToken(null);
         }
     }
 
@@ -111,6 +112,7 @@ export function useGooglePlacesAPI(type: PlaceViewType, pagination: boolean = tr
             } catch (error) {
                 setError(String(error));
                 setLoading(false);
+                setNextPageToken(null);
             }
         }
 
@@ -138,6 +140,7 @@ export function useGooglePlacesAPI(type: PlaceViewType, pagination: boolean = tr
             } catch (error) {
                 setError(String(error));
                 setLoading(false);
+                setNextPageToken(null);
             }
         }, 2000);
 
