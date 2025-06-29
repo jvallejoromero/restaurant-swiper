@@ -1,0 +1,125 @@
+import {useContext, useEffect, useRef, useState} from "react";
+import {UserLocationContext} from "@/context/UserLocationContext";
+import { fetchPlaces } from "@/utils/GoogleAPIUtils";
+import {PlaceViewType} from "@/components/screens/PlaceView";
+import {LocationObject} from "expo-location";
+
+
+const shuffleArray = (array: Place[]) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+};
+
+
+export function useGooglePlacesAPI(type: PlaceViewType, pagination: boolean = true) {
+    const { userLocation } = useContext(UserLocationContext);
+
+    const [places, setPlaces] = useState<Place[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const [radius, setRadius] = useState<number>(10_000);
+    const [nextPageToken, setNextPageToken] = useState<string | null>(null);
+
+    const didFetchInitial = useRef<boolean>(false);
+
+    const mergeUnique = (fetched: Place[]) => {
+        setPlaces(prev => {
+            const unique = fetched.filter(p => !prev.some(old => old.id === p.id));
+            return [...prev, ...shuffleArray(unique)];
+        });
+    };
+
+    const loadPlacesFromLocation = async (newLocation: LocationObject) => {
+        if (!newLocation) {
+            setError("User location is required.");
+            setLoading(false);
+            return;
+        }
+        setLoading(true);
+        setError(null);
+
+        try {
+            const { places: fetched, nextPageToken: newPageToken } = await fetchPlaces(newLocation, radius, type, nextPageToken);
+            mergeUnique(fetched);
+
+            if (newPageToken && pagination) {
+                setNextPageToken(newPageToken);
+            } else {
+                setLoading(false);
+                setNextPageToken(null);
+            }
+        } catch (error) {
+            setError(String(error));
+            setLoading(false);
+        }
+    }
+
+    // initial load
+    useEffect(() => {
+        if (!userLocation) {
+            setError("User location is required.");
+            setLoading(false);
+            return;
+        }
+
+        if (didFetchInitial.current) {
+            return;
+        }
+
+        didFetchInitial.current = true;
+        setLoading(true);
+        setError(null);
+
+        const fetchInitialData = async () => {
+            try {
+                const { places: fetched, nextPageToken: newPageToken } = await fetchPlaces(userLocation, radius, type, null);
+                mergeUnique(fetched);
+
+                if (newPageToken && pagination) {
+                    setNextPageToken(newPageToken);
+                } else {
+                    setLoading(false);
+                    setNextPageToken(null);
+                }
+            } catch (error) {
+                setError(String(error));
+                setLoading(false);
+            }
+        }
+
+        void fetchInitialData();
+        return () => {}
+    }, [userLocation]);
+
+    // pagination
+    useEffect(() => {
+        if (!nextPageToken || !userLocation || !pagination) {
+            return;
+        }
+
+        const delayFetch = setTimeout(async () => {
+            try {
+                const { places: fetched, nextPageToken: newPageToken } = await fetchPlaces(userLocation, radius, type, nextPageToken);
+                mergeUnique(fetched);
+
+                if (newPageToken) {
+                    setNextPageToken(newPageToken);
+                } else {
+                    setLoading(false);
+                    setNextPageToken(null);
+                }
+            } catch (error) {
+                setError(String(error));
+                setLoading(false);
+            }
+        }, 2000);
+
+        return () => clearTimeout(delayFetch);
+    }, [nextPageToken]);
+
+    return { places, loadingPlaces: loading, errorLoading: error, setRadius, loadPlacesFromLocation };
+}

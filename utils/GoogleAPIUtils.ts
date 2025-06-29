@@ -1,4 +1,6 @@
 import {PlaceDetails, PlaceReview} from "@/utils/GoogleResponseTypes";
+import {haversine} from "@/utils/LocationUtils";
+import {LocationObject} from "expo-location";
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
 
@@ -114,4 +116,72 @@ export const fetchPlaceDetails = async(placeId: string | string[]): Promise<(Pla
         console.error(err);
     }
     return null;
+}
+
+export const fetchPlaces = async(location: LocationObject, radius: number, type: string, nextPageToken:string | null)
+    : Promise<{ places: Place[], nextPageToken: (string | null)}> => {
+    const latitude = location.coords.latitude;
+    const longitude = location.coords.longitude;
+
+    if (!latitude || !longitude) {
+        return { places:[], nextPageToken: null };
+    }
+
+    let newPageToken = null;
+    let apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
+
+    console.log("---- New API request ---- ");
+    if (nextPageToken) {
+        console.log("Has next page token: YES");
+        apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=${GOOGLE_API_KEY}&pagetoken=${nextPageToken}`;
+    }
+    console.log(apiUrl);
+    console.log("---- END New API request ---- ");
+
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+
+    if (data.status !== "OK") {
+        const errorMessage = data.error_message;
+        console.error("Could not fetch places from Google API", errorMessage);
+        throw new Error(errorMessage);
+    }
+
+    if (!data.results) {
+        console.log("No data received.");
+        return { places: [], nextPageToken: null };
+    }
+
+    // Filter out results that are not strictly places.
+    const filteredResults = data.results.filter((item: any) => {
+        const types = item.types || [];
+        return types.includes(type)
+            && !types.includes("lodging")
+            && !types.includes("movie_theater")
+            && !types.includes("theatre");
+    });
+
+    // Map the API data to match the Place type
+    const places: Place[] = filteredResults.map((item: any) => ({
+        id: item.place_id,
+        name: item.name,
+        vicinity: item.vicinity,
+        rating: item.rating,
+        description: item.description || "No description available", // handle missing descriptions
+        photoUrl: item.photos?.[0]
+            ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1200&photo_reference=${item.photos[0].photo_reference}&key=${GOOGLE_API_KEY}`
+            : null,
+        images: item.photos?.map((photo: { photo_reference: string }) => `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1200&photo_reference=${photo.photo_reference}&key=${GOOGLE_API_KEY}`)
+            ?? [item.icon], // Fallback if no photos are available
+        openNow: item.opening_hours?.open_now,
+        latitude: item.geometry?.location.latitude,
+        longitude: item.geometry?.location.longitude,
+        distanceFromUser: haversine(latitude, longitude, item.geometry?.location.lat, item.geometry?.location.lng),
+    }))
+
+    if (data.next_page_token) {
+        newPageToken = data.next_page_token;
+    }
+
+    return { places, nextPageToken: newPageToken };
 }

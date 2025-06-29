@@ -1,5 +1,6 @@
-
 // Randomize coordinates by a few miles
+import {LocationObject} from "expo-location";
+
 export const randomizeLocation = (latitude: number, longitude: number, minMiles: number, maxMiles: number): { newLatitude: number, newLongitude: number } => {
     // Random distance in miles between minMiles and maxMiles
     const randomDistanceInMiles = Math.random() * (maxMiles - minMiles) + minMiles;
@@ -31,6 +32,22 @@ export const haversine = (lat1: number, lon1: number, lat2: number, lon2: number
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c; // Distance in kilometers
     return parseFloat(distance.toFixed(2));
+}
+
+export const createMockLocation = (lat: number, lng: number): LocationObject => {
+    return {
+        coords: {
+            latitude: lat,
+            longitude: lng,
+            altitude: null,
+            accuracy: null,
+            altitudeAccuracy: null,
+            heading: null,
+            speed: null,
+        },
+        timestamp: Date.now(),
+        mocked: true,
+    };
 }
 
 // convert degrees to radians

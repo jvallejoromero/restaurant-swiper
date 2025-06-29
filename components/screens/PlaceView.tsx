@@ -10,49 +10,33 @@ import Swiper from "react-native-deck-swiper";
 import {CardActionButtons} from "@/components/buttons/CardActionButtons";
 import {useRouter} from "expo-router";
 import {COLORS} from "@/constants/colors";
-import LottieView from 'lottie-react-native';
 import {IMAGES} from "@/constants/images";
 import { LinearGradient } from "expo-linear-gradient";
 import ShineText from "@/components/text/ShineText";
-import {haversine, randomizeLocation} from "@/utils/LocationUtils";
+import {createMockLocation, randomizeLocation} from "@/utils/LocationUtils";
 import { UserLocationContext } from '@/context/UserLocationContext';
+import { ForkAnimation } from "../animations/LoadingAnimations";
+import {useGooglePlacesAPI} from "@/hooks/GooglePlacesAPIHook";
+import GenericErrorScreen from "@/components/screens/GenericErrorScreen";
+import {LocationObject} from "expo-location";
 
-const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
+export type PlaceViewType = "restaurant" | "tourist_attraction";
 
 interface PlaceViewProps {
     type: PlaceViewType;
 }
-
-type PlaceViewType = "restaurant" | "tourist_attraction";
-
-const shuffleArray = (array: Place[]) => {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-};
 
 const PlaceView = ({ type }: PlaceViewProps) => {
     const router = useRouter();
 
     const [cardIndex, setCardIndex] = useState<number>(0);
     const [swiperKey, setSwiperKey] = useState<number>(0);
-
-    const [places, setPlaces] = useState<Place[]>([]);
-    const [radius, setRadius] = useState<number>(10000);
-    const [latitude, setLatitude] = useState<number | null>(null);
-    const [longitude, setLongitude] = useState<number | null>(null);
-
-    const [seenPlaces, setSeenPlaces] = useState<Set<string>>(new Set());
-    const [isFetching, setIsFetching] = useState<boolean>(false);
-    const [isUpdating, setIsUpdating] = useState<boolean>(false);
-
-    const [nextPageToken, setNextPageToken] = useState<string | null>(null);
     const [swipeProgressX] = useState(new Animated.Value(0));
+    const [lastLocation, setLastLocation] = useState<LocationObject | null>(null);
     const swiperRef = useRef<Swiper<any> | null>(null);
 
-    const { userLocation } = useContext(UserLocationContext);
+    const { places, loadingPlaces, errorLoading, loadPlacesFromLocation } = useGooglePlacesAPI(type, false);
+    const { userLocation: currentLocation } = useContext(UserLocationContext);
 
     const resetCardStack = () => {
         setSwiperKey(prev => prev + 1);
@@ -62,173 +46,51 @@ const PlaceView = ({ type }: PlaceViewProps) => {
         swipeProgressX.setValue(posX);
     };
 
-    // function to fetch place data
-    const fetchPlaces = (nextPageToken:string | null) => {
-        if (userLocation?.coords.latitude && userLocation?.coords.longitude) {
-            setIsUpdating(true);
-
-            let apiUrl = "";
-            if (latitude && longitude) {
-                console.log("--- Randomizing Location ---");
-                console.log('New Location: ', latitude,",",longitude);
-
-                apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
-            } else {
-                apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${userLocation?.coords.latitude},${userLocation?.coords.longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
-            }
-
-            if (nextPageToken) {
-                console.log("Has next page token: ", true);
-                apiUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=${GOOGLE_API_KEY}&pagetoken=${nextPageToken}`;
-            }
-
-            console.log("---- New API request ---- ");
-            console.log(apiUrl);
-            console.log("---- END New API request ---- ");
-
-            fetch(apiUrl).
-            then((response) => response.json()).
-            then((data) => {
-
-                console.log("---- New API Response ---- ");
-                console.log("RESPONSE: ", data.status, " LENGTH: " + data.results.length);
-                console.log("---- END New API Response ---- ");
-
-                if (data.results) {
-                    // Filter out results that are not strictly places.
-                    const filteredResults = data.results.filter((item: any) => {
-                        // Discard unwanted results
-                        const types = item.types || [];
-                        return types.includes(type)
-                            && !types.includes("lodging")
-                            && !types.includes("movie_theater")
-                            && !types.includes("theatre");
-                    });
-
-                    // Map the API data to match the Place type
-                    const places: Place[] = filteredResults.map((item: any) => ({
-                        id: item.place_id, // unique ID from the API
-                        name: item.name,
-                        vicinity: item.vicinity,
-                        rating: item.rating,
-                        description: item.description || "No description available", // handle missing descriptions
-                        photoUrl: item.photos?.[0]
-                            ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1200&photo_reference=${item.photos[0].photo_reference}&key=${GOOGLE_API_KEY}`
-                            : null,
-                        images: item.photos?.map((photo: { photo_reference: string }) => `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1200&photo_reference=${photo.photo_reference}&key=${GOOGLE_API_KEY}`) ??
-                            [item.icon], // Fallback if no photos are available
-                        openNow: item.opening_hours?.open_now,
-                        latitude: item.geometry?.location.latitude,
-                        longitude: item.geometry?.location.longitude,
-                        distanceFromUser: haversine(userLocation?.coords.latitude, userLocation?.coords.longitude, item.geometry?.location.lat, item.geometry?.location.lng),
-                    }))
-
-                    // Filter out places that the user has already seen
-                    const newPlaces = places.filter((place) => !seenPlaces.has(place.id));
-
-                    // Update places state
-                    setPlaces((prevPlaces) => [...prevPlaces, ...shuffleArray(newPlaces)]);
-                    // setPlaces((prevPlaces) => [...prevPlaces, ...newPlaces]);
-
-                    // Update seen places by adding new place IDs to the set
-                    setSeenPlaces((prevSeen) => {
-                        const updatedSeen = new Set(prevSeen);
-                        newPlaces.forEach((place) => {
-                            updatedSeen.add(place.id);
-                        });
-                        return updatedSeen;
-                    });
-
-                    if (data.next_page_token) {
-                        setNextPageToken(data.next_page_token);
-                    } else {
-                        setIsUpdating(false);
-                    }
-                } else {
-                    console.log("No places found!")
-                }
-            }).catch((error) => {
-                console.log("Error fetching places:");
-                console.log(error);
-            });
-        }
-    }
-
-
-    // fetch initial data from Google API
-    useEffect(() => {
-        if (userLocation && !nextPageToken) {
-            // fetchPlaces(null);
-        }
-    }, [userLocation]);
-
-    // fetch next page data from Google API
-    useEffect(() => {
-        if (nextPageToken) {
-            // Delay actual call if pagetoken is present
-            const delayFetch = setTimeout(() => {
-                fetchPlaces(nextPageToken);
-            }, 2000);
-            return () => clearTimeout(delayFetch);
-        }
-    }, [nextPageToken]);
-
-    // Update place date based on new coordinates
-    useEffect(() => {
-        if (latitude && longitude) {
-            console.log("--- Fetching places based on new coordinates ---");
-            setIsFetching(true);
-            setNextPageToken(null); // Clear old token
-            fetchPlaces(null); // This will use the updated latitude and longitude
-            setIsFetching(false);
-            resetCardStack();
-        }
-    }, [latitude, longitude]);
+    useEffect(() => { 
+        setLastLocation(currentLocation);
+    }, [currentLocation]);
 
     // Fetch new place data once all cards are swiped
     useEffect(() => {
-        if (cardIndex >= places.length && places.length > 0 && !isFetching && userLocation?.coords.latitude && userLocation?.coords.longitude) {
+        const needsToRefetch = (cardIndex >= places.length && places.length > 0) && !loadingPlaces;
+
+        if (needsToRefetch) {
             console.log("All cards swiped, fetching new location...");
-            if (!isFetching) {
-                const newLocation = randomizeLocation(userLocation.coords.latitude, userLocation.coords.longitude, 5, 10);
+            resetCardStack();
 
-                if (newLocation.newLatitude === userLocation.coords.latitude && newLocation.newLongitude === userLocation.coords.longitude) {
-                    console.log("Same location as last time — skipping");
-                    return;
-                }
-
-                setLatitude(newLocation.newLatitude);
-                setLongitude(newLocation.newLongitude);
+            let newCoords;
+            if (!lastLocation?.coords.latitude || !lastLocation?.coords.latitude) {
+                newCoords = { newLatitude: 0, newLongitude: 0 };
+            } else {
+                newCoords = randomizeLocation(lastLocation.coords.latitude, lastLocation.coords.longitude, 5, 10);
             }
+
+            const newLocation = createMockLocation(newCoords.newLatitude, newCoords.newLongitude);
+            setLastLocation(newLocation);
+
+            void loadPlacesFromLocation(newLocation);
         }
     }, [cardIndex]);
 
-    if (isUpdating) {
-        // Choose a loading animation randomly
-        const random = Math.random();
-
-        let animationPath = '';
-        if (random < 0.5) {
-            animationPath = require('../../assets/animations/red-fork-animation.json');
-        } else {
-            animationPath = require('../../assets/animations/plate-animation.json');
-        }
-        return (
-            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background_color}}>
-                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                    <LottieView
-                        source={animationPath}
-                        autoPlay
-                        loop
-                        style={{ width: 200, height: 200 }}
-                    />
-                </View>
-            </View>
-        );
+    if (loadingPlaces) {
+        return <ForkAnimation />;
     }
 
-    // Render the Swiper only when data is available
-    if (places.length === 0) {}
+    if (errorLoading) {
+        return <GenericErrorScreen message={errorLoading} />;
+    }
+
+    if (lastLocation && (lastLocation.coords.latitude === 0 && lastLocation.coords.longitude === 0)) {
+        if (lastLocation.mocked) {
+            return;
+        }
+
+        return <GenericErrorScreen message={"No places found on null island."} />
+    }
+
+    if (places.length === 0) {
+        return <GenericErrorScreen message={"No places found."} />;
+    }
 
     return (
         <View style={{flex: 1, backgroundColor: COLORS.background_color}}>
@@ -487,4 +349,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default PlaceView
+export default PlaceView;
