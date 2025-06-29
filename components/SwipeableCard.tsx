@@ -27,11 +27,10 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
 
     const resetDeck = () => {setSwiperKey((prev) => prev + 1)}
 
-    // Fetch new place data once all cards are swiped
     useEffect(() => {
-        const needsToRefetch = (cardIndex >= places.length && places.length > 0) && !fetchingData;
+        const allCardsSwiped = (cardIndex >= places.length && places.length > 0) && !fetchingData;
 
-        if (needsToRefetch) {
+        if (allCardsSwiped) {
             console.log("All cards swiped, fetching new location...");
             resetDeck();
             onExhaustOptions();

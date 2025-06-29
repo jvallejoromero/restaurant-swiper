@@ -64,10 +64,10 @@ const PlaceView = ({ type }: PlaceViewProps) => {
                 swiperRef={swiperRef}
                 places={places}
                 fetchingData={loadingPlaces}
+                cardIndex={cardIndex}
                 onSwipeLeft={() => console.log("<==== Swiped left")}
                 onSwipeRight={() => console.log("Swiped right ====>")}
                 onSwipeUp={(index) => {handleTopSwipe(index)}}
-                cardIndex={cardIndex}
                 onCardIndexChange={(index) => {setCardIndex(index)}}
                 onExhaustOptions={loadMorePlaces}
             />
