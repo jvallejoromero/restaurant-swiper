@@ -5,26 +5,22 @@ import {auth} from '@/firebase';
 import GenericLoadingScreen from "@/components/screens/GenericLoadingScreen";
 
 export default function ProfileLayout() {
-    const [loading, setLoading] = useState<boolean>(true);
     const [user, setUser] = useState<User | null | undefined>(undefined);
-
     const router = useRouter();
 
     useEffect(() => {
         return onAuthStateChanged(auth, u => {
-            setLoading(true);
             setUser(u);
-            setLoading(false);
         });
     }, []);
 
     useEffect(() => {
-        if (!loading && user === null) {
+        if (user === null) {
             router.replace("/profile/auth");
         }
-    }, [loading, user]);
+    }, [user]);
 
-    if (user === undefined || loading) {
+    if (user === undefined) {
         return (
             <GenericLoadingScreen />
         );
