@@ -1,35 +1,35 @@
 import React, {useEffect, useState} from 'react';
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
-import {Redirect, Stack, useRouter} from 'expo-router';
-import {onAuthStateChanged} from 'firebase/auth';
+import {Stack, useRouter} from 'expo-router';
+import {onAuthStateChanged, User} from 'firebase/auth';
 import {auth} from '@/firebase';
+import GenericLoadingScreen from "@/components/screens/GenericLoadingScreen";
 
 export default function ProfileLayout() {
-    const [user, setUser] = useState<any>(undefined);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [user, setUser] = useState<User | null | undefined>(undefined);
+
     const router = useRouter();
 
-    // subscribe to auth state changes once
     useEffect(() => {
         return onAuthStateChanged(auth, u => {
-            console.log(u);
-
+            setLoading(true);
             setUser(u);
-            // if there's no user, send to onboarding
-            if (u === null) {
-                console.log("user is null!!!!");
-                router.replace("/profile/auth");
-            }
+            setLoading(false);
         });
     }, []);
 
-    // still loading auth state
-    if (user === undefined) {
+    useEffect(() => {
+        if (!loading && user === null) {
+            router.replace("/profile/auth");
+        }
+    }, [loading, user]);
+
+    if (user === undefined || loading) {
         return (
-            <View style={[StyleSheet.absoluteFillObject, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" />
-            </View>
+            <GenericLoadingScreen />
         );
     }
+
     return (
         <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen

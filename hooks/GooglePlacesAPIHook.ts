@@ -16,7 +16,8 @@ const shuffleArray = (array: Place[]) => {
 
 
 export function useGooglePlacesAPI(type: PlaceViewType, pagination: boolean = true) {
-    const { userLocation } = useContext(UserLocationContext);
+    // const { userLocation } = useContext(UserLocationContext);
+    const userLocation = createMockLocation(0,0);
 
     const [places, setPlaces] = useState<Place[]>([]);
     const [loading, setLoading] = useState(true);

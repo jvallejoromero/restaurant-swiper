@@ -32,17 +32,16 @@ export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) 
 
     useEffect(() => {
         let profileUnsub: (() => void) | null = null;
-        // Subscribe to auth state changes
+
         const authUnsub = onAuthStateChanged(auth, fbUser => {
-            // Tear down any existing profile listener
+            setLoading(true);
+
             if (profileUnsub) {
                 profileUnsub();
                 profileUnsub = null;
             }
 
             if (fbUser) {
-                // New user signed in: start loading profile
-                setLoading(true);
                 profileUnsub = dbService.onUserProfile(fbUser.uid, (profile) => {
                     setUserProfile(profile);
                     setUser({
@@ -54,14 +53,12 @@ export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) 
                     setLoading(false);
                 });
             } else {
-                // User signed out: clear state
                 setUser(null);
                 setUserProfile(null);
                 setLoading(false);
             }
         });
 
-        // Cleanup both auth and profile subscriptions
         return () => {
             authUnsub();
             if (profileUnsub) profileUnsub();

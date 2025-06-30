@@ -28,16 +28,9 @@ export default function ProfileScreen() {
 
     const [initializing, setInitializing] = useState(true);
     const [loading, setLoading] = useState(false);
-
     const [user, setUser] = useState<User | null>(null);
-
     const [isMultilineDisplayName, setMultilineDisplayName] = useState(false);
 
-    useEffect(() => {
-        if (user === null && !initializing) {
-            router.replace("/profile/auth");
-        }
-    }, [user, initializing]);
 
     useEffect(() => {
         (async () => {
