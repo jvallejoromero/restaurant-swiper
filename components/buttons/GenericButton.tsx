@@ -4,13 +4,14 @@ import {COLORS} from "@/constants/colors";
 
 type GenericButtonProps = {
     onPress?: () => void;
+    color?: string;
     text: string;
 }
 
-const GenericButton = ({ onPress, text }: GenericButtonProps) => {
+const GenericButton = ({ onPress, text, color }: GenericButtonProps) => {
     return (
         <TouchableOpacity
-            style={[styles.button]}
+            style={[styles.button, { backgroundColor: color ? color : COLORS.primary }]}
             onPress={onPress}
         >
             <Text style={styles.buttonText}>{text}</Text>
@@ -22,7 +23,6 @@ export default GenericButton;
 
 const styles = StyleSheet.create({
     button: {
-        backgroundColor: COLORS.primary,
         borderRadius: 24,
         height: 48,
         width: "100%",
