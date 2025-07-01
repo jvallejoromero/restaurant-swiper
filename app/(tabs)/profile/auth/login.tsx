@@ -3,37 +3,33 @@ import {
     View,
     Text,
     TextInput,
-    TouchableOpacity,
-    ImageBackground, ActivityIndicator, TouchableWithoutFeedback, Keyboard,
+    ImageBackground, TouchableWithoutFeedback, Keyboard,
 } from "react-native";
 import { useServices } from "@/context/ServicesContext";
 import { useRouter }    from "expo-router";
-import {authStyles} from "@/styles/AuthStyles";
+import {AuthActionButton, AuthStatusMessage, authStyles} from "@/styles/AuthStyles";
 import {IMAGES} from "@/constants/images";
 import {Lock, Mail} from "lucide-react-native";
 import {COLORS} from "@/constants/colors";
 import PasswordInput from "@/components/inputs/PasswordInput";
 
 export default function LoginScreen() {
-    const { auth, user } = useServices();
     const router = useRouter();
+    const { auth } = useServices();
 
-    const [loading, setLoading] = useState(false);
-    const [idOrEmail, setIdOrEmail] = useState("");
-    const [pass, setPass] = useState("");
-    const [err, setErr] = useState("");
+    const [loading, setLoading] = useState<boolean>(false);
+    const [idOrEmail, setIdOrEmail] = useState<string>("");
+    const [pass, setPass] = useState<string>("");
+    const [err, setErr] = useState<string>("");
 
     const canSubmit = idOrEmail.trim() && pass.trim();
 
     const handleLogin = async () => {
-        // clear old errors
         setErr("");
         setLoading(true);
 
         try {
             await auth.signIn(idOrEmail.trim(), pass);
-
-            // successful login
             router.replace("/profile");
         } catch (e: any) {
             let msg = e.message;
@@ -47,7 +43,51 @@ export default function LoginScreen() {
         } finally {
             setLoading(false);
         }
-    };
+    }
+
+
+
+    const EmailField = () => {
+        return (
+            <View style={authStyles.inputWrapper}>
+                <Mail size={20} color={COLORS.primary} style={authStyles.icon} />
+                <TextInput
+                    placeholder="Email or Username"
+                    placeholderTextColor="#aaa"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    value={idOrEmail}
+                    onChangeText={setIdOrEmail}
+                    style={authStyles.input}
+                />
+            </View>
+        );
+    }
+
+    const PasswordField = () => {
+        return (
+            <View style={authStyles.inputWrapper}>
+                <Lock size={20} color={COLORS.primary} style={authStyles.icon} />
+                <PasswordInput
+                    placeholder="Password"
+                    placeholderTextColor="#aaa"
+                    secureTextEntry
+                    value={pass}
+                    onChangeText={setPass}
+                    style={authStyles.input}
+                />
+            </View>
+        );
+    }
+
+    const InputFields = () => {
+        return (
+            <>
+                <EmailField />
+                <PasswordField />
+            </>
+        );
+    }
 
     return (
         <TouchableWithoutFeedback
@@ -60,58 +100,12 @@ export default function LoginScreen() {
                 blurRadius={5}
             >
                 <View style={authStyles.container}>
-                    <View
-                        style={authStyles.card}
-                    >
+                    <View style={authStyles.card}>
                         <Text style={authStyles.title}>Welcome Back</Text>
-                        {
-                            loading
-                                ? (
-                                    <ActivityIndicator size={15} />
-                                ) : (
-                                    !!err && <Text style={authStyles.error}>{err}</Text>
-                                )
-                        }
-
-                        {/* Email */}
-                        <View style={authStyles.inputWrapper}>
-                            <Mail size={20} color={COLORS.primary} style={authStyles.icon} />
-                            <TextInput
-                                placeholder="Email or Username"
-                                placeholderTextColor="#aaa"
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                value={idOrEmail}
-                                onChangeText={setIdOrEmail}
-                                style={authStyles.input}
-                            />
-                        </View>
-
-                        {/* Password */}
-                        <View style={authStyles.inputWrapper}>
-                            <Lock size={20} color={COLORS.primary} style={authStyles.icon} />
-                            <PasswordInput
-                                placeholder="Password"
-                                placeholderTextColor="#aaa"
-                                secureTextEntry
-                                value={pass}
-                                onChangeText={setPass}
-                                style={authStyles.input}
-                            />
-                        </View>
-
-                        <TouchableOpacity
-                            style={[authStyles.button, !canSubmit && {opacity: 0.5}]}
-                            onPress={handleLogin}
-                            disabled={!canSubmit}
-                        >
-                            <Text style={authStyles.buttonText}>Sign In</Text>
-                        </TouchableOpacity>
-
-                        <Text
-                            style={authStyles.link}
-                            onPress={() => router.replace("/profile/auth/signup")}
-                        >
+                        <AuthStatusMessage loading={loading} err={err} />
+                        <InputFields />
+                        <AuthActionButton label={"Sign In"} disabled={!canSubmit} onPress={handleLogin} />
+                        <Text style={authStyles.link} onPress={() => router.replace("/profile/auth/signup")}>
                             Don’t have an account? Sign Up
                         </Text>
                     </View>

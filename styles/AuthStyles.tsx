@@ -1,9 +1,29 @@
-import {Dimensions, StyleSheet} from "react-native";
+import {ActivityIndicator, Dimensions, StyleSheet, Text, TouchableOpacity} from "react-native";
 import {COLORS} from "@/constants/colors";
+import React from "react";
 
 const { width } = Dimensions.get("window");
-
 export const CARD_WIDTH = width * 0.85;
+
+export const AuthStatusMessage = ({ loading, err}: { loading: boolean, err: string }) => {
+    if (loading) {
+        return <ActivityIndicator size={15} />;
+    } else if (!!err) {
+        return <Text style={authStyles.error}>{err}</Text>;
+    }
+}
+
+export const AuthActionButton = ({ label, disabled, onPress }: { label: string, disabled: boolean, onPress: () => {}}) => {
+    return (
+        <TouchableOpacity
+            style={[authStyles.button, disabled && {opacity: 0.5}]}
+            onPress={onPress}
+            disabled={disabled}
+        >
+            <Text style={authStyles.buttonText}>{label}</Text>
+        </TouchableOpacity>
+    );
+}
 
 export const authStyles = StyleSheet.create({
     loadingIndicator: {
