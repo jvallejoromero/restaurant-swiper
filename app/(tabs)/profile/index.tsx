@@ -12,6 +12,7 @@ import GenericLoadingScreen from "@/components/screens/GenericLoadingScreen";
 import GenericButton from "@/components/buttons/GenericButton";
 import TitleText from "@/components/headers/TitleText";
 import {AppUserProfile} from "@/services/DatabaseService";
+import ProfileAvatar from "@/components/avatar/ProfileAvatar";
 
 export default function ProfileScreen() {
     const { auth, userProfile } = useServices();
@@ -80,9 +81,7 @@ export default function ProfileScreen() {
                 blurRadius={5}
             >
                 <SafeAreaView>
-                    <View style={[authStyles.card]}
-                          className="items-center gap-4"
-                    >
+                    <View style={[authStyles.card]} className="items-center gap-4">
                         <Text className="text-xl font-semibold color-primary">Verify Your Email</Text>
                         <View className="items-center">
                             <Text className="text-lg">We sent a verification link to:</Text>
@@ -131,12 +130,7 @@ export default function ProfileScreen() {
                         </TouchableOpacity>
 
                         <View className="flex-col gap-2">
-                            <View>
-                                <Image
-                                    source={IMAGES.default_avatar}
-                                    className="h-[144] w-[144] rounded-full border border-neutral-800/15"
-                                />
-                            </View>
+                            <ProfileAvatar />
                             <Text className="text-white text-center font-semibold text-2xl">
                                 {userProfile?.displayName}
                             </Text>

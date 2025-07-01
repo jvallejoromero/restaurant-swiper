@@ -18,6 +18,6 @@ export const IMAGES = {
     info_overlay: require("@/assets/overlay-icons/thinking.png"),
     auth_bg: require("@/assets/images/signup-bg.png"),
     forked_logo: require("@/assets/images/forked-icon.png"),
-    default_avatar: require("@/assets/profile/default-avatar.png"),
+    default_avatar: require("@/assets/profile/avatar.png"),
     profile_header_bg: require("@/assets/profile/header-bg.png"),
 } as const;
