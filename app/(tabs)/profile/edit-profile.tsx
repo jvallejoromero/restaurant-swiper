@@ -1,190 +1,90 @@
-import {View, StyleSheet, SafeAreaView, Text, TouchableOpacity, Image, ActivityIndicator} from "react-native";
-import {COLORS} from "@/constants/colors";
+import {View, SafeAreaView, Text, TouchableOpacity} from "react-native";
 import {Ionicons} from "@expo/vector-icons";
 import {useRouter} from "expo-router";
-import {IMAGES} from "@/constants/images";
-import React, {useEffect, useState} from "react";
+import React from "react";
 import {useServices} from "@/context/ServicesContext";
-import {authStyles} from "@/styles/AuthStyles";
+import ProfileAvatar from "@/components/avatar/ProfileAvatar";
+import Separator from "@/components/ui/Separator";
+import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 
+type ProfileEntry = {
+    label: string;
+    value?: string;
+    iconName: React.ComponentProps<typeof Ionicons>["name"];
+};
 
 export default function EditProfileScreen() {
     const router = useRouter();
     const {user, userProfile} = useServices();
 
+    const profileEntries: ProfileEntry[] = [
+        { label: "Email", value: user?.email, iconName: "mail-outline" },
+        { label: "Display Name", value: userProfile?.displayName, iconName: "person-outline" },
+        { label: "Username", value: user?.username, iconName: "at-outline" },
+    ];
+
+    const handleOptionPress = (option: string) => {
+        const pressed = option.replaceAll(" ", "").toLowerCase();
+        if (pressed === "email") {
+            console.log("change email");
+        } else if (pressed === "displayname") {
+            router.push("/profile/edit-displayname");
+        } else if (pressed === "username") {
+            router.push("/profile/edit-username");
+        }
+    }
+
+    const ProfilePictureHeader = () => {
+        return (
+            <View className="items-center justify-center mt-8 gap-2">
+                <ProfileAvatar />
+                <TouchableOpacity activeOpacity={1} onPress={() => console.log("change pfp")}>
+                    <Text className="text-lg font-medium color-primary">Modify profile picture</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
+    const ProfileInfoEntry = ({ label, value, iconName, onPress }: {label: string, value: string | undefined, iconName: React.ComponentProps<typeof Ionicons>["name"], onPress: () => void }) => {
+        const fontStyle = value ? "font-medium" : "font-normal";
+        return (
+            <TouchableOpacity onPress={onPress}>
+                <View className="flex-row items-center justify-center gap-4">
+                    <Ionicons name={iconName} size={20} color="#555" />
+                    <Text className="text-lg text-[#555]">{label}</Text>
+                    <Text className={`flex-1 text-lg text-black text-right ${fontStyle}`} numberOfLines={1} ellipsizeMode="tail">
+                        {value}
+                    </Text>
+                    <Ionicons name={"chevron-forward-outline"} size={18} color="#999" />
+                </View>
+            </TouchableOpacity>
+        );
+    }
+
+    const ProfileInfoEntries = () => {
+        return (
+            <View className="px-6 gap-2">
+                {profileEntries.map(({ label, value, iconName}, index) => {
+                    return (
+                        <ProfileInfoEntry
+                            key={index}
+                            label={label}
+                            value={value}
+                            iconName={iconName}
+                            onPress={() => handleOptionPress(label)}
+                        />
+                    );
+                })}
+            </View>
+        );
+    }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.headerGoBack} onPress={() => router.back()}>
-                    <Ionicons name="chevron-back" size={24}/>
-                </TouchableOpacity>
-                <Text style={styles.headerText}>Edit Profile</Text>
-            </View>
-            <View style={[styles.avatarContainer]}>
-                <Image
-                    source={IMAGES.default_avatar}
-                    style={styles.avatar}
-                />
-                <TouchableOpacity activeOpacity={1} onPress={() => console.log("change pfp")}>
-                    <Text style={styles.avatarText}>Modify profile picture</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.separator} />
-            <View style={styles.editableContent}>
-                <TouchableOpacity onPress={() => {console.log("change email")}}>
-                    <View style={styles.row}>
-                        <Ionicons name="mail-outline" size={20} color="#555" />
-                        <Text style={styles.label}>Email</Text>
-                        <View style={{ flex: 1 }}>
-                            <Text numberOfLines={1} ellipsizeMode="tail" style={styles.value}>
-                                {user?.email}
-                            </Text>
-                        </View>
-                        <Ionicons
-                            name="chevron-forward-outline"
-                            size={18}
-                            color="#999"
-                            style={{ marginLeft: 8 }}
-                        />
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push("/profile/edit-displayname")}>
-                    <View style={styles.row}>
-                        <Ionicons name="person-outline" size={20} color="#555" />
-                        <Text style={styles.label}>Display Name</Text>
-                        <View style={{ flex: 1 }}>
-                            <Text numberOfLines={1} ellipsizeMode="tail" style={userProfile?.displayName ? styles.value : styles.emptyValue}>
-                                {userProfile?.displayName ? userProfile.displayName : "None set"}
-                            </Text>
-                        </View>
-                        <Ionicons
-                            name="chevron-forward-outline"
-                            size={18}
-                            color="#999"
-                            style={{ marginLeft: 8 }}
-                        />
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push("/profile/edit-username")}>
-                    <View style={styles.row}>
-                        <Ionicons name="at-outline" size={20} color="#333" />
-                        <Text style={styles.label}>Username</Text>
-                        <View style={{ flex: 1 }}>
-                            <Text numberOfLines={1} ellipsizeMode="tail" style={styles.value}>
-                                {userProfile?.username}
-                            </Text>
-                        </View>
-                        <Ionicons
-                            name="chevron-forward-outline"
-                            size={18}
-                            color="#999"
-                            style={{ marginLeft: 8 }}
-                        />
-                    </View>
-                </TouchableOpacity>
-            </View>
+        <SafeAreaView className="flex-1 bg-background">
+            <BackNavigationHeader label={"Edit Profile"} />
+            <ProfilePictureHeader />
+            <Separator className={"my-4 mx-6"} />
+            <ProfileInfoEntries />
         </SafeAreaView>
-    )
+    );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: COLORS.background_color,
-    },
-    header: {
-        width: "100%",
-        height: "5%",
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    headerGoBack: {
-        position: "absolute",
-        left: 10,
-    },
-    headerText: {
-        fontSize: 18,
-        fontWeight: "600",
-        textAlign: "center",
-    },
-    avatarContainer: {
-        paddingTop: 15,
-        height: 175,
-        alignItems: "center",
-    },
-    avatar: {
-        width: 144,
-        height: 144,
-        borderRadius: 75,
-
-        borderColor: COLORS.primary,
-    },
-    avatarText: {
-        paddingTop: 10,
-        fontSize: 15,
-        fontWeight: "500",
-        color: COLORS.primary,
-    },
-    separator: {
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: 'rgba(0,0,0,0.1)',
-        marginHorizontal: 16,
-        marginTop: 24,
-    },
-    editableContent: {
-        padding: 24,
-        flex: 1,
-        backgroundColor: COLORS.background_color,
-    },
-    name: {
-        fontSize: 26,
-        fontWeight: "700",
-        textAlign: "center",
-        marginBottom: 24
-    },
-    displayName: {
-        fontSize: 26,
-        fontWeight: "700",
-        textAlign: "center",
-        color: "white",
-    },
-    row: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 20,
-    },
-    label: {
-        marginLeft: 12,
-        paddingRight: 12,
-        fontSize: 16,
-        color: "#555",
-    },
-    value: {
-        flex: 1,
-        fontSize: 16,
-        fontWeight: "500",
-        color: "#000",
-        textAlign: "right",
-    },
-    emptyValue: {
-        flex: 1,
-        fontSize: 16,
-        color: "#000",
-        textAlign: "right",
-    },
-    menuItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingVertical: 10,
-    },
-    menuIcon: {
-        marginRight: 12
-    },
-    menuText: {
-        flex: 1,
-        fontSize: 16,
-        color: "#000"
-    },
-});

@@ -128,7 +128,6 @@ export default function ProfileScreen() {
                         <TouchableOpacity className="absolute mt-safe top-0 right-8" onPress={() => router.push("/profile/edit-profile")}>
                             <Ionicons name="create-outline" size={24} color="#fff" />
                         </TouchableOpacity>
-
                         <View className="flex-col gap-2">
                             <ProfileAvatar />
                             <Text className="text-white text-center font-semibold text-2xl">

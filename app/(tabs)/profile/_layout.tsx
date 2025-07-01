@@ -21,9 +21,7 @@ export default function ProfileLayout() {
     }, [user]);
 
     if (user === undefined) {
-        return (
-            <GenericLoadingScreen />
-        );
+        return <GenericLoadingScreen />;
     }
 
     return (

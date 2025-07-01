@@ -1,9 +1,14 @@
 import {StyleSheet, Text, View} from "react-native";
 import React from "react";
 
-const Subheader = ({ text }: {text: string}) => {
+type SubheaderProps = {
+    text: string;
+    className?: string;
+}
+
+const Subheader = ({ text, className }: SubheaderProps) => {
     return (
-        <Text style={styles.subheading}>{text}</Text>
+        <Text style={styles.subheading} className={className}>{text}</Text>
     );
 }
 
