@@ -1,35 +1,24 @@
 import React, {useEffect, useState} from "react";
-import {
-    ActivityIndicator,
-    Dimensions,
-    ImageBackground,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    Image,
-} from "react-native";
-import {COLORS} from "@/constants/colors";
+import {ImageBackground,SafeAreaView,StyleSheet,Text,TouchableOpacity,View,Image} from "react-native";
 import {IMAGES} from "@/constants/images";
 import {authStyles} from "@/styles/AuthStyles"
 import {useServices} from "@/context/ServicesContext";
 import {getAuth, sendEmailVerification} from "firebase/auth";
 import {User} from "@/services/AuthService";
-import {Ionicons, MaterialIcons} from "@expo/vector-icons";
+import {Ionicons} from "@expo/vector-icons";
 import {LinearGradient} from "expo-linear-gradient";
 import {router} from "expo-router";
-
-const { width } = Dimensions.get("window");
+import GenericLoadingScreen from "@/components/screens/GenericLoadingScreen";
+import GenericButton from "@/components/buttons/GenericButton";
+import TitleText from "@/components/headers/TitleText";
+import {AppUserProfile} from "@/services/DatabaseService";
 
 export default function ProfileScreen() {
-
     const { auth, userProfile } = useServices();
 
     const [initializing, setInitializing] = useState(true);
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState<User | null>(null);
-    const [isMultilineDisplayName, setMultilineDisplayName] = useState(false);
 
 
     useEffect(() => {
@@ -83,272 +72,132 @@ export default function ProfileScreen() {
         setLoading(false);
     };
 
-    if (initializing || loading) {
-        return (
-            <View style={[StyleSheet.absoluteFillObject, authStyles.loadingIndicator]}>
-                <ActivityIndicator size={24} />
-            </View>
-        )
-    }
-
-    if (!user?.emailVerified) {
+    const EmailVerificationScreen = () => {
         return (
             <ImageBackground
                 source={IMAGES.auth_bg}
                 style={authStyles.background}
                 blurRadius={5}
             >
-                <SafeAreaView style={styles.emailVerificationContainer}>
-                    <View style={[authStyles.card, styles.cardInner]}>
-                        <Text style={styles.title}>Verify Your Email</Text>
-                        <Text style={styles.message}>
-                            We sent a verification link to:
-                        </Text>
-                        <Text style={styles.email}>{user?.email}</Text>
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={handleResend}
-                        >
-                            <Text style={styles.buttonText}>Resend Email</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.button, styles.refreshButton]}
-                            onPress={handleRefresh}
-                        >
-                            <Text style={styles.buttonText}>I’m Verified</Text>
-                        </TouchableOpacity>
+                <SafeAreaView>
+                    <View style={[authStyles.card]}
+                          className="items-center gap-4"
+                    >
+                        <Text className="text-xl font-semibold color-primary">Verify Your Email</Text>
+                        <View className="items-center">
+                            <Text className="text-lg">We sent a verification link to:</Text>
+                            <Text className="font-semibold text-lg">{user?.email}</Text>
+                        </View>
+                        <View className="w-full gap-2">
+                            <GenericButton text={"Resend email"} onPress={handleResend} />
+                            <GenericButton text={"I'm verified"} onPress={handleRefresh} />
+                        </View>
                     </View>
                 </SafeAreaView>
             </ImageBackground>
-        )
+        );
+    }
+    
+    const AccountInfoIcon = ({ iconName }: { iconName: React.ComponentProps<typeof Ionicons>["name"] }) => {
+        return <Ionicons name={iconName} size={20} color="#555" />;
+    }
+    
+    const AccountInfoEntry = ({ iconName, label, value }: { iconName: React.ComponentProps<typeof Ionicons>["name"], label: string, value: string }) => {
+        return (
+            <View className="w-full flex-row items-center gap-4">
+                <AccountInfoIcon iconName={iconName} />
+                <Text className="flex-1 text-lg text-[#555]">{label}</Text>
+                <Text className="text-lg font-medium">{value}</Text>
+            </View>
+        );
     }
 
-    // user is valid
-    return (
-        <View style={styles.container}>
-            {/* Header with decorative food shapes */}
+    const ProfileHeader = () => {
+        return (
             <ImageBackground
                 source={IMAGES.profile_header_bg}
-                style={[styles.header, isMultilineDisplayName && { flexBasis: '41%' }]}
+                className="min-h-[250px] w-full items-center justify-center"
                 blurRadius={5}
             >
                 <LinearGradient
-                    // fade from fully transparent at the top to a tiny bit darker at the bottom
                     colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.22)']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 0, y: 1 }}
-                    style={StyleSheet.absoluteFillObject}    // absolutely cover the header
+                    style={StyleSheet.absoluteFillObject}
                 >
-                    <View style={styles.avatarContainer}>
-                        <Image
-                            source={IMAGES.default_avatar}
-                            style={styles.avatar}
-                        />
+                    <View className="items-center justify-center pt-safe">
+                        <TouchableOpacity className="absolute mt-safe top-0 right-8" onPress={() => router.push("/profile/edit-profile")}>
+                            <Ionicons name="create-outline" size={24} color="#fff" />
+                        </TouchableOpacity>
+
+                        <View className="flex-col gap-2">
+                            <View>
+                                <Image
+                                    source={IMAGES.default_avatar}
+                                    className="h-[144] w-[144] rounded-full border border-neutral-800/15"
+                                />
+                            </View>
+                            <Text className="text-white text-center font-semibold text-2xl">
+                                {userProfile?.displayName}
+                            </Text>
+                        </View>
                     </View>
-                    <TouchableOpacity style={styles.editButton} onPress={() => router.push("/profile/edit-profile")}>
-                        <Ionicons name="create-outline" size={24} color="#fff" />
-                    </TouchableOpacity>
-                    <Text style={styles.displayName}
-                          onTextLayout={(e) => {
-                              if (e.nativeEvent.lines.length > 1) {
-                                  setMultilineDisplayName(true);
-                              } else {
-                                  setMultilineDisplayName(false);
-                              }
-                          }}
-                    >
-                        {userProfile?.displayName}</Text>
                 </LinearGradient>
             </ImageBackground>
+        );
+    }
 
-            <View style={styles.content}>
-                <Text style={styles.name}>{"Account Information"}</Text>
+    const ChevronButton = ({ label, iconName, onPress }: { label: string, iconName: React.ComponentProps<typeof Ionicons>["name"], onPress: () => void }) => {
+        return (
+            <TouchableOpacity className="flex-row items-center gap-4" onPress={onPress}>
+                <AccountInfoIcon iconName={iconName} />
+                <Text className="flex-1 text-black text-lg">{label}</Text>
+                <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+        );
+    }
 
-                <View style={styles.row}>
-                    <Ionicons name="mail-outline" size={20} color="#555" />
-                    <Text style={styles.label}>Email</Text>
-                    <Text style={styles.value}>{user?.email}</Text>
+    const CriticalActionButton = ({ label, iconName, onPress }: { label: string, iconName: React.ComponentProps<typeof Ionicons>["name"], onPress: () => void }) => {
+        return (
+            <TouchableOpacity className="flex-row items-center gap-4" onPress={onPress}>
+                <Ionicons name={iconName} size={20} color="#555" />
+                <Text className="text-lg color-primary">{label}</Text>
+            </TouchableOpacity>
+        );
+    }
+
+    const ProfileInfoContent = ({ user, userProfile }: { user: User, userProfile: AppUserProfile | null }) => {
+        return (
+            <View className="flex-1 flex-col p-5 gap-3">
+                <View className="gap-1">
+                    <AccountInfoEntry label={"Email"} value={user.email} iconName={"mail-outline"} />
+                    <AccountInfoEntry label={"Username"} value={userProfile ? userProfile.username : "Unknown"} iconName={"person-outline"} />
                 </View>
-
-                <View style={styles.row}>
-                    <Ionicons name="person-outline" size={20} color="#555" />
-                    <Text style={styles.label}>Username</Text>
-                    <Text style={styles.value}>{userProfile?.username}</Text>
+                <View className="gap-1">
+                    <ChevronButton label={"Settings"} iconName={"settings-outline"} onPress={() => {}} />
+                    <ChevronButton label={"Sessions"} iconName={"rocket-outline"} onPress={() => {}} />
                 </View>
-
-                {/* Menu Actions */}
-                <TouchableOpacity
-                    style={[styles.menuItem, { borderBottomColor: "#eee" }]}
-                >
-                    <Ionicons
-                        name="settings-outline"
-                        size={20}
-                        color="#555"
-                        style={styles.menuIcon}
-                    />
-                    <Text style={styles.menuText}>Settings</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#999" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[styles.menuItem, { borderBottomColor: "#eee" }]}
-                >
-                    <Ionicons
-                        name="rocket-outline"
-                        size={20}
-                        color="#555"
-                        style={styles.menuIcon}
-                    />
-                    <Text style={styles.menuText}>Sessions</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#999"/>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.menuItem} onPress={handleSignout}>
-                    <MaterialIcons
-                        name="logout"
-                        size={20}
-                        color="#555"
-                        style={styles.menuIcon}
-                    />
-                    <Text style={[styles.menuText, { color: COLORS.primary }]}>Log Out</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
-                    <Ionicons
-                        name="person-remove-outline"
-                        size={20}
-                        color="#555"
-                        style={styles.menuIcon}
-                    />
-                    <Text style={[styles.menuText, { color: COLORS.primary }]}>Delete Account</Text>
-                </TouchableOpacity>
+                <View className="gap-1 mt-12">
+                    <CriticalActionButton label={"Log Out"} iconName={"log-out-outline"} onPress={handleSignout} />
+                    <CriticalActionButton label={"Delete Account"} iconName={"person-remove-outline"} onPress={() => {}} />
+                </View>
             </View>
+        );
+    }
+
+    if (initializing || loading) {
+        return <GenericLoadingScreen />;
+    }
+
+    if (!user?.emailVerified) {
+        return <EmailVerificationScreen />;
+    }
+
+    return (
+        <View className="flex-1 bg-background">
+            <ProfileHeader />
+            <TitleText text={"Account Information"} className="mt-5 text-center" />
+            <ProfileInfoContent user={user} userProfile={userProfile} />
         </View>
     );
 }
-
-const BUTTON_WIDTH = width * 0.75;
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    emailVerificationContainer: {
-    },
-    background: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    cardInner: {
-        alignItems: "center",
-        padding: 24,
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: "600",
-        marginBottom: 12,
-        color: COLORS.primary,
-    },
-    message: {
-        fontSize: 16,
-        textAlign: "center",
-        marginBottom: 8,
-    },
-    email: {
-        fontSize: 16,
-        fontWeight: "500",
-        marginBottom: 24,
-    },
-    button: {
-        width: BUTTON_WIDTH,
-        height: 48,
-        backgroundColor: COLORS.primary,
-        borderRadius: 24,
-        justifyContent: "center",
-        alignItems: "center",
-        marginBottom: 16,
-    },
-    refreshButton: {
-        backgroundColor: COLORS.primary,
-    },
-    buttonText: {
-        color: "#fff",
-        fontSize: 16,
-        fontWeight: "600",
-    },
-    header: {
-        flexBasis: '37%',       // take roughly 37% of the screen height
-        maxHeight: 300,
-        justifyContent: "center",
-        alignItems: "center",
-        position: "relative",
-    },
-    avatarContainer: {
-        paddingTop: "15%",
-        justifyContent: "center",
-        alignItems: "center",
-        position: "relative",
-        padding: 10,
-    },
-    avatar: {
-        width: 144,
-        height: 144,
-        borderRadius: 75,
-        borderWidth: 0.5,
-        borderColor: "#fff",
-    },
-    editButton: {
-        position: "absolute",
-        top: "15%",
-        right: "5%",
-        padding: 8
-    },
-    content: {
-        padding: 24,
-        flex: 1,
-        backgroundColor: COLORS.background_color,
-    },
-    name: {
-        fontSize: 26,
-        fontWeight: "700",
-        textAlign: "center",
-        marginBottom: 24
-    },
-    displayName: {
-        padding: 10,
-        fontSize: 26,
-        fontWeight: "700",
-        textAlign: "center",
-        color: "white",
-    },
-    row: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 20,
-    },
-    label: {
-        flex: 1,
-        marginLeft: 12,
-        fontSize: 16,
-        color: "#555"
-    },
-    value: {
-        fontSize: 16,
-        fontWeight: "500",
-        color: "#000"
-    },
-    menuItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingVertical: 10,
-    },
-    menuIcon: {
-        marginRight: 12
-    },
-    menuText: {
-        flex: 1,
-        fontSize: 16,
-        color: "#000"
-    },
-});

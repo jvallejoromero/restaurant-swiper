@@ -45,6 +45,9 @@ const _layout = () => {
                     flexDirection: 'row',
                     justifyContent: "space-between",
                 },
+                sceneStyle: {
+                    backgroundColor: COLORS.background_color,
+                }
             }}
         >
             <Tabs.Screen

@@ -2,12 +2,22 @@ import { Stack } from "expo-router";
 import './globals.css';
 import {ServicesProvider} from "@/context/ServicesContext";
 import {UserLocationProvider} from "@/context/UserLocationContext";
+import { COLORS } from "@/constants/colors";
 
 export default function RootLayout() {
   return (
       <UserLocationProvider>
           <ServicesProvider>
-              <Stack >
+              <Stack
+                  screenOptions={{
+                      contentStyle: {
+                          backgroundColor: COLORS.background_color,
+                      },
+                      headerStyle: {
+                          backgroundColor: COLORS.background_color,
+                      },
+                  }}
+              >
                   <Stack.Screen
                       name="restaurant/[id]"
                       options={{
