@@ -46,14 +46,15 @@ export default function EditProfileScreen() {
     }
 
     const ProfileInfoEntry = ({ label, value, iconName, onPress }: {label: string, value: string | undefined, iconName: React.ComponentProps<typeof Ionicons>["name"], onPress: () => void }) => {
-        const fontStyle = value ? "font-medium" : "font-normal";
+        const isValueEmpty = value?.trim() === "" || value === undefined || value === null;
+        const fontStyle =  isValueEmpty ? "font-normal" : "font-medium";
         return (
             <TouchableOpacity onPress={onPress}>
                 <View className="flex-row items-center justify-center gap-4">
                     <Ionicons name={iconName} size={20} color="#555" />
                     <Text className="text-lg text-[#555]">{label}</Text>
                     <Text className={`flex-1 text-lg text-black text-right ${fontStyle}`} numberOfLines={1} ellipsizeMode="tail">
-                        {value}
+                        {isValueEmpty ? "None Set" : value}
                     </Text>
                     <Ionicons name={"chevron-forward-outline"} size={18} color="#999" />
                 </View>
