@@ -14,7 +14,7 @@ import Separator from "@/components/ui/Separator";
 export default function EditDisplayNameScreen() {
     const router = useRouter();
     const navigation = useNavigation();
-    const {user, database} = useServices();
+    const { user, database } = useServices();
 
     const [isFocused, setIsFocused] = useState<boolean>(false);
     const [isEdited, setIsEdited] = useState<boolean>(false);
@@ -89,8 +89,18 @@ export default function EditDisplayNameScreen() {
         return <GenericLoadingScreen />;
     }
 
-    const Content = () => {
-        return (
+    return (
+        <SafeAreaView className="flex-1">
+            <ConfirmChangesModal
+                visible={showConfirmModal}
+                onCancel={() => {
+                    setShowConfirmModal(false);
+                    pendingBackAction.current();
+                }}
+                onConfirm={updateDisplayName}
+            />
+            <BackDoneNavigationHeader label={"Display Name"} onPressDone={updateDisplayName} />
+            <Separator className={"my-4 mx-6"} />
             <View className="flex-1 px-6 gap-3">
                 <View>
                     <FloatingLabelInput
@@ -121,22 +131,6 @@ export default function EditDisplayNameScreen() {
                     Pick a display name (letters, numbers, emojis)—up to 32 characters. Your display name will be visible to others.
                 </Text>
             </View>
-        );
-    }
-
-    return (
-        <SafeAreaView className="flex-1">
-            <ConfirmChangesModal
-                visible={showConfirmModal}
-                onCancel={() => {
-                    setShowConfirmModal(false);
-                    pendingBackAction.current();
-                }}
-                onConfirm={updateDisplayName}
-            />
-            <BackDoneNavigationHeader label={"Display Name"} onPressDone={updateDisplayName} />
-            <Separator className={"my-4 mx-6"} />
-            <Content />
         </SafeAreaView>
     );
 }
