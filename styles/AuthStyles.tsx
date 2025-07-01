@@ -1,6 +1,8 @@
-import {ActivityIndicator, Dimensions, StyleSheet, Text, TouchableOpacity} from "react-native";
+import {ActivityIndicator, Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import {COLORS} from "@/constants/colors";
 import React from "react";
+import {Coffee, Lock, Mail} from "lucide-react-native";
+import PasswordInput from "@/components/inputs/PasswordInput";
 
 const { width } = Dimensions.get("window");
 export const CARD_WIDTH = width * 0.85;
@@ -22,6 +24,54 @@ export const AuthActionButton = ({ label, disabled, onPress }: { label: string, 
         >
             <Text style={authStyles.buttonText}>{label}</Text>
         </TouchableOpacity>
+    );
+}
+
+export const UsernameField = ({ placeholder, value, onChangeText }: { placeholder: string, value: string, onChangeText: (text: string) => void }) => {
+    return (
+        <View style={authStyles.inputWrapper}>
+            <Coffee size={20} color={COLORS.primary} style={authStyles.icon} />
+            <TextInput
+                placeholder={placeholder}
+                placeholderTextColor="#aaa"
+                value={value}
+                onChangeText={onChangeText}
+                style={authStyles.input}
+            />
+        </View>
+    );
+}
+
+export const EmailField = ({ placeholder, value, onChangeText }: { placeholder: string, value: string, onChangeText: (text: string) => void }) => {
+    return (
+        <View style={authStyles.inputWrapper}>
+            <Mail size={20} color={COLORS.primary} style={authStyles.icon} />
+            <TextInput
+                placeholder={placeholder}
+                placeholderTextColor="#aaa"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={value}
+                onChangeText={onChangeText}
+                style={authStyles.input}
+            />
+        </View>
+    );
+}
+
+export const PasswordField = ({ placeholder, value, onChangeText }: { placeholder: string, value: string, onChangeText: (text: string) => void }) => {
+    return (
+        <View style={authStyles.inputWrapper}>
+            <Lock size={20} color={COLORS.primary} style={authStyles.icon} />
+            <PasswordInput
+                placeholder={placeholder}
+                placeholderTextColor="#aaa"
+                secureTextEntry
+                value={value}
+                onChangeText={onChangeText}
+                style={authStyles.input}
+            />
+        </View>
     );
 }
 
@@ -50,12 +100,10 @@ export const authStyles = StyleSheet.create({
         backgroundColor: "#fff",
         borderRadius: 16,
         padding: 24,
-        // shadow (iOS)
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.15,
         shadowRadius: 8,
-        // elevation (Android)
         elevation: 6,
     },
     title: {

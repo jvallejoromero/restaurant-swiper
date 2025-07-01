@@ -3,37 +3,37 @@ import {
     ImageBackground,
     View,
     Text,
-    TextInput,
-    TouchableOpacity, ActivityIndicator,
-    TouchableWithoutFeedback, Keyboard, Pressable,
+    TouchableWithoutFeedback, Keyboard,
 } from "react-native";
 import { useServices } from "@/context/ServicesContext";
 import { useRouter } from "expo-router";
-import { Coffee, Mail, Lock } from "lucide-react-native";
-import {COLORS} from "@/constants/colors";
 import {IMAGES} from "@/constants/images";
-import {authStyles} from "@/styles/AuthStyles";
-import PasswordInput from "@/components/inputs/PasswordInput";
+import {
+    AuthActionButton,
+    AuthStatusMessage,
+    authStyles,
+    EmailField,
+    PasswordField,
+    UsernameField
+} from "@/styles/AuthStyles";
 
 export default function SignupScreen() {
-    const { auth } = useServices();
     const router = useRouter();
+    const { auth } = useServices();
 
-    const [loading, setLoading] = useState(false);
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [pass, setPass] = useState("");
-    const [err, setErr] = useState("");
+    const [loading, setLoading] = useState<boolean>(false);
+    const [username, setUsername] = useState<string>("");
+    const [email, setEmail] = useState<string>("");
+    const [pass, setPass] = useState<string>("");
+    const [err, setErr] = useState<string>("");
 
     const canSubmit = username.trim() && email.trim() && pass.trim();
 
-    // go back to profile index
     const goToProfile = () => {
         router.replace("/profile");
     };
 
     const handleSignup = async () => {
-        // clear old errors
         setErr("");
         setLoading(true);
 
@@ -91,66 +91,12 @@ export default function SignupScreen() {
                 <View style={authStyles.container}>
                     <View style={authStyles.card}>
                         <Text style={authStyles.title}>Create an Account</Text>
-                        {
-                            loading
-                                ? (
-                                    <ActivityIndicator size={15} />
-                                ) : (
-                                    !!err && <Text style={authStyles.error}>{err}</Text>
-                                )
-                        }
-
-                        {/* Display Name */}
-                        <View style={authStyles.inputWrapper}>
-                            <Coffee size={20} color={COLORS.primary} style={authStyles.icon} />
-                            <TextInput
-                                placeholder="Username"
-                                placeholderTextColor="#aaa"
-                                value={username}
-                                onChangeText={setUsername}
-                                style={authStyles.input}
-                            />
-                        </View>
-
-                        {/* Email */}
-                        <View style={authStyles.inputWrapper}>
-                            <Mail size={20} color={COLORS.primary} style={authStyles.icon} />
-                            <TextInput
-                                placeholder="Email"
-                                placeholderTextColor="#aaa"
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                value={email}
-                                onChangeText={setEmail}
-                                style={authStyles.input}
-                            />
-                        </View>
-
-                        {/* Password */}
-                        <View style={authStyles.inputWrapper}>
-                            <Lock size={20} color={COLORS.primary} style={authStyles.icon} />
-                            <PasswordInput
-                                placeholder="Password"
-                                placeholderTextColor="#aaa"
-                                secureTextEntry
-                                value={pass}
-                                onChangeText={setPass}
-                                style={authStyles.input}
-                            />
-                        </View>
-
-                        <TouchableOpacity
-                            style={[authStyles.button, !canSubmit && {opacity: 0.5}]}
-                            onPress={handleSignup}
-                            disabled={!canSubmit}
-                        >
-                            <Text style={authStyles.buttonText}>Sign Up</Text>
-                        </TouchableOpacity>
-
-                        <Text
-                            style={authStyles.link}
-                            onPress={() => router.replace("/profile/auth/login")}
-                        >
+                        <AuthStatusMessage loading={loading} err={err} />
+                        <UsernameField placeholder={"Username"} value={username} onChangeText={setUsername} />
+                        <EmailField placeholder={"Email"} value={email} onChangeText={setEmail} />
+                        <PasswordField placeholder={"Password"} value={pass} onChangeText={setPass} />
+                        <AuthActionButton label={"Sign Up"} disabled={!canSubmit} onPress={handleSignup} />
+                        <Text style={authStyles.link} onPress={() => router.replace("/profile/auth/login")}>
                             Already have an account? Sign In
                         </Text>
                     </View>
