@@ -12,6 +12,7 @@ module.exports = {
         background: "#F0F1FB",
         primary: "#d52e4c",
         icon: "#ff3a3a",
+        "accent-grey": "#555",
       }
     },
   },
