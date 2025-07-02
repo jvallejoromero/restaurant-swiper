@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {ImageBackground,SafeAreaView,StyleSheet,Text,TouchableOpacity,View,Image} from "react-native";
+import {ImageBackground, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {IMAGES} from "@/constants/images";
 import {authStyles} from "@/styles/AuthStyles"
 import {useServices} from "@/context/ServicesContext";
-import {getAuth, sendEmailVerification} from "firebase/auth";
+import {deleteUser, getAuth, sendEmailVerification} from "firebase/auth";
 import {User} from "@/services/AuthService";
 import {Ionicons} from "@expo/vector-icons";
 import {LinearGradient} from "expo-linear-gradient";
@@ -20,7 +20,6 @@ export default function ProfileScreen() {
     const [initializing, setInitializing] = useState(true);
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState<User | null>(null);
-
 
     useEffect(() => {
         (async () => {
@@ -73,6 +72,20 @@ export default function ProfileScreen() {
         setLoading(false);
     };
 
+    const restartSignup = async() => {
+        const auth = getAuth();
+        const fbUser = auth.currentUser;
+        if (!fbUser) return;
+
+        try {
+            await deleteUser(fbUser);
+        } catch (err) {
+            console.warn("Couldn’t delete unverified user:", err);
+        }
+        await auth.signOut();
+        router.replace("/profile/auth/signup");
+    }
+
     const EmailVerificationScreen = () => {
         return (
             <ImageBackground
@@ -90,6 +103,12 @@ export default function ProfileScreen() {
                         <View className="w-full gap-2">
                             <GenericButton text={"Resend email"} onPress={handleResend} />
                             <GenericButton text={"I'm verified"} onPress={handleRefresh} />
+                        </View>
+                        <View className="w-full gap-1">
+                            <Text className="text-primary text-lg text-center">Did you enter the wrong email?</Text>
+                            <TouchableOpacity onPress={restartSignup}>
+                                <Text className="text-primary text-md text-center underline">Go back to sign up</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </SafeAreaView>

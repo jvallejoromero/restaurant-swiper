@@ -11,7 +11,7 @@ import {IMAGES} from "@/constants/images";
 import {
     AuthActionButton,
     AuthStatusMessage,
-    authStyles,
+    authStyles, ConfirmEmailField,
     EmailField,
     PasswordField,
     UsernameField
@@ -24,10 +24,11 @@ export default function SignupScreen() {
     const [loading, setLoading] = useState<boolean>(false);
     const [username, setUsername] = useState<string>("");
     const [email, setEmail] = useState<string>("");
+    const [confirmEmail, setConfirmEmail] = useState<string>("");
     const [pass, setPass] = useState<string>("");
     const [err, setErr] = useState<string>("");
 
-    const canSubmit = username.trim() && email.trim() && pass.trim();
+    const canSubmit = username.trim() && email.trim() && confirmEmail.trim() && pass.trim();
 
     const goToProfile = () => {
         router.replace("/profile");
@@ -38,10 +39,6 @@ export default function SignupScreen() {
         setLoading(true);
 
         try {
-            if (!username.trim()) {
-                setErr("Please enter a username!");
-                return;
-            }
             if (username.length < 4) {
                 setErr("Please enter a longer username!");
                 return;
@@ -56,6 +53,11 @@ export default function SignupScreen() {
                 setErr("Please enter a valid username!\n (only _ and . are allowed as special characters)");
                 return;
             }
+            if (email !== confirmEmail) {
+                setErr("Email addresses must match!");
+                return;
+            }
+
             await auth.signUp(email.trim(), pass, username.trim().toLowerCase());
 
             // successful sign up
@@ -94,6 +96,7 @@ export default function SignupScreen() {
                         <AuthStatusMessage loading={loading} err={err} />
                         <UsernameField placeholder={"Username"} value={username} onChangeText={setUsername} />
                         <EmailField placeholder={"Email"} value={email} onChangeText={setEmail} />
+                        <ConfirmEmailField placeholder={"Confirm Email"} value={confirmEmail} onChangeText={setConfirmEmail} />
                         <PasswordField placeholder={"Password"} value={pass} onChangeText={setPass} />
                         <AuthActionButton label={"Sign Up"} disabled={!canSubmit} onPress={handleSignup} />
                         <Text style={authStyles.link} onPress={() => router.replace("/profile/auth/login")}>

@@ -1,7 +1,7 @@
 import {ActivityIndicator, Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import {COLORS} from "@/constants/colors";
 import React from "react";
-import {Coffee, Lock, Mail} from "lucide-react-native";
+import {Coffee, Lock, Mail, MailCheck} from "lucide-react-native";
 import PasswordInput from "@/components/inputs/PasswordInput";
 
 const { width } = Dimensions.get("window");
@@ -15,7 +15,7 @@ export const AuthStatusMessage = ({ loading, err}: { loading: boolean, err: stri
     }
 }
 
-export const AuthActionButton = ({ label, disabled, onPress }: { label: string, disabled: boolean, onPress: () => {}}) => {
+export const AuthActionButton = ({ label, disabled, onPress }: { label: string, disabled: boolean, onPress: () => void }) => {
     return (
         <TouchableOpacity
             style={[authStyles.button, disabled && {opacity: 0.5}]}
@@ -46,6 +46,23 @@ export const EmailField = ({ placeholder, value, onChangeText }: { placeholder: 
     return (
         <View style={authStyles.inputWrapper}>
             <Mail size={20} color={COLORS.primary} style={authStyles.icon} />
+            <TextInput
+                placeholder={placeholder}
+                placeholderTextColor="#aaa"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={value}
+                onChangeText={onChangeText}
+                style={authStyles.input}
+            />
+        </View>
+    );
+}
+
+export const ConfirmEmailField = ({ placeholder, value, onChangeText }: { placeholder: string, value: string, onChangeText: (text: string) => void }) => {
+    return (
+        <View style={authStyles.inputWrapper}>
+            <MailCheck size={20} color={COLORS.primary} style={authStyles.icon} />
             <TextInput
                 placeholder={placeholder}
                 placeholderTextColor="#aaa"
