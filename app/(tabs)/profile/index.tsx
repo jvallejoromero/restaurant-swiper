@@ -73,11 +73,12 @@ export default function ProfileScreen() {
     };
 
     const restartSignup = async() => {
-        const auth = getAuth();
-        const fbUser = auth.currentUser;
+        const fbAuth = getAuth();
+        const fbUser = fbAuth.currentUser;
         if (!fbUser) return;
 
         try {
+            await auth.deleteUserData(fbUser.uid);
             await deleteUser(fbUser);
             await auth.signOut();
             router.replace("/profile/auth/signup");

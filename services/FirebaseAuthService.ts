@@ -10,13 +10,13 @@ import {
     getDoc,
     setDoc,
     serverTimestamp,
+    deleteDoc,
 } from "firebase/firestore";
 
 import { AuthService, User } from "./AuthService";
 import { auth, firestore } from "@/firebase";
 
 export class FirebaseAuthService implements AuthService {
-
     async getCurrentUser(): Promise<User | null> {
         return new Promise((resolve, reject) => {
             const unsubscribe = onAuthStateChanged(auth, async fbUser => {
@@ -43,6 +43,28 @@ export class FirebaseAuthService implements AuthService {
                 }
             })
         });
+    }
+
+    async deleteUserData(userId: string): Promise<void> {
+        const userRef = doc(firestore, "users", userId);
+        const snap = await getDoc(userRef);
+        if (!snap.exists()) {
+            throw new Error("User not found");
+        }
+
+        const usernameDoc = doc(firestore, "usernames", snap.data().username);
+        const usernameSnap = await getDoc(usernameDoc);
+        if (!usernameSnap.exists()) {
+            throw new Error(`Could not find username information for user: ${userId}`);
+        }
+
+        try {
+            await deleteDoc(userRef);
+            await deleteDoc(usernameDoc);
+        } catch (error) {
+            console.error("Failed to delete user data for", userId, error);
+            throw new Error("Could not complete user deletion. Please try again.");
+        }
     }
 
     async signUp(email: string, pass: string, username: string): Promise<User> {
