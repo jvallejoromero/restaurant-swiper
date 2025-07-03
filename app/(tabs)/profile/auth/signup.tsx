@@ -76,7 +76,9 @@ export default function SignupScreen() {
                 setErr(msg);
             }
         } finally {
-            setLoading(false);
+            setTimeout(() => {
+                setLoading(false);
+            }, 100);
         }
     };
 

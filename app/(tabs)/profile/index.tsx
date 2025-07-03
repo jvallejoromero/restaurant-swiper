@@ -79,11 +79,11 @@ export default function ProfileScreen() {
 
         try {
             await deleteUser(fbUser);
+            await auth.signOut();
+            router.replace("/profile/auth/signup");
         } catch (err) {
             console.warn("Couldn’t delete unverified user:", err);
         }
-        await auth.signOut();
-        router.replace("/profile/auth/signup");
     }
 
     const EmailVerificationScreen = () => {
