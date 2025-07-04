@@ -47,7 +47,7 @@ const _layout = () => {
                 },
                 sceneStyle: {
                     backgroundColor: COLORS.background_color,
-                }
+                },
             }}
         >
             <Tabs.Screen

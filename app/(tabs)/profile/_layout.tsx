@@ -25,7 +25,11 @@ export default function ProfileLayout() {
     }
 
     return (
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
             <Stack.Screen
                 name="index"
                 options={{ gestureEnabled: false }}

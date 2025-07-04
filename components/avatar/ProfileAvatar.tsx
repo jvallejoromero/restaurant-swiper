@@ -4,7 +4,7 @@ import {IMAGES} from "@/constants/images";
 
 const ProfileAvatar = ({ className }: { className?: string }) => {
     return (
-        <View className={`h-[144] w-[144] rounded-full border-2 border-neutral-800/20 overflow-hidden ${className}`}>
+        <View className={`h-[144] w-[144] rounded-full border border-neutral-800/40 overflow-hidden ${className}`}>
             <Image
                 source={IMAGES.default_avatar}
                 className="h-[165] w-[165] -translate-y-1 self-center"

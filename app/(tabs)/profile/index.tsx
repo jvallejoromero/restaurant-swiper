@@ -135,27 +135,28 @@ export default function ProfileScreen() {
         return (
             <ImageBackground
                 source={IMAGES.profile_header_bg}
-                className="min-h-[250px] w-full items-center justify-center"
+                className="relative min-h-[250px] w-full items-center justify-center"
                 blurRadius={5}
+                fadeDuration={0}
             >
                 <LinearGradient
                     colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.22)']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 0, y: 1 }}
                     style={StyleSheet.absoluteFillObject}
-                >
-                    <View className="items-center justify-center pt-safe">
-                        <TouchableOpacity className="absolute mt-safe top-0 right-8" onPress={() => router.push("/profile/edit-profile")}>
-                            <Ionicons name="create-outline" size={24} color="#fff" />
-                        </TouchableOpacity>
-                        <View className="flex-col gap-2">
-                            <ProfileAvatar />
-                            <Text className="text-white text-center font-semibold text-2xl">
-                                {userProfile?.displayName}
-                            </Text>
-                        </View>
+                />
+                <TouchableOpacity className="absolute mt-safe top-0 right-8" onPress={() => router.push("/profile/edit-profile")}>
+                    <Ionicons name="create-outline" size={24} color="#fff" />
+                </TouchableOpacity>
+
+                <View className="items-center justify-center pt-safe">
+                    <View className="flex-col items-center justify-center gap-2">
+                        <ProfileAvatar />
+                        <Text className="text-white text-center font-semibold text-2xl">
+                            {userProfile?.displayName ?? user?.username}
+                        </Text>
                     </View>
-                </LinearGradient>
+                </View>
             </ImageBackground>
         );
     }

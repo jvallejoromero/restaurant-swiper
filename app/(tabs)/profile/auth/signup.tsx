@@ -53,7 +53,7 @@ export default function SignupScreen() {
                 setErr("Please enter a valid username!\n (only _ and . are allowed as special characters)");
                 return;
             }
-            if (email !== confirmEmail) {
+            if (email.trim() !== confirmEmail.trim()) {
                 setErr("Email addresses must match!");
                 return;
             }

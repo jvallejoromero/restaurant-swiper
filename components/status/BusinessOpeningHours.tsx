@@ -8,6 +8,19 @@ const BusinessOpeningHours = ({ details }: { details: PlaceDetails }) => {
         return null;
     }
 
+    if (!details.opening_hours.weekday_text ) {
+        return (
+            <View className="gap-2">
+                <Subheader text={"Opening Hours"} />
+                <View>
+                    <Text style={{fontSize: 16}}>
+                        We couldn't find any information about this business's opening hours.
+                    </Text>
+                </View>
+            </View>
+        );
+    }
+
     return (
         <View style={{
             gap: 2,
