@@ -114,6 +114,7 @@ export class FirebaseAuthService implements AuthService {
             }
             const profile = snap.data()!;
             uidToUse = profile.uid;
+            console.log("logging in with ", profile.uid);
             emailToUse = profile.email;
         }
 

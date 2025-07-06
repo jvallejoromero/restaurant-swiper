@@ -6,10 +6,13 @@ import {FirebaseAuthService} from "@/services/FirebaseAuthService";
 import {FirebaseDatabaseService} from "@/services/FirebaseDatabaseService";
 import {onAuthStateChanged} from "firebase/auth";
 import {auth} from "@/firebase";
+import { StorageService } from "@/services/StorageService";
+import { FirebaseStorageService } from "@/services/FirebaseStorageService.";
 
 interface ServicesContextProps {
     auth: AuthService;
     database: DatabaseService;
+    storage: StorageService;
     user: User | null;
     userProfile: AppUserProfile | null;
     loading: boolean;
@@ -24,6 +27,7 @@ export const ServicesContext = createContext<ServicesContextProps | null>(null);
 export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) => {
     const authService = new FirebaseAuthService();
     const dbService   = new FirebaseDatabaseService();
+    const storageService = new FirebaseStorageService();
 
     // track the signed-in user & loading state once
     const [user, setUser] = useState<User | null>(null);
@@ -67,7 +71,7 @@ export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) 
 
 
     return (
-        <ServicesContext.Provider value={{ auth: authService, database: dbService, user, userProfile, loading }}>
+        <ServicesContext.Provider value={{ auth: authService, storage: storageService, database: dbService, user, userProfile, loading }}>
             {children}
         </ServicesContext.Provider>
     );

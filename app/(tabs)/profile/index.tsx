@@ -151,7 +151,7 @@ export default function ProfileScreen() {
 
                 <View className="items-center justify-center pt-safe">
                     <View className="flex-col items-center justify-center gap-2">
-                        <ProfileAvatar />
+                        <ProfileAvatar photoUrl={userProfile?.photoURL} userId={user?.uid!} />
                         <Text className="text-white text-center font-semibold text-2xl">
                             {userProfile?.displayName ?? user?.username}
                         </Text>
