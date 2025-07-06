@@ -12,7 +12,7 @@ import GenericLoadingScreen from "@/components/screens/GenericLoadingScreen";
 import GenericButton from "@/components/buttons/GenericButton";
 import TitleText from "@/components/headers/TitleText";
 import {AppUserProfile} from "@/services/DatabaseService";
-import ProfileAvatar from "@/components/avatar/ProfileAvatar";
+import CachedAvatar from "@/components/avatar/CachedAvatar";
 
 export default function ProfileScreen() {
     const { auth, userProfile } = useServices();
@@ -151,7 +151,7 @@ export default function ProfileScreen() {
 
                 <View className="items-center justify-center pt-safe">
                     <View className="flex-col items-center justify-center gap-2">
-                        <ProfileAvatar photoUrl={userProfile?.photoURL} userId={user?.uid!} />
+                        <CachedAvatar photoUrl={userProfile?.photoURL} userId={user?.uid!} />
                         <Text className="text-white text-center font-semibold text-2xl">
                             {userProfile?.displayName ?? user?.username}
                         </Text>

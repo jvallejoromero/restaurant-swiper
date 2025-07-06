@@ -1,4 +1,3 @@
-// context/ServicesContext.tsx
 import React, {createContext, ReactNode, useContext, useEffect, useState} from "react";
 import {AuthService, User} from "@/services/AuthService"
 import {DatabaseService, AppUserProfile} from "@/services/DatabaseService";

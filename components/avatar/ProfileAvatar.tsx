@@ -20,7 +20,6 @@ const ProfileAvatar = ({ className, userId, photoUrl}: ProfileAvatarProps) => {
             </View>
         );
     }
-
     return <CachedAvatar photoUrl={photoUrl} userId={userId} />;
 }
 

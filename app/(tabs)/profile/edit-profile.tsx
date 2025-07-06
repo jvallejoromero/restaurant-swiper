@@ -3,7 +3,6 @@ import {Ionicons} from "@expo/vector-icons";
 import {useRouter} from "expo-router";
 import React from "react";
 import {useServices} from "@/context/ServicesContext";
-import ProfileAvatar from "@/components/avatar/ProfileAvatar";
 import Separator from "@/components/ui/Separator";
 import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import * as ImagePicker from "expo-image-picker";
