@@ -30,7 +30,7 @@ const CachedAvatar = ({ photoUrl, userId, className }: CachedAvatarProps) => {
         <View className={`h-[144] w-[144] rounded-full shadow-neutral-900 border-neutral-800/40 overflow-hidden ${className}`}>
             <Image
                 source={localUri ? { uri: localUri } : IMAGES.default_avatar}
-                className="h-[165] w-[165] -translate-y-1 self-center"
+                className="h-[165] w-[165] self-center"
             />
         </View>
     );
