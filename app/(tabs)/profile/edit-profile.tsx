@@ -71,15 +71,16 @@ export default function EditProfileScreen() {
         });
     }
 
-    const handlePfpOptionPress = (option: string) => {
+    const handlePfpOptionPress = async (option: string) => {
         const pressed = option.replaceAll(" ", "").toLowerCase();
         if (pressed === "choosefromlibrary") {
-            handlePfpChange().then(() => {});
+            await handlePfpChange();
         } else if (pressed === "takeapicture") {
             console.log("change takeapicture");
         } else if (pressed === "deleteprofilepicture") {
             if (!userProfile?.photoURL) return;
-            database.updateUserProfile(user?.uid!, { photoURL: ""}).then(() => {});
+            await database.updateUserProfile(user?.uid!, {photoURL: ""});
+            await storage.deleteProfilePicture(user?.uid!);
         }
     }
 

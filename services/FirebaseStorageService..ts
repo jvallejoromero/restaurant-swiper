@@ -1,5 +1,5 @@
 import { StorageService } from "./StorageService";
-import {getDownloadURL, getStorage, ref, uploadBytes} from "@firebase/storage";
+import {deleteObject, getDownloadURL, getStorage, ref, uploadBytes} from "@firebase/storage";
 import * as ImageManipulator from "expo-image-manipulator";
 
 export class FirebaseStorageService implements StorageService {
@@ -22,5 +22,19 @@ export class FirebaseStorageService implements StorageService {
         });
 
         return getDownloadURL(storageRef);
+    }
+
+    async deleteProfilePicture(uid: string): Promise<void> {
+        const fileUri = `profilePictures/${uid}`;
+        await this.deleteFile(fileUri);
+    }
+
+    async deleteFile(fileUri: string): Promise<void> {
+        const storageRef = ref(this.storage, fileUri);
+        try {
+            await deleteObject(storageRef);
+        } catch (err) {
+            console.error("Failed to delete file", err);
+        }
     }
 }
