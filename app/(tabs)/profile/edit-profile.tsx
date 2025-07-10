@@ -119,21 +119,16 @@ export default function EditProfileScreen() {
 
     const handleTakePicture = async() => {
         if (!user || loading) {
-            console.log("here");
             return;
         }
 
-        console.log("picturee");
-
         const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
         const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
         if (cameraStatus !== "granted" || mediaStatus !== "granted") {
             alert("Camera access is required to take a picture!");
             return;
         }
 
-        console.log("laumching camera");
         const result = await ImagePicker.launchCameraAsync({
             mediaTypes: ["images"],
             allowsEditing: true,
@@ -143,13 +138,10 @@ export default function EditProfileScreen() {
         });
 
         if (result.canceled || result.assets.length === 0) {
-            console.log("no results")
             return;
         }
 
         const { uri } = result.assets[0];
-        console.log("got result", uri);
-
         try {
             const pfpUrl = await storage.uploadProfilePicture(user.uid, uri);
             await database.updateUserProfile(user.uid, { photoURL: pfpUrl });
