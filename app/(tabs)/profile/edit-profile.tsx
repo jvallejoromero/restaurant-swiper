@@ -165,10 +165,13 @@ export default function EditProfileScreen() {
 
     const ProfilePictureOptionsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
         const opacity = useRef(new Animated.Value(0)).current;
-        const scale   = useRef(new Animated.Value(0.8)).current;
+        const scale   = useRef(new Animated.Value(1.0)).current;
 
         useEffect(() => {
             if (isOpen) {
+                opacity.setValue(0);
+                scale.setValue(1.15);
+
                 Animated.timing(opacity, {
                     toValue: 1,
                     duration: 200,
@@ -176,13 +179,13 @@ export default function EditProfileScreen() {
                 }).start();
                 Animated.spring(scale, {
                     toValue: 1,
-                    friction: 10,
+                    friction: 8,
                     tension: 200,
                     useNativeDriver: true,
                 }).start();
             } else {
                 opacity.setValue(0);
-                scale.setValue(0.8);
+                scale.setValue(1);
             }
         }, [isOpen]);
 
@@ -193,8 +196,8 @@ export default function EditProfileScreen() {
                 onRequestClose={onClose}
                 statusBarTranslucent={true}
             >
-                <View className="flex-1">
-                    <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+                <View className="flex-1" pointerEvents={"box-none"}>
+                    <Pressable style={StyleSheet.absoluteFill} onPress={onClose} pointerEvents={"auto"} />
                     <Animated.View
                         style={{
                             opacity,
@@ -220,13 +223,13 @@ export default function EditProfileScreen() {
                                 return (
                                     <TouchableOpacity
                                         key={label}
-                                        className={`flex-row items-center p-3 gap-2 ${
-                                            !isLast && "border-b border-accent-grey/20"
+                                        className={`flex-row items-center p-3  gap-2 
+                                        ${!isLast && "border-b border-accent-grey/20"
                                         }`}
                                         onPress={() => {
                                             onClose();
                                             setTimeout(() => {
-                                                handlePfpOptionPress(label);
+                                                void handlePfpOptionPress(label);
                                             }, 100);
                                         }}
                                     >
