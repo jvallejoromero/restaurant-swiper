@@ -76,7 +76,7 @@ export default function EditProfileScreen() {
         if (pressed === "choosefromlibrary") {
             await handlePfpChange();
         } else if (pressed === "takeapicture") {
-            console.log("change takeapicture");
+            await handleTakePicture();
         } else if (pressed === "deleteprofilepicture") {
             if (!userProfile?.photoURL) return;
             await database.updateUserProfile(user?.uid!, {photoURL: ""});
@@ -109,6 +109,47 @@ export default function EditProfileScreen() {
         }
 
         const { uri } = result.assets[0];
+        try {
+            const pfpUrl = await storage.uploadProfilePicture(user.uid, uri);
+            await database.updateUserProfile(user.uid, { photoURL: pfpUrl });
+        } catch (error) {
+            console.log("Could not upload profile picture", error);
+        }
+    }
+
+    const handleTakePicture = async() => {
+        if (!user || loading) {
+            console.log("here");
+            return;
+        }
+
+        console.log("picturee");
+
+        const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+        const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (cameraStatus !== "granted" || mediaStatus !== "granted") {
+            alert("Camera access is required to take a picture!");
+            return;
+        }
+
+        console.log("laumching camera");
+        const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            aspect: [1,1],
+            quality: 0.7,
+            base64: false,
+        });
+
+        if (result.canceled || result.assets.length === 0) {
+            console.log("no results")
+            return;
+        }
+
+        const { uri } = result.assets[0];
+        console.log("got result", uri);
+
         try {
             const pfpUrl = await storage.uploadProfilePicture(user.uid, uri);
             await database.updateUserProfile(user.uid, { photoURL: pfpUrl });
