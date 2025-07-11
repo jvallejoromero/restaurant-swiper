@@ -68,13 +68,13 @@ export class FirebaseDatabaseService implements DatabaseService {
         return session;
     }
 
-    async joinSession(sessionId: string, userId: string): Promise<void> {
+    async addToSession(sessionId: string, userId: string): Promise<void> {
         const sessionRef = doc(firestore, 'sessions', sessionId);
         await updateDoc(sessionRef, {
             participants: arrayUnion(userId)
         });
     }
-     async leaveSession(sessionId: string, userId: string): Promise<void> {
+     async removeFromSession(sessionId: string, userId: string): Promise<void> {
         const sessionRef = doc(firestore, 'sessions', sessionId);
         await updateDoc(sessionRef, {
             participants: arrayRemove(userId)
