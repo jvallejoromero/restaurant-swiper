@@ -8,8 +8,7 @@ import {useGooglePlacesAPI} from "@/hooks/GooglePlacesAPIHook";
 import GenericErrorScreen from "@/components/screens/GenericErrorScreen";
 import AppLogoHeader from "@/components/headers/AppLogoHeader";
 import SwipeableCard from "@/components/SwipeableCard";
-
-export type PlaceViewType = "restaurant" | "tourist_attraction";
+import { PlaceViewType } from "@/types/Places.types";
 
 interface PlaceViewProps {
     type: PlaceViewType;

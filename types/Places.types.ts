@@ -1,0 +1,1 @@
+export type PlaceViewType = "restaurant" | "tourist_attraction";
