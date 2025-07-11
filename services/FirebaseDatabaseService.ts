@@ -6,7 +6,8 @@ import {
     deleteDoc,
 } from 'firebase/firestore';
 import {firestore} from '@/firebase';
-import {DatabaseService, Swipe, AppUserProfile, Session} from './DatabaseService';
+import {DatabaseService, AppUserProfile, SwipeAction, SwipingSession} from './DatabaseService';
+import {createMockLocation} from "@/utils/LocationUtils";
 
 export class FirebaseDatabaseService implements DatabaseService {
 
@@ -45,10 +46,12 @@ export class FirebaseDatabaseService implements DatabaseService {
         });
     }
 
-    createSession(userId: string): Promise<Session> {
-        const session: Session = {
+    createSession(userId: string): Promise<SwipingSession> {
+        const session = {
             id: "temp",
             participants: [],
+            location: createMockLocation(0,0),
+            places: [],
             createdAt: new Date(),
         };
         return Promise.resolve(session);
@@ -58,12 +61,12 @@ export class FirebaseDatabaseService implements DatabaseService {
         return Promise.resolve(undefined);
     }
 
-    onSessionSwipes(sessionId: string, callback: (swipes: Swipe[]) => void): () => void {
+    onSessionSwipes(sessionId: string, callback: (swipes: SwipeAction[]) => void): () => void {
         return function () {
         };
     }
 
-    recordSwipe(sessionId: string, swipe: Swipe): Promise<void> {
+    recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void> {
         return Promise.resolve(undefined);
     }
 }
