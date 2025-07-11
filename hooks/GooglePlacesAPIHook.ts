@@ -1,7 +1,7 @@
 import {useContext, useEffect, useRef, useState} from "react";
 import {UserLocationContext} from "@/context/UserLocationContext";
 import { fetchPlaces } from "@/utils/GoogleAPIUtils";
-import {PlaceViewType} from "@/components/screens/PlaceView";
+import {PlaceType} from "@/components/screens/PlaceView";
 import {LocationObject} from "expo-location";
 import {createMockLocation, randomizeLocation} from "@/utils/LocationUtils";
 

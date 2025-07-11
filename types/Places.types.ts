@@ -1,4 +1,4 @@
-export type PlaceViewType = "restaurant" | "tourist_attraction";
+export type PlaceType = "restaurant" | "tourist_attraction";
 
 export type Place = {
     id: string;
@@ -11,4 +11,5 @@ export type Place = {
     latitude: number;
     longitude: number;
     distanceFromUser: number;
+    type: PlaceType;
 }
