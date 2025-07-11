@@ -1,6 +1,7 @@
 import {PlaceDetails, PlaceReview} from "@/types/GoogleResponse.types";
 import {haversine} from "@/utils/LocationUtils";
 import {LocationObject} from "expo-location";
+import {Place} from "@/types/Places.types";
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
 

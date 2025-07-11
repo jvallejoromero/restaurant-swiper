@@ -8,7 +8,7 @@ import {useGooglePlacesAPI} from "@/hooks/GooglePlacesAPIHook";
 import GenericErrorScreen from "@/components/screens/GenericErrorScreen";
 import AppLogoHeader from "@/components/headers/AppLogoHeader";
 import SwipeableCard from "@/components/SwipeableCard";
-import { PlaceViewType } from "@/types/Places.types";
+import {Place, PlaceViewType} from "@/types/Places.types";
 
 interface PlaceViewProps {
     type: PlaceViewType;

@@ -4,6 +4,7 @@ import Swiper from "react-native-deck-swiper";
 import PlaceViewCard from "@/components/cards/PlaceViewCard";
 import {IMAGES} from "@/constants/images";
 import {CardActionButtons} from "@/components/buttons/CardActionButtons";
+import { Place } from "@/types/Places.types";
 
 type SwipeableCardProps = {
     places: Place[];
