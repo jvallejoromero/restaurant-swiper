@@ -3,11 +3,13 @@ import {
     getDoc,
     onSnapshot,
     setDoc,
-    deleteDoc,
+    deleteDoc, Timestamp,
 } from 'firebase/firestore';
 import {firestore} from '@/firebase';
 import {DatabaseService, AppUserProfile, SwipeAction, SwipingSession} from './DatabaseService';
 import {createMockLocation} from "@/utils/LocationUtils";
+import {LocationObject} from "expo-location";
+import {uuid} from "expo-modules-core";
 
 export class FirebaseDatabaseService implements DatabaseService {
 
@@ -46,27 +48,34 @@ export class FirebaseDatabaseService implements DatabaseService {
         });
     }
 
-    createSession(userId: string): Promise<SwipingSession> {
+    async createSession(ownerId: string, location: LocationObject): Promise<SwipingSession> {
+        const sessionId = uuid.v4();
+        const sessionRef = doc(firestore, 'sessions', sessionId);
+        const now = Timestamp.now();
+
         const session = {
-            id: "temp",
-            participants: [],
-            location: createMockLocation(0,0),
+            id: sessionId,
+            createdBy: ownerId,
+            location: location,
+            participants: [ownerId],
             places: [],
-            createdAt: new Date(),
+            createdAt: now,
         };
-        return Promise.resolve(session);
+
+        await setDoc(sessionRef, session);
+        return session;
     }
 
-    joinSession(sessionId: string, userId: string): Promise<void> {
+    async joinSession(sessionId: string, userId: string): Promise<void> {
+        return Promise.resolve(undefined);
+    }
+
+    async recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void> {
         return Promise.resolve(undefined);
     }
 
     onSessionSwipes(sessionId: string, callback: (swipes: SwipeAction[]) => void): () => void {
         return function () {
         };
-    }
-
-    recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void> {
-        return Promise.resolve(undefined);
     }
 }
