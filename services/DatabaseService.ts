@@ -27,6 +27,7 @@ export interface AppUserProfile {
 export interface DatabaseService {
     createSession(ownerId: string, location: LocationObject): Promise<SwipingSession>;
     joinSession(sessionId: string, userId: string): Promise<void>;
+    leaveSession(sessionId: string, userId: string): Promise<void>;
     recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void>;
     getUserProfile(uid: string): Promise<AppUserProfile | null>;
     updateUserProfile(uid: string, data: Partial<AppUserProfile>): Promise<void>;

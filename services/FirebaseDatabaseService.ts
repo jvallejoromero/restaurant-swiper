@@ -4,6 +4,8 @@ import {
     onSnapshot,
     setDoc,
     deleteDoc, Timestamp,
+    updateDoc, arrayUnion,
+    arrayRemove,
 } from 'firebase/firestore';
 import {firestore} from '@/firebase';
 import {DatabaseService, AppUserProfile, SwipeAction, SwipingSession} from './DatabaseService';
@@ -67,8 +69,17 @@ export class FirebaseDatabaseService implements DatabaseService {
     }
 
     async joinSession(sessionId: string, userId: string): Promise<void> {
-        return Promise.resolve(undefined);
+        const sessionRef = doc(firestore, 'sessions', sessionId);
+        await updateDoc(sessionRef, {
+            participants: arrayUnion(userId)
+        });
     }
+     async leaveSession(sessionId: string, userId: string): Promise<void> {
+        const sessionRef = doc(firestore, 'sessions', sessionId);
+        await updateDoc(sessionRef, {
+            participants: arrayRemove(userId)
+        });
+     }
 
     async recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void> {
         return Promise.resolve(undefined);
