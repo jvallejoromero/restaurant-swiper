@@ -1,4 +1,4 @@
-import {PlaceDetails, PlaceReview} from "@/utils/GoogleResponseTypes";
+import {PlaceDetails, PlaceReview} from "@/types/GoogleResponse.types";
 import {haversine} from "@/utils/LocationUtils";
 import {LocationObject} from "expo-location";
 

@@ -1,6 +1,6 @@
 import {Image, StyleSheet, Text, View} from "react-native";
 import React from "react";
-import {PlaceReview} from "@/utils/GoogleResponseTypes";
+import {PlaceReview} from "@/types/GoogleResponse.types";
 
 const ReviewCard = ({ review }: { review: PlaceReview }) => {
     return (

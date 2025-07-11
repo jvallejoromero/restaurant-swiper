@@ -1,6 +1,6 @@
 import {StyleSheet, Text, View} from "react-native";
 import React from "react";
-import {BusinessStatus, PlaceOpeningHours} from "@/utils/GoogleResponseTypes";
+import {BusinessStatus, PlaceOpeningHours} from "@/types/GoogleResponse.types";
 import StatusMessage from "./StatusMessage";
 
 

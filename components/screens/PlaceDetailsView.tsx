@@ -1,7 +1,7 @@
 import {Text, View, StyleSheet, TouchableOpacity, ScrollView, Linking} from "react-native";
 import React, { useState, useEffect} from "react"
 import {LinkIcon} from "lucide-react-native";
-import {PlaceDetails} from "@/utils/GoogleResponseTypes";
+import {PlaceDetails} from "@/types/GoogleResponse.types";
 import {fetchPlaceDetails} from "@/utils/GoogleAPIUtils";
 import {ForkAnimation} from "@/components/animations/LoadingAnimations";
 import GenericErrorScreen from "@/components/screens/GenericErrorScreen";

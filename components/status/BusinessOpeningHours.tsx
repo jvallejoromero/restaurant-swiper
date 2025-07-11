@@ -1,6 +1,6 @@
 import {StyleSheet, Text, View} from "react-native";
 import React from "react";
-import {BusinessStatus, PlaceDetails, PlaceOpeningHours} from "@/utils/GoogleResponseTypes";
+import {BusinessStatus, PlaceDetails, PlaceOpeningHours} from "@/types/GoogleResponse.types";
 import Subheader from "@/components/headers/Subheader";
 
 const BusinessOpeningHours = ({ details }: { details: PlaceDetails }) => {
