@@ -5,6 +5,7 @@ import {Timestamp} from "firebase/firestore";
 export interface SwipeAction {
     userId:  string;
     placeId: string;
+    direction: string;
     liked:   boolean;
     swipedAt: Timestamp;
 }

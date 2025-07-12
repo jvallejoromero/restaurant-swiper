@@ -1,15 +1,19 @@
 import {
+    arrayRemove,
+    arrayUnion,
+    collection,
+    deleteDoc,
     doc,
     getDoc,
+    getDocs,
     onSnapshot,
+    query,
     setDoc,
-    deleteDoc, Timestamp,
-    updateDoc, arrayUnion,
-    arrayRemove,
+    Timestamp,
+    updateDoc, where, writeBatch,
 } from 'firebase/firestore';
 import {firestore} from '@/firebase';
-import {DatabaseService, AppUserProfile, SwipeAction, SwipingSession} from './DatabaseService';
-import {createMockLocation} from "@/utils/LocationUtils";
+import {AppUserProfile, DatabaseService, SwipeAction, SwipingSession} from './DatabaseService';
 import {LocationObject} from "expo-location";
 import {uuid} from "expo-modules-core";
 
@@ -79,14 +83,35 @@ export class FirebaseDatabaseService implements DatabaseService {
         await updateDoc(sessionRef, {
             participants: arrayRemove(userId)
         });
+
+         const swipesCol = collection(firestore, 'sessions', sessionId, 'swipes');
+         const q = query(swipesCol, where("userId", "==", userId));
+         const snap = await getDocs(q);
+
+         if (snap.empty) {
+             return;
+         }
+
+         const batch = writeBatch(firestore);
+         snap.docs.forEach(doc => {
+             batch.delete(doc.ref);
+         });
+
+         await batch.commit();
      }
 
     async recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void> {
-        return Promise.resolve(undefined);
+        const swipeRef = doc(firestore, 'sessions', sessionId, 'swipes', `${swipe.userId}_${swipe.placeId}`);
+        await setDoc(swipeRef, swipe);
     }
 
     onSessionSwipes(sessionId: string, callback: (swipes: SwipeAction[]) => void): () => void {
-        return function () {
-        };
+        const swipesCol = collection(firestore, 'sessions', sessionId, 'swipes');
+        return onSnapshot(swipesCol, snap => {
+            const all: SwipeAction[] = snap.docs.map(doc => {
+                return doc.data() as SwipeAction;
+            });
+            callback(all);
+        });
     }
 }
