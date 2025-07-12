@@ -189,7 +189,7 @@ export default function ProfileScreen() {
                 </View>
                 <View className="gap-1">
                     <ChevronButton label={"Settings"} iconName={"settings-outline"} onPress={() => {}} />
-                    <ChevronButton label={"Sessions"} iconName={"rocket-outline"} onPress={() => {}} />
+                    <ChevronButton label={"Sessions"} iconName={"rocket-outline"} onPress={() => {router.push("/profile/swipe-session")}} />
                 </View>
                 <View className="gap-1 mt-12">
                     <CriticalActionButton label={"Log Out"} iconName={"log-out-outline"} onPress={handleSignout} />
