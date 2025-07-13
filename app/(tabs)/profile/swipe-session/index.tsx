@@ -10,12 +10,13 @@ import {
     ScrollView,
     RefreshControl,
 } from "react-native";
-import React from "react";
+import React, {ComponentProps} from "react";
 import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import Separator from "@/components/ui/Separator";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import {CardsSwipeAnimation} from "@/components/animations/LoadingAnimations";
+import {IconProps} from "@expo/vector-icons/build/createIconSet";
 
 type MockData = {
     id: string;
@@ -80,7 +81,7 @@ const renderSession: ListRenderItem<MockData> = ({ item }) => (
     </View>
 );
 
-const BigActionButton = ({ onPress }: { onPress: () => void }) => {
+const BigActionButton = ({ label, iconName, onPress }: { label: string, iconName?: ComponentProps<typeof Feather>["name"], onPress: () => void }) => {
     return (
         <Pressable
             onPress={onPress}
@@ -92,9 +93,9 @@ const BigActionButton = ({ onPress }: { onPress: () => void }) => {
                 end={[1, 1]}
                 style={styles.gradientCard}
             >
-                <Feather name="plus" size={32} color="white" />
+                {iconName && <Feather name={iconName} size={32} color="white" />}
                 <Text className="text-white ml-3 text-xl font-semibold">
-                    Create Session
+                    {label}
                 </Text>
             </LinearGradient>
         </Pressable>
@@ -137,7 +138,7 @@ export default function SessionsScreen() {
                             Ready to swipe your way through the city’s best spots?
                         </Text>
                     </View>
-                    <BigActionButton onPress={handleCreateSession} />
+                    <BigActionButton label={"Create Session"} iconName={"plus"} onPress={handleCreateSession} />
                     <RecentSessions />
                 </View>
             </ScrollView>
