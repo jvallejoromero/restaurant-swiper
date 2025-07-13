@@ -87,17 +87,20 @@ export class FirebaseDatabaseService implements DatabaseService {
             console.error("Could not create swiping session:", error);
             return null;
         }
+        return this.getSession(sessionId);
+    }
 
-        let savedSession;
+    async getSession(sessionId: string): Promise<SwipingSession | null> {
+        const sessionRef = doc(firestore, 'sessions', sessionId);
+        let session;
         try {
             const snap = await getDoc(sessionRef);
-            savedSession = snap.data() as SwipingSession;
+            session = snap.data() as SwipingSession;
         } catch (err) {
             console.error("Could not retrieve session:", err);
             return null;
         }
-
-        return savedSession;
+        return session;
     }
 
     async addToSession(sessionId: string, userId: string): Promise<void> {
