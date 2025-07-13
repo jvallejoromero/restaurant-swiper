@@ -16,6 +16,8 @@ import {AppUserProfile, DatabaseService, SwipeAction, SwipingSession} from './Da
 import {LocationObject} from "expo-location";
 import {uuid} from "expo-modules-core";
 import {Place} from "@/types/Places.types";
+import {PlaceDetails} from "@/types/GoogleResponse.types";
+import { fetchPlaceDetails } from '@/utils/GoogleAPIUtils';
 
 type NewSwipingSession = Omit<SwipingSession, 'createdAt'> & {
     createdAt: FieldValue;
@@ -149,6 +151,26 @@ export class FirebaseDatabaseService implements DatabaseService {
         } catch (err) {
             console.error("Could not add places to session:", err);
         }
+    }
+
+    async getPlaceDetailsForSession(sessionId: string, placeId: string): Promise<PlaceDetails | null> {
+        const detailsRef = doc(firestore, 'sessions', sessionId, 'places', placeId, 'details', 'info');
+        try {
+            const detailsSnap = await getDoc(detailsRef);
+            if (detailsSnap.exists()) {
+                console.log("Retrieved place details from firestore cache");
+                return detailsSnap.data() as PlaceDetails;
+            }
+        } catch (err) {
+            console.log(`Could not find place details for place with id ${placeId} in session with id ${sessionId}`);
+            console.log('Attempting to fetch from Google API..');
+        }
+        const placeData = await fetchPlaceDetails(placeId);
+        if (!placeData) {
+            return null;
+        }
+        await setDoc(detailsRef, placeData);
+        return placeData;
     }
 
     onSessionSwipes(sessionId: string, callback: (swipes: SwipeAction[]) => void): () => void {

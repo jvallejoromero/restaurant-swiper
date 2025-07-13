@@ -1,6 +1,7 @@
 import {Place} from "@/types/Places.types";
 import {LocationObject} from "expo-location";
 import {Timestamp} from "firebase/firestore";
+import {PlaceDetails} from "@/types/GoogleResponse.types";
 
 export interface SwipeAction {
     userId:  string;
@@ -36,6 +37,7 @@ export interface DatabaseService {
     removeUserFromSession(sessionId: string, userId: string): Promise<void>;
     recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void>;
     addPlacesToSession(sessionId: string, places: Place[]): Promise<void>;
+    getPlaceDetailsForSession(sessionId: string, placeId: string): Promise<PlaceDetails | null>;
     getUserProfile(uid: string): Promise<AppUserProfile | null>;
     updateUserProfile(uid: string, data: Partial<AppUserProfile>): Promise<void>;
     updateUsernameDoc(userId: string, oldUsername: string, newUsername: string, email: string): Promise<void>;
