@@ -137,6 +137,20 @@ export class FirebaseDatabaseService implements DatabaseService {
         await setDoc(swipeRef, swipe);
     }
 
+    async addPlacesToSession(sessionId: string, places: Place[]): Promise<void> {
+        const batch = writeBatch(firestore);
+        for (const place of places) {
+            const placeRef = doc(firestore, 'sessions', sessionId, 'places', place.id);
+            batch.set(placeRef, place);
+        }
+        try {
+            await batch.commit();
+            console.log(`Successfully wrote ${places.length} place(s)`);
+        } catch (err) {
+            console.error("Could not add places to session:", err);
+        }
+    }
+
     onSessionSwipes(sessionId: string, callback: (swipes: SwipeAction[]) => void): () => void {
         const swipesCol = collection(firestore, 'sessions', sessionId, 'swipes');
         return onSnapshot(swipesCol, snap => {

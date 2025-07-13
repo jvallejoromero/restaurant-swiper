@@ -35,6 +35,7 @@ export interface DatabaseService {
     addUserToSession(sessionId: string, userId: string): Promise<void>;
     removeUserFromSession(sessionId: string, userId: string): Promise<void>;
     recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void>;
+    addPlacesToSession(sessionId: string, places: Place[]): Promise<void>;
     getUserProfile(uid: string): Promise<AppUserProfile | null>;
     updateUserProfile(uid: string, data: Partial<AppUserProfile>): Promise<void>;
     updateUsernameDoc(userId: string, oldUsername: string, newUsername: string, email: string): Promise<void>;
