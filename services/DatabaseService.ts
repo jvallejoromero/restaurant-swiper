@@ -17,6 +17,10 @@ export interface SwipingSession {
     location: LocationObject;
     participants: string[];
     places: Place[];
+    title?: string;
+    description?: string;
+    radius?: number;
+    filters?: string[];
 }
 
 export interface AppUserProfile {
@@ -26,7 +30,7 @@ export interface AppUserProfile {
 }
 
 export interface DatabaseService {
-    createSession(ownerId: string, location: LocationObject): Promise<SwipingSession>;
+    createSession(ownerId: string, title: string, description: string, radius: number, filters: string[], location: LocationObject): Promise<SwipingSession>;
     addToSession(sessionId: string, userId: string): Promise<void>;
     removeFromSession(sessionId: string, userId: string): Promise<void>;
     recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void>;

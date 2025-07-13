@@ -10,13 +10,14 @@ import {
     ScrollView,
     RefreshControl,
 } from "react-native";
-import React, {ComponentProps} from "react";
+import React, {ComponentProps, useCallback, useRef, useState} from "react";
 import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import Separator from "@/components/ui/Separator";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import {CardsSwipeAnimation} from "@/components/animations/LoadingAnimations";
-import {IconProps} from "@expo/vector-icons/build/createIconSet";
+import BottomSheet from "@gorhom/bottom-sheet";
+import CreateSessionSheet, { CreateSessionOptions } from "@/components/screens/session/CreateSessionSheet";
 
 type MockData = {
     id: string;
@@ -103,6 +104,21 @@ const BigActionButton = ({ label, iconName, onPress }: { label: string, iconName
 }
 
 export default function SessionsScreen() {
+    const sheetRef = useRef<BottomSheet>(null);
+
+    const openBottomSheet = useCallback(() => {
+        sheetRef.current?.expand();
+    }, []);
+
+    const handleCreateSession = (selectedOptions: CreateSessionOptions) => {
+        sheetRef.current?.close();
+        console.log("Create Session");
+        console.log("title", selectedOptions.title);
+        console.log("description", selectedOptions.description);
+        console.log("radius", selectedOptions.radius);
+        console.log("filters", selectedOptions.filters);
+    }
+
     const RecentSessions = () => {
         return (
             <View>
@@ -116,14 +132,10 @@ export default function SessionsScreen() {
                     snapToInterval={ (192) }
                     decelerationRate="fast"
                     keyExtractor={(_, i) => i.toString()}
-                    renderItem={() => <OutlineCard onPress={handleCreateSession} />}
+                    renderItem={() => <OutlineCard onPress={openBottomSheet} />}
                 />
             </View>
         );
-    }
-
-    const handleCreateSession = () => {
-        console.log("Create Session");
     }
 
     return (
@@ -138,10 +150,14 @@ export default function SessionsScreen() {
                             Ready to swipe your way through the city’s best spots?
                         </Text>
                     </View>
-                    <BigActionButton label={"Create Session"} iconName={"plus"} onPress={handleCreateSession} />
+                    <BigActionButton label={"Create Session"} iconName={"plus"} onPress={openBottomSheet} />
                     <RecentSessions />
                 </View>
             </ScrollView>
+            <CreateSessionSheet
+                sheetRef={sheetRef}
+                onCreate={handleCreateSession}
+            />
         </SafeAreaView>
     );
 }

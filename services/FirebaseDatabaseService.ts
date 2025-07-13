@@ -54,7 +54,12 @@ export class FirebaseDatabaseService implements DatabaseService {
         });
     }
 
-    async createSession(ownerId: string, location: LocationObject): Promise<SwipingSession> {
+    async createSession(ownerId: string,
+                        title: string,
+                        description: string,
+                        radius: number,
+                        filters: string[],
+                        location: LocationObject): Promise<SwipingSession> {
         const sessionId = uuid.v4();
         const sessionRef = doc(firestore, 'sessions', sessionId);
         const now = Timestamp.now();
@@ -62,10 +67,14 @@ export class FirebaseDatabaseService implements DatabaseService {
         const session = {
             id: sessionId,
             createdBy: ownerId,
+            createdAt: now,
+            title: title,
+            description: description,
+            radius: radius,
+            filters: filters,
             location: location,
             participants: [ownerId],
             places: [],
-            createdAt: now,
         };
 
         await setDoc(sessionRef, session);
