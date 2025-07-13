@@ -4,6 +4,7 @@ import {IMAGES} from "@/constants/images";
 import {LinearGradient} from "expo-linear-gradient";
 import {COLORS} from "@/constants/colors";
 import ShineText from "@/components/text/ShineText";
+import {Place} from "@/types/Places.types";
 
 type CardSkeletonProps = {
     imageSrc: ImageSourcePropType | string;

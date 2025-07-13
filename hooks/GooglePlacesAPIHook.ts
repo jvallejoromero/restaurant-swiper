@@ -1,9 +1,9 @@
 import {useContext, useEffect, useRef, useState} from "react";
 import {UserLocationContext} from "@/context/UserLocationContext";
 import { fetchPlaces } from "@/utils/GoogleAPIUtils";
-import {PlaceType} from "@/components/screens/PlaceView";
 import {LocationObject} from "expo-location";
 import {createMockLocation, randomizeLocation} from "@/utils/LocationUtils";
+import {Place, PlaceType} from "@/types/Places.types";
 
 
 const shuffleArray = (array: Place[]) => {
@@ -15,7 +15,7 @@ const shuffleArray = (array: Place[]) => {
 };
 
 
-export function useGooglePlacesAPI(type: PlaceViewType, pagination: boolean = true) {
+export function useGooglePlacesAPI(type: PlaceType, pagination: boolean = true) {
     // const { userLocation } = useContext(UserLocationContext);
     const userLocation = createMockLocation(0,0);
 
