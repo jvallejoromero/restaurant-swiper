@@ -27,7 +27,7 @@ export interface SwipingSession {
 export interface AppUserProfile {
     displayName?: string;
     photoURL?: string;
-    activeSessionId?: string;
+    activeSessionId?: string | null;
     username: string;
 }
 

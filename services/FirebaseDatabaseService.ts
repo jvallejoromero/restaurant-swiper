@@ -89,6 +89,7 @@ export class FirebaseDatabaseService implements DatabaseService {
             console.error("Could not create swiping session:", error);
             return null;
         }
+
         return this.getSession(sessionId);
     }
 
@@ -109,6 +110,9 @@ export class FirebaseDatabaseService implements DatabaseService {
         const sessionRef = doc(firestore, 'sessions', sessionId);
         await updateDoc(sessionRef, {
             participants: arrayUnion(userId)
+        });
+        await this.updateUserProfile(userId, {
+            activeSessionId: sessionId,
         });
     }
 
@@ -132,6 +136,10 @@ export class FirebaseDatabaseService implements DatabaseService {
          });
 
          await batch.commit();
+
+         await this.updateUserProfile(userId, {
+             activeSessionId: null,
+         });
     }
 
     async recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void> {
