@@ -32,8 +32,8 @@ export interface AppUserProfile {
 export interface DatabaseService {
     createSession(ownerId: string, title: string, description: string, radius: number, filters: string[], places: Place[], location: LocationObject): Promise<SwipingSession | null>;
     getSession(sessionId: string): Promise<SwipingSession | null>;
-    addToSession(sessionId: string, userId: string): Promise<void>;
-    removeFromSession(sessionId: string, userId: string): Promise<void>;
+    addUserToSession(sessionId: string, userId: string): Promise<void>;
+    removeUserFromSession(sessionId: string, userId: string): Promise<void>;
     recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void>;
     getUserProfile(uid: string): Promise<AppUserProfile | null>;
     updateUserProfile(uid: string, data: Partial<AppUserProfile>): Promise<void>;

@@ -103,13 +103,14 @@ export class FirebaseDatabaseService implements DatabaseService {
         return session;
     }
 
-    async addToSession(sessionId: string, userId: string): Promise<void> {
+    async addUserToSession(sessionId: string, userId: string): Promise<void> {
         const sessionRef = doc(firestore, 'sessions', sessionId);
         await updateDoc(sessionRef, {
             participants: arrayUnion(userId)
         });
     }
-     async removeFromSession(sessionId: string, userId: string): Promise<void> {
+
+    async removeUserFromSession(sessionId: string, userId: string): Promise<void> {
         const sessionRef = doc(firestore, 'sessions', sessionId);
         await updateDoc(sessionRef, {
             participants: arrayRemove(userId)
@@ -129,7 +130,7 @@ export class FirebaseDatabaseService implements DatabaseService {
          });
 
          await batch.commit();
-     }
+    }
 
     async recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void> {
         const swipeRef = doc(firestore, 'sessions', sessionId, 'swipes', `${swipe.userId}_${swipe.placeId}`);

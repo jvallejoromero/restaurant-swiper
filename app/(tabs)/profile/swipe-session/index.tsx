@@ -125,7 +125,7 @@ export default function SessionsScreen() {
             return;
         }
         sheetRef.current?.close();
-        console.log("Created new session with id", session.id, session.createdAt.toDate());
+        console.log("Created new session with id", session.id, session.createdAt.toDate().toLocaleString());
     }
 
     const RecentSessions = () => {
