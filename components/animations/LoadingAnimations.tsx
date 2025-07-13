@@ -15,3 +15,18 @@ export const ForkAnimation = () => {
         </View>
     );
 }
+
+export const CardsSwipeAnimation = ({ width = 200, height = 200 }: { width?: number, height?: number }) => {
+    const animationPath = require('../../assets/animations/cards-animation-red.json');
+
+    return (
+        <View className="flex-1 justify-center items-center">
+            <LottieView
+                source={animationPath}
+                autoPlay
+                loop
+                style={{ width: width, height: height }}
+            />
+        </View>
+    );
+}
