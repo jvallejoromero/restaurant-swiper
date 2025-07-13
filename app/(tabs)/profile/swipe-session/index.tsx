@@ -19,6 +19,7 @@ import {CardsSwipeAnimation} from "@/components/animations/LoadingAnimations";
 import BottomSheet from "@gorhom/bottom-sheet";
 import CreateSessionSheet, { CreateSessionOptions } from "@/components/screens/session/CreateSessionSheet";
 import {useServices} from "@/context/ServicesContext";
+import {Place} from "@/types/Places.types";
 
 type MockData = {
     id: string;
@@ -117,7 +118,8 @@ export default function SessionsScreen() {
     }, []);
 
     const handleCreateSession = async({title, description, radius, filters, location} : CreateSessionOptions) => {
-        const session = await database.createSession(user.uid, title, description, radius, filters, location);
+        const places: Place[] = [];
+        const session = await database.createSession(user.uid, title, description, radius, filters, places, location);
         if (!session) {
             //TODO: alert user that session creation failed
             return;

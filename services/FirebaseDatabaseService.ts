@@ -15,6 +15,7 @@ import {firestore} from '@/firebase';
 import {AppUserProfile, DatabaseService, SwipeAction, SwipingSession} from './DatabaseService';
 import {LocationObject} from "expo-location";
 import {uuid} from "expo-modules-core";
+import {Place} from "@/types/Places.types";
 
 type NewSwipingSession = Omit<SwipingSession, 'createdAt'> & {
     createdAt: FieldValue;
@@ -62,6 +63,7 @@ export class FirebaseDatabaseService implements DatabaseService {
                         description: string,
                         radius: number,
                         filters: string[],
+                        places: Place[],
                         location: LocationObject): Promise<SwipingSession | null> {
         const sessionId = uuid.v4();
         const sessionRef = doc(firestore, 'sessions', sessionId);
@@ -76,7 +78,7 @@ export class FirebaseDatabaseService implements DatabaseService {
             filters: filters,
             location: location,
             participants: [ownerId],
-            places: [],
+            places: places,
         };
 
         try {
