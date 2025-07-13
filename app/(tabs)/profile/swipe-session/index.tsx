@@ -8,7 +8,7 @@ import {
     ListRenderItem,
     StyleSheet,
     ScrollView,
-    RefreshControl
+    RefreshControl,
 } from "react-native";
 import React from "react";
 import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
@@ -45,75 +45,100 @@ const mockSessions: MockData[] = [
     },
 ];
 
-export default function SessionsScreen() {
+const OutlineCard = ({ onPress }: { onPress?: () => void }) => (
+    <Pressable
+        className="w-48 h-64 mr-4 my-2 rounded-lg border-2 border-dashed border-accent-grey/50 items-center justify-center"
+        onPress={onPress}
+    >
+        <Feather name="plus" size={32} color="#555" />
+        <Text className="text-accent-grey mt-2">Create Session</Text>
+    </Pressable>
+);
 
-    const renderSession: ListRenderItem<MockData> = ({ item }) => (
-        <View className="w-48 h-64 mr-4 my-2 rounded-lg shadow shadow-black/30">
-            <View className="flex-1 bg-white rounded-lg overflow-hidden">
-                <Image
-                    source={{ uri: item.coverImageUrl }}
-                    className="h-32 w-full"
-                    resizeMode="cover"
-                />
-                <View className="p-4 flex-1 justify-between">
-                    <Text className="text-accent-grey font-semibold text-lg">
-                        {item.title}
-                    </Text>
-                    <Text className="text-accent-grey text-sm">
-                        {item.updatedAt.toLocaleDateString()}
-                        {" "}
-                        {item.updatedAt.toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                        })}
-                    </Text>
-                </View>
+const renderSession: ListRenderItem<MockData> = ({ item }) => (
+    <View className="w-48 h-64 mr-4 my-2 rounded-lg shadow shadow-black/30">
+        <View className="flex-1 bg-white rounded-lg overflow-hidden">
+            <Image
+                source={{ uri: item.coverImageUrl }}
+                className="h-32 w-full"
+                resizeMode="cover"
+            />
+            <View className="p-4 flex-1 justify-between">
+                <Text className="text-accent-grey font-semibold text-lg">
+                    {item.title}
+                </Text>
+                <Text className="text-accent-grey text-sm">
+                    {item.updatedAt.toLocaleDateString()}
+                    {" "}
+                    {item.updatedAt.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    })}
+                </Text>
             </View>
         </View>
+    </View>
+);
+
+const BigActionButton = ({ onPress }: { onPress: () => void }) => {
+    return (
+        <Pressable
+            onPress={onPress}
+            className="w-full h-28 rounded-2xl overflow-hidden"
+        >
+            <LinearGradient
+                colors={["#d52e4c", "#e53946", "#e53946", "#b71c1c"]}
+                start={[0, 0]}
+                end={[1, 1]}
+                style={styles.gradientCard}
+            >
+                <Feather name="plus" size={32} color="white" />
+                <Text className="text-white ml-3 text-xl font-semibold">
+                    Create Session
+                </Text>
+            </LinearGradient>
+        </Pressable>
     );
+}
+
+export default function SessionsScreen() {
+    const RecentSessions = () => {
+        return (
+            <View>
+                <Text className="text-black font-medium">
+                    Recent Sessions
+                </Text>
+                <FlatList
+                    data={[1, 2, 3]}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    snapToInterval={ (192) }
+                    decelerationRate="fast"
+                    keyExtractor={(_, i) => i.toString()}
+                    renderItem={() => <OutlineCard onPress={handleCreateSession} />}
+                />
+            </View>
+        );
+    }
+
+    const handleCreateSession = () => {
+        console.log("Create Session");
+    }
 
     return (
         <SafeAreaView className="relative flex-1 bg-background">
             <BackNavigationHeader label="Sessions" />
             <Separator className="mt-4 mx-6" />
             <ScrollView refreshControl={<RefreshControl refreshing={false} onRefresh={()=>{console.log("Refreshing...")}} />}>
-                <View className="px-6 gap-4">
+                <View className="px-6 pb-12 gap-4">
                     <View>
                         <CardsSwipeAnimation width={250} height={250} />
                         <Text className="text-center font-semibold text-lg text-accent-grey">
                             Ready to swipe your way through the city’s best spots?
                         </Text>
                     </View>
-                    <Pressable
-                        onPress={() => {}}
-                        className="w-full h-28 rounded-2xl overflow-hidden"
-                    >
-                        <LinearGradient
-                            colors={["#d52e4c", "#e53946", "#e53946", "#b71c1c"]}
-                            start={[0, 0]}
-                            end={[1, 1]}
-                            style={styles.gradientCard}
-                        >
-                            <Feather name="plus" size={32} color="white" />
-                            <Text className="text-white ml-3 text-xl font-semibold">
-                                Create Session
-                            </Text>
-                        </LinearGradient>
-                    </Pressable>
-                    <View>
-                        <Text className="text-black font-medium">
-                            Recent Sessions
-                        </Text>
-                        <FlatList<MockData>
-                            data={mockSessions}
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            snapToInterval={ (192) }
-                            decelerationRate="fast"
-                            keyExtractor={(item) => item.id}
-                            renderItem={renderSession}
-                        />
-                    </View>
+                    <BigActionButton onPress={handleCreateSession} />
+                    <RecentSessions />
                 </View>
             </ScrollView>
         </SafeAreaView>
