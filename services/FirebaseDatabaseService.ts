@@ -3,19 +3,22 @@ import {
     arrayUnion,
     collection,
     deleteDoc,
-    doc,
+    doc, FieldValue,
     getDoc,
     getDocs,
     onSnapshot,
-    query,
+    query, serverTimestamp,
     setDoc,
-    Timestamp,
     updateDoc, where, writeBatch,
 } from 'firebase/firestore';
 import {firestore} from '@/firebase';
 import {AppUserProfile, DatabaseService, SwipeAction, SwipingSession} from './DatabaseService';
 import {LocationObject} from "expo-location";
 import {uuid} from "expo-modules-core";
+
+type NewSwipingSession = Omit<SwipingSession, 'createdAt'> & {
+    createdAt: FieldValue;
+};
 
 export class FirebaseDatabaseService implements DatabaseService {
 
@@ -59,15 +62,14 @@ export class FirebaseDatabaseService implements DatabaseService {
                         description: string,
                         radius: number,
                         filters: string[],
-                        location: LocationObject): Promise<SwipingSession> {
+                        location: LocationObject): Promise<SwipingSession | null> {
         const sessionId = uuid.v4();
         const sessionRef = doc(firestore, 'sessions', sessionId);
-        const now = Timestamp.now();
 
-        const session = {
+        const session: NewSwipingSession = {
             id: sessionId,
             createdBy: ownerId,
-            createdAt: now,
+            createdAt: serverTimestamp(),
             title: title,
             description: description,
             radius: radius,
@@ -77,8 +79,23 @@ export class FirebaseDatabaseService implements DatabaseService {
             places: [],
         };
 
-        await setDoc(sessionRef, session);
-        return session;
+        try {
+            await setDoc(sessionRef, session);
+        } catch (error) {
+            console.error("Could not create swiping session:", error);
+            return null;
+        }
+
+        let savedSession;
+        try {
+            const snap = await getDoc(sessionRef);
+            savedSession = snap.data() as SwipingSession;
+        } catch (err) {
+            console.error("Could not retrieve session:", err);
+            return null;
+        }
+
+        return savedSession;
     }
 
     async addToSession(sessionId: string, userId: string): Promise<void> {

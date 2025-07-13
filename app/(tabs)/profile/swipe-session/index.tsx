@@ -18,6 +18,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import {CardsSwipeAnimation} from "@/components/animations/LoadingAnimations";
 import BottomSheet from "@gorhom/bottom-sheet";
 import CreateSessionSheet, { CreateSessionOptions } from "@/components/screens/session/CreateSessionSheet";
+import {useServices} from "@/context/ServicesContext";
 
 type MockData = {
     id: string;
@@ -105,18 +106,24 @@ const BigActionButton = ({ label, iconName, onPress }: { label: string, iconName
 
 export default function SessionsScreen() {
     const sheetRef = useRef<BottomSheet>(null);
+    const { loading, user, database } = useServices();
+
+    if (loading || !user) {
+        return null;
+    }
 
     const openBottomSheet = useCallback(() => {
         sheetRef.current?.expand();
     }, []);
 
-    const handleCreateSession = (selectedOptions: CreateSessionOptions) => {
+    const handleCreateSession = async({title, description, radius, filters, location} : CreateSessionOptions) => {
+        const session = await database.createSession(user.uid, title, description, radius, filters, location);
+        if (!session) {
+            //TODO: alert user that session creation failed
+            return;
+        }
         sheetRef.current?.close();
-        console.log("Create Session");
-        console.log("title", selectedOptions.title);
-        console.log("description", selectedOptions.description);
-        console.log("radius", selectedOptions.radius);
-        console.log("filters", selectedOptions.filters);
+        console.log("Created new session with id", session.id, session.createdAt.toDate());
     }
 
     const RecentSessions = () => {

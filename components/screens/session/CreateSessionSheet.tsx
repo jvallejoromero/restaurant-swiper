@@ -12,6 +12,7 @@ export type CreateSessionOptions = {
     description: string;
     radius: number;
     filters: string[];
+    location: LocationObject;
 }
 
 type CreateSessionSheetProps = {
@@ -74,22 +75,22 @@ export default function CreateSessionSheet({ sheetRef, index, onChange, onCreate
         })();
     }, [fetchingLocation, userLocation]);
 
-    const handleCreatePress = () => {
-        onCreate({ title, description, radius, filters });
-    }
-
-    const toggleFilter = (f: string) => {
-        setFilters((curr) =>
-            curr.includes(f) ? curr.filter((x) => x !== f) : [...curr, f]
-        );
-    }
-
     if (fetchingLocation) {
         return null;
     }
 
     if (!userLocation) {
         return null;
+    }
+
+    const handleCreatePress = () => {
+        onCreate({ title, description, radius, filters, location: userLocation });
+    }
+
+    const toggleFilter = (f: string) => {
+        setFilters((curr) =>
+            curr.includes(f) ? curr.filter((x) => x !== f) : [...curr, f]
+        );
     }
 
     const FilterOptions = () => {
