@@ -20,6 +20,7 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import CreateSessionSheet, { CreateSessionOptions } from "@/components/screens/session/CreateSessionSheet";
 import {useServices} from "@/context/ServicesContext";
 import {Place} from "@/types/Places.types";
+import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
 
 type MockData = {
     id: string;
@@ -84,14 +85,14 @@ const renderSession: ListRenderItem<MockData> = ({ item }) => (
     </View>
 );
 
-const BigActionButton = ({ label, iconName, onPress }: { label: string, iconName?: ComponentProps<typeof Feather>["name"], onPress: () => void }) => {
+const BigActionButton = ({ label, iconName, active=false, onPress }: { label: string, active?: boolean, iconName?: ComponentProps<typeof Feather>["name"], onPress: () => void }) => {
     return (
         <Pressable
             onPress={onPress}
             className="w-full h-28 rounded-2xl overflow-hidden"
         >
             <LinearGradient
-                colors={["#d52e4c", "#e53946", "#e53946", "#b71c1c"]}
+                colors={active ? ["#4CAF50", "#66BB6A", "#81C784"] : ["#d52e4c", "#e53946", "#e53946", "#b71c1c"]}
                 start={[0, 0]}
                 end={[1, 1]}
                 style={styles.gradientCard}
@@ -108,7 +109,9 @@ const BigActionButton = ({ label, iconName, onPress }: { label: string, iconName
 export default function SessionsScreen() {
     const sheetRef = useRef<BottomSheet>(null);
     const [loadingSession, setLoadingSession] = useState<boolean>(false);
+
     const { loading, user, database } = useServices();
+    const { activeSession } = useActiveSwipingSession();
 
     if (loading || !user) {
         return null;
@@ -137,7 +140,7 @@ export default function SessionsScreen() {
         return (
             <View>
                 <Text className="text-black font-medium">
-                    Recent Sessions
+                    Recent Sessions {activeSession && "(1 in progress)"}
                 </Text>
                 <FlatList
                     data={[1, 2, 3]}
@@ -164,7 +167,11 @@ export default function SessionsScreen() {
                             Ready to swipe your way through the city’s best spots?
                         </Text>
                     </View>
-                    <BigActionButton label={"Create Session"} iconName={"plus"} onPress={openBottomSheet} />
+                    {activeSession !== null ? (
+                        <BigActionButton label={"Tap to view current session"} active={true} onPress={openBottomSheet} />
+                    ) : (
+                        <BigActionButton label={"Create Session"} iconName={"plus"} onPress={openBottomSheet} />
+                    )}
                     <RecentSessions />
                 </View>
             </ScrollView>
