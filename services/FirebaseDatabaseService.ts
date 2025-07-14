@@ -269,7 +269,7 @@ export class FirebaseDatabaseService implements DatabaseService {
     onParticipantUpdates(sessionId: string, callback: (participants: SessionParticipant[]) => void) {
         const participantsCol = collection(firestore, 'sessions', sessionId, 'participants');
         return onSnapshot(participantsCol, snap => {
-            const list = snap.docs.map(doc => {
+            const list: SessionParticipant[] = snap.docs.map(doc => {
                 const data = doc.data();
                 return {
                     id: doc.id,

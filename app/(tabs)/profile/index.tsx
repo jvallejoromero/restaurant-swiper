@@ -22,12 +22,12 @@ export default function ProfileScreen() {
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState<User | null>(null);
 
-    const { activeSession } = useActiveSwipingSession();
+    const { activeSession, participants } = useActiveSwipingSession();
 
     useEffect(() => {
         console.log("active session:", activeSession);
-        console.log('participants', activeSession?.participantCount);
-    }, [activeSession]);
+        console.log('participants', participants);
+    }, [activeSession, participants]);
 
     useEffect(() => {
         (async () => {

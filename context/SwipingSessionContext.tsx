@@ -4,25 +4,37 @@ import {useServices} from "@/context/ServicesContext";
 
 type SwipingSessionContextProps = {
     activeSession: SwipingSession | null;
+    participants: SessionParticipant[];
 }
-export const SwipingSessionContext = createContext<SwipingSessionContextProps>({ activeSession: null });
+export const SwipingSessionContext = createContext<SwipingSessionContextProps>({ activeSession: null, participants: [] });
 export function SwipingSessionProvider({ children }: { children: ReactNode }) {
     const [activeSession, setActiveSession] = useState<SwipingSession | null>(null);
+    const [participants, setParticipants] = useState<SessionParticipant[]>([]);
+
     const { database, userProfile } = useServices();
 
     useEffect(() => {
-        (async() => {
-            if (!userProfile || !userProfile.activeSessionId) {
-                setActiveSession(null);
-                return;
-            }
-            const session = await database.getSession(userProfile.activeSessionId);
+        if (!userProfile || !userProfile.activeSessionId) {
+            setActiveSession(null);
+            setParticipants([]);
+            return;
+        }
+
+        let unsub: (() => void) | undefined;
+        database.getSession(userProfile.activeSessionId).then((session) => {
             setActiveSession(session);
-        })();
-    }, [userProfile?.activeSessionId]);
+            if (session) {
+                unsub = database.onParticipantUpdates(session.id, setParticipants);
+            }
+        });
+
+        return () => {
+            unsub && unsub();
+        }
+    }, [database, userProfile?.activeSessionId]);
 
     return (
-        <SwipingSessionContext.Provider value={{ activeSession }} >
+        <SwipingSessionContext.Provider value={{ activeSession, participants }} >
             {children}
         </SwipingSessionContext.Provider>
     );
