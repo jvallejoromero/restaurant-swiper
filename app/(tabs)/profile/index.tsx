@@ -13,7 +13,6 @@ import GenericButton from "@/components/buttons/GenericButton";
 import TitleText from "@/components/headers/TitleText";
 import {AppUserProfile} from "@/services/DatabaseService";
 import CachedAvatar from "@/components/avatar/CachedAvatar";
-import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
 
 export default function ProfileScreen() {
     const { auth, userProfile } = useServices();
@@ -21,13 +20,6 @@ export default function ProfileScreen() {
     const [initializing, setInitializing] = useState(true);
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState<User | null>(null);
-
-    const { activeSession, participants } = useActiveSwipingSession();
-
-    useEffect(() => {
-        console.log("active session:", activeSession);
-        console.log('participants', participants);
-    }, [activeSession, participants]);
 
     useEffect(() => {
         (async () => {

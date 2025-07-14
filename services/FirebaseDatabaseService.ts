@@ -16,7 +16,6 @@ import {Place} from "@/types/Places.types";
 import {PlaceDetails} from "@/types/GoogleResponse.types";
 import { fetchPlaceDetails } from '@/utils/GoogleAPIUtils';
 import {increment, Timestamp} from "@firebase/firestore";
-import {Time} from "lightningcss";
 
 type NewSwipingSession = Omit<SwipingSession, 'createdAt'> & {
     createdAt: FieldValue;
