@@ -1,7 +1,7 @@
 import BottomSheet, {BottomSheetScrollView} from "@gorhom/bottom-sheet";
 import React, {useContext, useEffect, useMemo, useState} from "react";
 import {UserLocationContext} from "@/context/UserLocationContext";
-import {Pressable, StyleSheet, Text, TextInput, View} from "react-native";
+import {ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import Slider from "@react-native-community/slider";
 import MapView, {Marker} from "react-native-maps";
 import { LocationObject } from "expo-location";
@@ -17,6 +17,7 @@ export type CreateSessionOptions = {
 }
 
 type CreateSessionSheetProps = {
+    loading: boolean;
     sheetRef: React.RefObject<BottomSheet | null>;
     index?: number;
     onChange?: (index: number) => void;
@@ -48,7 +49,7 @@ const LocationMap = ({ title, location }: {title: string, location: LocationObje
 const snapPoints = useMemo(() => ["10%", "20%", "50%", "90%"], []);
 const availableFilters = ["coming-soon"];
 
-export default function CreateSessionSheet({ sheetRef, index, onChange, onCreate }: CreateSessionSheetProps) {
+export default function CreateSessionSheet({ loading, sheetRef, index, onChange, onCreate }: CreateSessionSheetProps) {
     const [title, setTitle] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [radius, setRadius] = useState<number>(10_000);
@@ -182,7 +183,11 @@ export default function CreateSessionSheet({ sheetRef, index, onChange, onCreate
                         onPress={handleCreatePress}
                         className="bg-primary py-4 rounded-lg items-center"
                     >
-                        <Text className="text-white text-lg font-semibold">Create Session 🚀</Text>
+                        {loading ? (
+                            <ActivityIndicator size={22} color={"white"} />
+                        ) : (
+                            <Text className="text-white text-lg font-semibold">Create Session 🚀</Text>
+                        )}
                     </Pressable>
                 </View>
             </BottomSheetScrollView>

@@ -107,6 +107,7 @@ const BigActionButton = ({ label, iconName, onPress }: { label: string, iconName
 
 export default function SessionsScreen() {
     const sheetRef = useRef<BottomSheet>(null);
+    const [loadingSession, setLoadingSession] = useState<boolean>(false);
     const { loading, user, database } = useServices();
 
     if (loading || !user) {
@@ -120,13 +121,14 @@ export default function SessionsScreen() {
     const handleCreateSession = async({title, description, radius, filters, participants, location} : CreateSessionOptions) => {
         const places: Place[] = [];
         const allParticipants = [...participants, user.uid];
-        console.log("using participants", participants);
-        console.log("all participants", allParticipants);
+        setLoadingSession(true);
         const session = await database.createSession(user.uid, title, description, radius, filters, places, allParticipants, location);
         if (!session) {
             //TODO: alert user that session creation failed
+            setLoadingSession(false);
             return;
         }
+        setLoadingSession(false);
         sheetRef.current?.close();
         console.log("Created new session with id", session.id, session.createdAt.toDate().toLocaleString());
     }
@@ -167,6 +169,7 @@ export default function SessionsScreen() {
                 </View>
             </ScrollView>
             <CreateSessionSheet
+                loading={loadingSession}
                 sheetRef={sheetRef}
                 onCreate={handleCreateSession}
             />

@@ -89,7 +89,7 @@ export class FirebaseDatabaseService implements DatabaseService {
         } catch (error) {
             console.error("Could not create swiping session:", error);
             return null;
-        } 
+        }
         await this.addUsersToSession(sessionId, participants);
         return this.getSession(sessionId);
     }
