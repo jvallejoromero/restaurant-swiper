@@ -21,6 +21,8 @@ import CreateSessionSheet, { CreateSessionOptions } from "@/components/screens/s
 import {useServices} from "@/context/ServicesContext";
 import {Place} from "@/types/Places.types";
 import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
+import PopupMessage, { PopupMessageRef } from "@/components/popups/PopupMessage";
+import GenericButton from "@/components/buttons/GenericButton";
 
 type MockData = {
     id: string;
@@ -108,6 +110,8 @@ const BigActionButton = ({ label, iconName, active=false, onPress }: { label: st
 
 export default function SessionsScreen() {
     const sheetRef = useRef<BottomSheet>(null);
+    const cannotCreateSessionRef = useRef<PopupMessageRef>(null);
+
     const [loadingSession, setLoadingSession] = useState<boolean>(false);
 
     const { loading, user, database } = useServices();
@@ -136,6 +140,30 @@ export default function SessionsScreen() {
         console.log("Created new session with id", session.id, session.createdAt.toDate().toLocaleString());
     }
 
+    const ActiveSessionWarning = () => {
+        return (
+            <PopupMessage
+                ref={cannotCreateSessionRef}
+                className="bg-white rounded-xl p-6 w-[90%] max-w-sm"
+                bgClassname="bg-black/60"
+            >
+                <View className="items-center  gap-1">
+                    <Text className="text-2xl font-bold text-primary">
+                        Warning
+                    </Text>
+                    <Text className="text-lg text-gray-600 text-center leading-snug">
+                        You already have an active session.
+                        {"\n"}Please end it before creating a new one.
+                    </Text>
+                    <GenericButton
+                        text="Okay"
+                        onPress={() => cannotCreateSessionRef.current?.close()}
+                    />
+                </View>
+            </PopupMessage>
+        );
+    }
+
     const RecentSessions = () => {
         return (
             <View>
@@ -149,7 +177,13 @@ export default function SessionsScreen() {
                     snapToInterval={ (192) }
                     decelerationRate="fast"
                     keyExtractor={(_, i) => i.toString()}
-                    renderItem={() => <OutlineCard onPress={openBottomSheet} />}
+                    renderItem={() => <OutlineCard onPress={() => {
+                        if (activeSession) {
+                            cannotCreateSessionRef.current?.open();
+                            return;
+                        }
+                        openBottomSheet();
+                    }} />}
                 />
             </View>
         );
@@ -180,6 +214,7 @@ export default function SessionsScreen() {
                 sheetRef={sheetRef}
                 onCreate={handleCreateSession}
             />
+            <ActiveSessionWarning />
         </SafeAreaView>
     );
 }
