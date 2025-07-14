@@ -32,10 +32,12 @@ export interface AppUserProfile {
 }
 
 export interface DatabaseService {
-    createSession(ownerId: string, title: string, description: string, radius: number, filters: string[], places: Place[], location: LocationObject): Promise<SwipingSession | null>;
+    createSession(ownerId: string, title: string, description: string, radius: number, filters: string[], places: Place[], participants: string[], location: LocationObject): Promise<SwipingSession | null>;
     getSession(sessionId: string): Promise<SwipingSession | null>;
     addUserToSession(sessionId: string, userId: string): Promise<void>;
+    addUsersToSession(sessionId: string, userIds: string[]): Promise<void>;
     removeUserFromSession(sessionId: string, userId: string): Promise<void>;
+    removeUsersFromSession(sessionId: string, userIds: string[]): Promise<void>;
     recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void>;
     addPlacesToSession(sessionId: string, places: Place[]): Promise<void>;
     getPlaceDetailsForSession(sessionId: string, placeId: string): Promise<PlaceDetails | null>;

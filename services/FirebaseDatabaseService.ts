@@ -66,6 +66,7 @@ export class FirebaseDatabaseService implements DatabaseService {
                         radius: number,
                         filters: string[],
                         places: Place[],
+                        participants: string[],
                         location: LocationObject): Promise<SwipingSession | null> {
         const sessionId = uuid.v4();
         const sessionRef = doc(firestore, 'sessions', sessionId);
@@ -79,7 +80,7 @@ export class FirebaseDatabaseService implements DatabaseService {
             radius: radius,
             filters: filters,
             location: location,
-            participants: [ownerId],
+            participants: [],
             places: places,
         };
 
@@ -88,8 +89,8 @@ export class FirebaseDatabaseService implements DatabaseService {
         } catch (error) {
             console.error("Could not create swiping session:", error);
             return null;
-        }
-
+        } 
+        await this.addUsersToSession(sessionId, participants);
         return this.getSession(sessionId);
     }
 
@@ -116,6 +117,27 @@ export class FirebaseDatabaseService implements DatabaseService {
         });
     }
 
+    async addUsersToSession(sessionId: string, userIds: string[]): Promise<void> {
+        const batch = writeBatch(firestore);
+        const sessionRef = doc(firestore, 'sessions', sessionId);
+        try {
+            batch.update(sessionRef, {
+                participants: arrayUnion(...userIds)
+            });
+
+            userIds.forEach((uid) => {
+                const userRef = doc(firestore, 'users', uid);
+                batch.update(userRef, {
+                    activeSessionId: sessionId
+                });
+            });
+
+            await batch.commit();
+        } catch (err) {
+            console.error("Could not add users to session:", err);
+        }
+    }
+
     async removeUserFromSession(sessionId: string, userId: string): Promise<void> {
         const sessionRef = doc(firestore, 'sessions', sessionId);
         await updateDoc(sessionRef, {
@@ -140,6 +162,37 @@ export class FirebaseDatabaseService implements DatabaseService {
          await this.updateUserProfile(userId, {
              activeSessionId: null,
          });
+    }
+
+    async removeUsersFromSession(sessionId: string, userIds: string[]): Promise<void> {
+        const batch = writeBatch(firestore);
+        const sessionRef = doc(firestore, 'sessions', sessionId);
+        const swipesCol = collection(firestore, 'sessions', sessionId, 'swipes');
+
+        batch.update(sessionRef, {
+            participants: arrayRemove(...userIds)
+        });
+
+        for (const uid of userIds) {
+            const userRef = doc(firestore, 'users', uid);
+            batch.update(userRef, {
+                activeSessionId: null
+            });
+
+            const swipeBatch = writeBatch(firestore);
+            const q = query(swipesCol, where("userId", "==", uid));
+            const snap = await getDocs(q);
+
+            if (snap.empty) {
+                continue;
+            }
+            snap.docs.forEach(doc => {
+                swipeBatch.delete(doc.ref);
+            });
+            await swipeBatch.commit();
+        }
+
+        await batch.commit();
     }
 
     async recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void> {

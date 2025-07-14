@@ -12,6 +12,7 @@ export type CreateSessionOptions = {
     description: string;
     radius: number;
     filters: string[];
+    participants: string[];
     location: LocationObject;
 }
 
@@ -84,7 +85,7 @@ export default function CreateSessionSheet({ sheetRef, index, onChange, onCreate
     }
 
     const handleCreatePress = () => {
-        onCreate({ title, description, radius, filters, location: userLocation });
+        onCreate({ title, description, radius, filters, participants: [], location: userLocation });
     }
 
     const toggleFilter = (f: string) => {

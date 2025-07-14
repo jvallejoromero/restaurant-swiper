@@ -117,9 +117,12 @@ export default function SessionsScreen() {
         sheetRef.current?.expand();
     }, []);
 
-    const handleCreateSession = async({title, description, radius, filters, location} : CreateSessionOptions) => {
+    const handleCreateSession = async({title, description, radius, filters, participants, location} : CreateSessionOptions) => {
         const places: Place[] = [];
-        const session = await database.createSession(user.uid, title, description, radius, filters, places, location);
+        const allParticipants = [...participants, user.uid];
+        console.log("using participants", participants);
+        console.log("all participants", allParticipants);
+        const session = await database.createSession(user.uid, title, description, radius, filters, places, allParticipants, location);
         if (!session) {
             //TODO: alert user that session creation failed
             return;
