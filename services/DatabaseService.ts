@@ -16,12 +16,16 @@ export interface SwipingSession {
     createdBy: string;
     createdAt: Timestamp;
     location: LocationObject;
-    participants: string[];
     places: Place[];
     title?: string;
     description?: string;
     radius?: number;
     filters?: string[];
+}
+
+export interface SessionParticipant {
+    currentIndex: number;
+    joinedAt: Timestamp;
 }
 
 export interface AppUserProfile {
