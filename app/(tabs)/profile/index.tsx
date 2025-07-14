@@ -26,6 +26,7 @@ export default function ProfileScreen() {
 
     useEffect(() => {
         console.log("active session:", activeSession);
+        console.log('participants', activeSession?.participantCount);
     }, [activeSession]);
 
     useEffect(() => {

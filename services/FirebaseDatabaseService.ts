@@ -15,7 +15,7 @@ import {uuid} from "expo-modules-core";
 import {Place} from "@/types/Places.types";
 import {PlaceDetails} from "@/types/GoogleResponse.types";
 import { fetchPlaceDetails } from '@/utils/GoogleAPIUtils';
-import {increment} from "@firebase/database";
+import {increment} from "@firebase/firestore";
 
 type NewSwipingSession = Omit<SwipingSession, 'createdAt'> & {
     createdAt: FieldValue;
@@ -77,7 +77,7 @@ export class FirebaseDatabaseService implements DatabaseService {
             id: sessionId,
             createdBy: ownerId,
             createdAt: serverTimestamp(),
-            participantCount: participants.length,
+            participantCount: 0,
             title: title,
             description: description,
             radius: radius,
