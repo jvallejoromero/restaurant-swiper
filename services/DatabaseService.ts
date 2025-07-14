@@ -15,6 +15,7 @@ export interface SwipingSession {
     id: string;
     createdBy: string;
     createdAt: Timestamp;
+    participantCount: number;
     location: LocationObject;
     places: Place[];
     title?: string;

@@ -6,7 +6,7 @@ import {
     getDocs,
     onSnapshot,
     query, serverTimestamp,
-    setDoc, where, writeBatch,
+    setDoc, updateDoc, where, writeBatch,
 } from 'firebase/firestore';
 import {firestore} from '@/firebase';
 import {AppUserProfile, DatabaseService, SessionParticipant, SwipeAction, SwipingSession} from './DatabaseService';
@@ -15,6 +15,7 @@ import {uuid} from "expo-modules-core";
 import {Place} from "@/types/Places.types";
 import {PlaceDetails} from "@/types/GoogleResponse.types";
 import { fetchPlaceDetails } from '@/utils/GoogleAPIUtils';
+import {increment} from "@firebase/database";
 
 type NewSwipingSession = Omit<SwipingSession, 'createdAt'> & {
     createdAt: FieldValue;
@@ -76,6 +77,7 @@ export class FirebaseDatabaseService implements DatabaseService {
             id: sessionId,
             createdBy: ownerId,
             createdAt: serverTimestamp(),
+            participantCount: participants.length,
             title: title,
             description: description,
             radius: radius,
@@ -109,11 +111,16 @@ export class FirebaseDatabaseService implements DatabaseService {
 
     async addUserToSession(sessionId: string, userId: string): Promise<void> {
         const participantRef = doc(firestore, 'sessions', sessionId, 'participants', userId);
+        const sessionRef = doc(firestore, "sessions", sessionId);
+
         const participant: NewParticipant = {
             currentIndex: 0,
             joinedAt: serverTimestamp(),
         }
         await setDoc(participantRef, participant);
+        await updateDoc(sessionRef, {
+            participantCount: increment(1),
+        });
         await this.updateUserProfile(userId, {
             activeSessionId: sessionId,
         });
@@ -122,6 +129,7 @@ export class FirebaseDatabaseService implements DatabaseService {
 
     async addUsersToSession(sessionId: string, userIds: string[]): Promise<void> {
         const batch = writeBatch(firestore);
+        const sessionRef = doc(firestore, "sessions", sessionId);
         try {
             userIds.forEach((uid) => {
                 const participantRef = doc(firestore, 'sessions', sessionId, 'participants', uid);
@@ -130,7 +138,6 @@ export class FirebaseDatabaseService implements DatabaseService {
                     joinedAt: serverTimestamp(),
                 }
                 batch.set(participantRef, participant);
-
                 const userRef = doc(firestore, 'users', uid);
                 batch.update(userRef, {
                     activeSessionId: sessionId
@@ -138,6 +145,9 @@ export class FirebaseDatabaseService implements DatabaseService {
             });
 
             await batch.commit();
+            await updateDoc(sessionRef, {
+                participantCount: increment(userIds.length),
+            });
             console.log(`Added ${userIds.length} participants to session with id ${sessionId}`);
         } catch (err) {
             console.error("Could not add users to session:", err);
@@ -145,23 +155,28 @@ export class FirebaseDatabaseService implements DatabaseService {
     }
 
     async removeUserFromSession(sessionId: string, userId: string): Promise<void> {
+        const batch = writeBatch(firestore);
+
+        const sessionRef = doc(firestore, "sessions", sessionId);
         const participantRef = doc(firestore, 'sessions', sessionId, 'participants', userId);
+
         const swipesCol = collection(firestore, 'sessions', sessionId, 'swipes');
         const q = query(swipesCol, where("userId", "==", userId));
         const swipeSnap = await getDocs(q);
 
-        const batch = writeBatch(firestore);
         batch.delete(participantRef);
         swipeSnap.docs.forEach((doc) => {
             batch.delete(doc.ref);
         });
 
-        await this.updateUserProfile(userId, {
-            activeSessionId: null,
-        });
-
         try {
             await batch.commit();
+            await this.updateUserProfile(userId, {
+                activeSessionId: null,
+            });
+            await updateDoc(sessionRef, {
+                participantCount: increment(-1),
+            });
             console.log(`User ${userId} removed from session ${sessionId}`);
         } catch (err) {
             console.error("Failed to remove user from session:", err);
@@ -170,6 +185,7 @@ export class FirebaseDatabaseService implements DatabaseService {
 
     async removeUsersFromSession(sessionId: string, userIds: string[]): Promise<void> {
         const batch = writeBatch(firestore);
+        const sessionRef = doc(firestore, "sessions", sessionId);
         const swipesCol = collection(firestore, 'sessions', sessionId, 'swipes');
 
         for (const uid of userIds) {
@@ -194,6 +210,9 @@ export class FirebaseDatabaseService implements DatabaseService {
         }
 
         await batch.commit();
+        await updateDoc(sessionRef, {
+            participantCount: increment(-userIds.length),
+        });
         console.log(`Removed ${userIds.length} participants from session with id ${sessionId}`);
     }
 
