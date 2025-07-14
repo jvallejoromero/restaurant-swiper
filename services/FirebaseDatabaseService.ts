@@ -15,7 +15,8 @@ import {uuid} from "expo-modules-core";
 import {Place} from "@/types/Places.types";
 import {PlaceDetails} from "@/types/GoogleResponse.types";
 import { fetchPlaceDetails } from '@/utils/GoogleAPIUtils';
-import {increment} from "@firebase/firestore";
+import {increment, Timestamp} from "@firebase/firestore";
+import {Time} from "lightningcss";
 
 type NewSwipingSession = Omit<SwipingSession, 'createdAt'> & {
     createdAt: FieldValue;
@@ -262,6 +263,21 @@ export class FirebaseDatabaseService implements DatabaseService {
                 return doc.data() as SwipeAction;
             });
             callback(all);
+        });
+    }
+
+    onParticipantUpdates(sessionId: string, callback: (participants: SessionParticipant[]) => void) {
+        const participantsCol = collection(firestore, 'sessions', sessionId, 'participants');
+        return onSnapshot(participantsCol, snap => {
+            const list = snap.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    currentIndex: data.currentIndex as number,
+                    joinedAt: data.joinedAt as Timestamp,
+                };
+            });
+            callback(list);
         });
     }
 }

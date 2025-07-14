@@ -25,6 +25,7 @@ export interface SwipingSession {
 }
 
 export interface SessionParticipant {
+    id?: string;
     currentIndex: number;
     joinedAt: Timestamp;
 }
@@ -51,5 +52,6 @@ export interface DatabaseService {
     updateUsernameDoc(userId: string, oldUsername: string, newUsername: string, email: string): Promise<void>;
     usernameExists(username: string): Promise<boolean>;
     onSessionSwipes(sessionId: string, callback: (swipes: SwipeAction[]) => void): () => void;
+    onParticipantUpdates(sessionId: string, callback: (participants: SessionParticipant[]) => void): () => void;
     onUserProfile(uid: string, callback: (profile: AppUserProfile | null) => void): () => void;
 }

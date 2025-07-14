@@ -1,4 +1,4 @@
-import {SwipingSession} from "@/services/DatabaseService";
+import {SessionParticipant, SwipingSession} from "@/services/DatabaseService";
 import {createContext, ReactNode, useContext, useEffect, useState} from "react";
 import {useServices} from "@/context/ServicesContext";
 
