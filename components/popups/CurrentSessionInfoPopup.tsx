@@ -1,4 +1,4 @@
-import {Share, Text, TouchableOpacity, View} from "react-native";
+import {ActivityIndicator, Share, Text, TouchableOpacity, View} from "react-native";
 import React, {RefObject, useCallback, useEffect, useState} from "react";
 import * as Location from "expo-location";
 import * as Clipboard from "expo-clipboard";
@@ -7,6 +7,7 @@ import {MaterialCommunityIcons} from "@expo/vector-icons";
 import {COLORS} from "@/constants/colors";
 import SessionQRCode from "@/components/session/SessionQRCode";
 import { SwipingSession } from "@/services/DatabaseService";
+import {useServices} from "@/context/ServicesContext";
 
 type CurrentSessionInfoProps = {
     session: SwipingSession | null;
@@ -21,34 +22,46 @@ type GeoInfo = {
 }
 
 const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps) => {
-    if (!session) {
-        console.warn("Tried to open session info popup but no active session was found!");
-        return null;
-    }
-
+    const { user, database } = useServices();
+    const [inviteUrl, setInviteUrl] = useState("");
     const [geoInfo, setGeoInfo] = useState<GeoInfo>({ city: null, region: null, country: null, fallback: "Your area" });
-    const inviteUrl = `https://forked-app.com/join-session?id=${session.id}`;
+    const [endingSession, setEndingSession] = useState<boolean>(false);
 
     useEffect(() => {
+        if (!session) {
+            return;
+        }
         Location.reverseGeocodeAsync(session.location.coords).then((info) => {
             if (info.length) {
                 const { city, region, country } = info[0];
                 setGeoInfo({ city, region, country, fallback: "Your area" });
             }
         });
-    }, []);
+        setInviteUrl(`https://forked-app.com/join-session?id=${session?.id}`);
+    }, [session]);
 
     const onCopyLink = useCallback(() => {
         void Clipboard.setStringAsync(inviteUrl);
-    }, []);
+    }, [inviteUrl]);
 
     const onShare = useCallback(async () => {
         try {
             await Share.share({
-                message: `Join my session "${session.title}": ${inviteUrl}`,
+                message: `Join my session "${session?.title}": ${inviteUrl}`,
             });
         } catch {}
-    }, [session.title]);
+    }, [session?.title, inviteUrl]);
+
+    if (!session) {
+        return null;
+    }
+
+    const handleEndSession = async() => {
+        setEndingSession(true);
+        await database.endSession(session.id);
+        setEndingSession(false);
+        popupRef.current?.close();
+    }
 
     return (
         <PopupMessage
@@ -117,6 +130,18 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
                         <Text className="text-white">Share</Text>
                     </TouchableOpacity>
                 </View>
+                {user?.uid === session.createdBy && (
+                    <TouchableOpacity
+                        onPress={handleEndSession}
+                        className="mt-4 py-2 bg-primary rounded-lg"
+                    >
+                        {endingSession ? (
+                            <ActivityIndicator size={22} color={"white"} />
+                        ) : (
+                            <Text className="text-white text-lg text-center font-semibold">End Session</Text>
+                        )}
+                    </TouchableOpacity>
+                )}
             </View>
         </PopupMessage>
     );

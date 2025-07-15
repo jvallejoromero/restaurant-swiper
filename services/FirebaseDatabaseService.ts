@@ -1,12 +1,17 @@
 import {
     collection,
     deleteDoc,
-    doc, FieldValue,
+    doc,
+    FieldValue,
     getDoc,
     getDocs,
     onSnapshot,
-    query, serverTimestamp,
-    setDoc, updateDoc, where, writeBatch,
+    query,
+    serverTimestamp,
+    setDoc,
+    updateDoc,
+    where,
+    writeBatch,
 } from 'firebase/firestore';
 import {firestore} from '@/firebase';
 import {AppUserProfile, DatabaseService, SessionParticipant, SwipeAction, SwipingSession} from './DatabaseService';
@@ -14,7 +19,7 @@ import {LocationObject} from "expo-location";
 import {uuid} from "expo-modules-core";
 import {Place} from "@/types/Places.types";
 import {PlaceDetails} from "@/types/GoogleResponse.types";
-import { fetchPlaceDetails } from '@/utils/GoogleAPIUtils';
+import {fetchPlaceDetails} from '@/utils/GoogleAPIUtils';
 import {increment, Timestamp} from "@firebase/firestore";
 
 type NewSwipingSession = Omit<SwipingSession, 'createdAt'> & {
@@ -94,6 +99,30 @@ export class FirebaseDatabaseService implements DatabaseService {
         }
         await this.addUsersToSession(sessionId, participants);
         return this.getSession(sessionId);
+    }
+
+    async endSession(sessionId: string): Promise<void> {
+        const sessionRef = doc(firestore, 'sessions', sessionId);
+        //TODO: Compile a stats file before deleting full data
+        try {
+            await this.deleteCachedPlaceData(sessionId);
+        } catch (err) {
+            console.error(`Could not delete place data from session with id: ${sessionId}`, err);
+        }
+        try {
+            const participants = await this.getSessionParticipants(sessionId);
+            const participantIds = participants
+                .map(user => user.id)
+                .filter((id): id is string => id !== undefined);
+            await this.removeUsersFromSession(sessionId, participantIds);
+        } catch (err) {
+            console.error(`Could not remove users from session with id: ${sessionId}`, err);
+        }
+        try {
+            await deleteDoc(sessionRef);
+        } catch (error) {
+            console.error(`Could not delete swiping session with id ${sessionId}`, error);
+        }
     }
 
     async getSession(sessionId: string): Promise<SwipingSession | null> {
@@ -253,6 +282,45 @@ export class FirebaseDatabaseService implements DatabaseService {
         }
         await setDoc(detailsRef, placeData);
         return placeData;
+    }
+
+    async getSessionParticipants(sessionId:string): Promise<SessionParticipant[]> {
+        const participantsCol = collection(firestore, 'sessions', sessionId, 'participants');
+        let snapshot;
+        try {
+            snapshot = await getDocs(participantsCol);
+        } catch (err) {
+            console.error(`Could not get participants in session with id:${sessionId}`, err);
+            return [];
+        }
+        return snapshot.docs.map((doc) => {
+            return {
+                id: doc.id,
+                ...doc.data(),
+            };
+        }) as SessionParticipant[];
+    }
+
+    async deleteCachedPlaceData(sessionId:string): Promise<void> {
+        const placesCol = collection(firestore, 'sessions', sessionId, 'places');
+        const placesSnap = await getDocs(placesCol);
+        const batch = writeBatch(firestore);
+
+        for (const placeDoc of placesSnap.docs) {
+            const detailsCol = collection(
+                firestore,
+                'sessions',
+                sessionId,
+                'places',
+                placeDoc.id,
+                'details'
+            );
+            const detailsSnap = await getDocs(detailsCol);
+            detailsSnap.docs.forEach(d => batch.delete(d.ref));
+            batch.delete(placeDoc.ref);
+        }
+
+        await batch.commit();
     }
 
     onSessionSwipes(sessionId: string, callback: (swipes: SwipeAction[]) => void): () => void {

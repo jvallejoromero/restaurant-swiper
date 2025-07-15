@@ -39,7 +39,9 @@ export interface AppUserProfile {
 
 export interface DatabaseService {
     createSession(ownerId: string, title: string, description: string, radius: number, filters: string[], places: Place[], participants: string[], location: LocationObject): Promise<SwipingSession | null>;
+    endSession(sessionId: string): Promise<void>;
     getSession(sessionId: string): Promise<SwipingSession | null>;
+    getSessionParticipants(sessionId: string): Promise<SessionParticipant[]>;
     addUserToSession(sessionId: string, userId: string): Promise<void>;
     addUsersToSession(sessionId: string, userIds: string[]): Promise<void>;
     removeUserFromSession(sessionId: string, userId: string): Promise<void>;
