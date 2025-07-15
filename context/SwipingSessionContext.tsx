@@ -20,17 +20,12 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
             return;
         }
 
-        let unsub: (() => void) | undefined;
         database.getSession(userProfile.activeSessionId).then((session) => {
             setActiveSession(session);
-            if (session) {
-                unsub = database.onParticipantUpdates(session.id, setParticipants);
-            }
         });
 
-        return () => {
-            unsub && unsub();
-        }
+        const unsub = database.onParticipantUpdates(userProfile?.activeSessionId, setParticipants);
+        return () => unsub();
     }, [database, userProfile?.activeSessionId]);
 
     return (

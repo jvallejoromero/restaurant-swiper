@@ -335,16 +335,27 @@ export class FirebaseDatabaseService implements DatabaseService {
 
     onParticipantUpdates(sessionId: string, callback: (participants: SessionParticipant[]) => void) {
         const participantsCol = collection(firestore, 'sessions', sessionId, 'participants');
-        return onSnapshot(participantsCol, snap => {
-            const list: SessionParticipant[] = snap.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    currentIndex: data.currentIndex as number,
-                    joinedAt: data.joinedAt as Timestamp,
-                };
-            });
-            callback(list);
-        });
+        const unsub = onSnapshot(
+            participantsCol,
+            snap => {
+                const list: SessionParticipant[] = snap.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        currentIndex: data.currentIndex as number,
+                        joinedAt: data.joinedAt as Timestamp,
+                    };
+                });
+                callback(list);
+            },
+            error => {
+                if (error.code === 'permission-denied') {
+                    unsub();
+                } else {
+                    console.error('Participant listener error:', error);
+                }
+            }
+        );
+        return unsub;
     }
 }
