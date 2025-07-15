@@ -6,15 +6,13 @@ import {
     FlatList,
     Image,
     ListRenderItem,
-    StyleSheet,
     ScrollView,
     RefreshControl,
 } from "react-native";
-import React, {ComponentProps, useCallback, useRef, useState} from "react";
+import React, {useCallback, useRef, useState} from "react";
 import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import Separator from "@/components/ui/Separator";
 import {Feather} from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import {CardsSwipeAnimation} from "@/components/animations/LoadingAnimations";
 import BottomSheet from "@gorhom/bottom-sheet";
 import CreateSessionSheet, { CreateSessionOptions } from "@/components/screens/session/CreateSessionSheet";
@@ -24,6 +22,8 @@ import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
 import PopupMessage, { PopupMessageRef } from "@/components/popups/PopupMessage";
 import GenericButton from "@/components/buttons/GenericButton";
 import CurrentSessionInfoPopup from "@/components/popups/CurrentSessionInfoPopup";
+import {useNavigation} from "expo-router";
+import BigActionButton from "@/components/buttons/BigActionButton";
 
 type MockData = {
     id: string;
@@ -88,28 +88,6 @@ const renderSession: ListRenderItem<MockData> = ({ item }) => (
     </View>
 );
 
-const BigActionButton = ({ label, iconName, active=false, onPress }: { label: string, active?: boolean, iconName?: ComponentProps<typeof Feather>["name"], onPress: () => void }) => {
-    return (
-        <Pressable
-            onPress={onPress}
-            pressRetentionOffset={{ top: 30, bottom: 30, left: 30, right: 30 }}
-            className={`w-full h-28 rounded-2xl`}
-        >
-            <LinearGradient
-                colors={active ? ["#4CAF50", "#66BB6A", "#81C784"] : ["#d52e4c", "#e53946", "#e53946", "#b71c1c"]}
-                start={[0, 0]}
-                end={[1, 1]}
-                style={styles.gradientCard}
-            >
-                {iconName && <Feather name={iconName} size={32} color="white" />}
-                <Text className="text-white ml-3 text-xl font-semibold">
-                    {label}
-                </Text>
-            </LinearGradient>
-        </Pressable>
-    );
-}
-
 export default function SessionsScreen() {
     const sheetRef = useRef<BottomSheet>(null);
     const cannotCreateSessionRef = useRef<PopupMessageRef>(null);
@@ -120,13 +98,27 @@ export default function SessionsScreen() {
     const { loading, user, database } = useServices();
     const { activeSession } = useActiveSwipingSession();
 
-    if (loading || !user) {
-        return null;
-    }
+    const navigation = useNavigation();
+    React.useLayoutEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <Pressable
+                    onPress={() => {}}
+                    style={{ padding: 8 }}
+                >
+                    <Feather name="camera" size={24} color="#333" />
+                </Pressable>
+            ),
+        });
+    }, [navigation]);
 
     const openBottomSheet = useCallback(() => {
         sheetRef.current?.expand();
     }, []);
+
+    if (loading || !user) {
+        return null;
+    }
 
     const handleCreateSession = async({title, description, radius, filters, participants, location} : CreateSessionOptions) => {
         const places: Place[] = [];
@@ -198,7 +190,7 @@ export default function SessionsScreen() {
             <Separator className="mt-4 mx-6" />
             <ScrollView refreshControl={<RefreshControl refreshing={false} onRefresh={()=>{console.log("Refreshing...")}} />}>
                 <View className="px-6 pb-12 gap-4">
-                    <View>
+                    <View className={"mt-2 min-h-[250px]"}>
                         <CardsSwipeAnimation width={250} height={250} />
                         <Text className="text-center font-semibold text-lg text-accent-grey">
                             Ready to swipe your way through the city’s best spots?
@@ -213,7 +205,14 @@ export default function SessionsScreen() {
                             }}
                         />
                     ) : (
-                        <BigActionButton label={"Create Session"} iconName={"plus"} onPress={openBottomSheet} />
+                        <View className="gap-1">
+                            <BigActionButton label={"Create Session"} iconName={"plus"} onPress={openBottomSheet} />
+                            <BigActionButton
+                                label={"Scan QR Code"}
+                                iconName={"qrcode-scan"}
+                                onPress={() => console.log('qr code scan')}
+                            />
+                        </View>
                     )}
                     <RecentSessions />
                 </View>
@@ -228,13 +227,3 @@ export default function SessionsScreen() {
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    gradientCard: {
-        flex: 1,
-        paddingHorizontal: 20,
-        flexDirection: "row",
-        alignItems: "center",
-        borderRadius: 16,
-    },
-});

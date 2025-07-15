@@ -116,11 +116,11 @@ export default function ProfileScreen() {
             </ImageBackground>
         );
     }
-    
+
     const AccountInfoIcon = ({ iconName }: { iconName: React.ComponentProps<typeof Ionicons>["name"] }) => {
         return <Ionicons name={iconName} size={20} color="#555" />;
     }
-    
+
     const AccountInfoEntry = ({ iconName, label, value }: { iconName: React.ComponentProps<typeof Ionicons>["name"], label: string, value: string }) => {
         return (
             <View className="w-full flex-row items-center gap-4">
@@ -187,9 +187,10 @@ export default function ProfileScreen() {
                     <AccountInfoEntry label={"Email"} value={user.email} iconName={"mail-outline"} />
                     <AccountInfoEntry label={"Username"} value={userProfile ? userProfile.username : "Unknown"} iconName={"person-outline"} />
                 </View>
-                <View className="gap-1">
+                <View className="gap-2">
                     <ChevronButton label={"Settings"} iconName={"settings-outline"} onPress={() => {}} />
                     <ChevronButton label={"Sessions"} iconName={"rocket-outline"} onPress={() => {router.push("/profile/swipe-session")}} />
+                    <ChevronButton label={"QR Code Scanner"} iconName={"qr-code-outline"} onPress={() => console.log('qr code scan')} />
                 </View>
                 <View className="gap-1 mt-12">
                     <CriticalActionButton label={"Log Out"} iconName={"log-out-outline"} onPress={handleSignout} />
