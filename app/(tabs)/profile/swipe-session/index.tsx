@@ -13,7 +13,7 @@ import {
 import React, {ComponentProps, useCallback, useRef, useState} from "react";
 import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import Separator from "@/components/ui/Separator";
-import { Feather } from "@expo/vector-icons";
+import {Feather} from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import {CardsSwipeAnimation} from "@/components/animations/LoadingAnimations";
 import BottomSheet from "@gorhom/bottom-sheet";
@@ -23,6 +23,7 @@ import {Place} from "@/types/Places.types";
 import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
 import PopupMessage, { PopupMessageRef } from "@/components/popups/PopupMessage";
 import GenericButton from "@/components/buttons/GenericButton";
+import CurrentSessionInfoPopup from "@/components/popups/CurrentSessionInfoPopup";
 
 type MockData = {
     id: string;
@@ -111,6 +112,7 @@ const BigActionButton = ({ label, iconName, active=false, onPress }: { label: st
 export default function SessionsScreen() {
     const sheetRef = useRef<BottomSheet>(null);
     const cannotCreateSessionRef = useRef<PopupMessageRef>(null);
+    const activeSessionPopupRef = useRef<PopupMessageRef>(null);
 
     const [loadingSession, setLoadingSession] = useState<boolean>(false);
 
@@ -144,7 +146,7 @@ export default function SessionsScreen() {
         return (
             <PopupMessage
                 ref={cannotCreateSessionRef}
-                className="bg-white rounded-xl p-6 w-[90%] max-w-sm"
+                className="bg-neutral-100 rounded-xl p-6 w-[90%] max-w-sm"
                 bgClassname="bg-black/60"
             >
                 <View className="items-center  gap-1">
@@ -202,7 +204,13 @@ export default function SessionsScreen() {
                         </Text>
                     </View>
                     {activeSession !== null ? (
-                        <BigActionButton label={"Tap to view current session"} active={true} onPress={openBottomSheet} />
+                        <BigActionButton
+                            label={"Tap to view current session"}
+                            active={true}
+                            onPress={() => {
+                                activeSessionPopupRef.current?.open();
+                            }}
+                        />
                     ) : (
                         <BigActionButton label={"Create Session"} iconName={"plus"} onPress={openBottomSheet} />
                     )}
@@ -215,6 +223,7 @@ export default function SessionsScreen() {
                 onCreate={handleCreateSession}
             />
             <ActiveSessionWarning />
+            <CurrentSessionInfoPopup session={activeSession} popupRef={activeSessionPopupRef} />
         </SafeAreaView>
     );
 }
