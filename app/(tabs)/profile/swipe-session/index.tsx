@@ -92,7 +92,8 @@ const BigActionButton = ({ label, iconName, active=false, onPress }: { label: st
     return (
         <Pressable
             onPress={onPress}
-            className="w-full h-28 rounded-2xl overflow-hidden"
+            pressRetentionOffset={{ top: 30, bottom: 30, left: 30, right: 30 }}
+            className={`w-full h-28 rounded-2xl`}
         >
             <LinearGradient
                 colors={active ? ["#4CAF50", "#66BB6A", "#81C784"] : ["#d52e4c", "#e53946", "#e53946", "#b71c1c"]}

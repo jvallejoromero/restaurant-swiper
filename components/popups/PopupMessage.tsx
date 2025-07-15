@@ -18,6 +18,7 @@ const { height: windowHeight } = Dimensions.get("window");
 
 const PopupMessage = forwardRef<PopupMessageRef, PopupMessageProps>(({ animated = true, className, bgClassname, onClose, children }, ref) => {
     const [visible, setVisible] = useState<boolean>(false);
+    const [blocking, setBlocking] = useState(false);
     const translateY = useRef<Animated.Value>(new Animated.Value(windowHeight)).current;
 
     useEffect(() => {
@@ -37,12 +38,13 @@ const PopupMessage = forwardRef<PopupMessageRef, PopupMessageProps>(({ animated 
     }));
 
     const handleClose = () => {
+        setVisible(false);
+
         Animated.timing(translateY, {
             toValue: windowHeight,
             duration: 200,
             useNativeDriver: true,
         }).start(() => {
-            setVisible(false);
             onClose?.();
         });
     };
@@ -53,10 +55,9 @@ const PopupMessage = forwardRef<PopupMessageRef, PopupMessageProps>(({ animated 
             visible={visible}
             animationType="fade"
             onRequestClose={handleClose}
-            presentationStyle="overFullScreen"
         >
             <Pressable
-                className={`absolute inset-0 ${bgClassname}`}
+                className={`inset-0 ${visible ? `absolute` : `hidden`} ${bgClassname}`}
                 onPress={handleClose}
             />
             <View
