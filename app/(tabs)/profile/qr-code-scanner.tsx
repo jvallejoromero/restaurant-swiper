@@ -59,18 +59,30 @@ const ScanResults = ({ result }: { result: BarcodeScanningResult}) => {
         return <ActivityIndicator size={12} />;
     }
 
+    if (session) {
+        return (
+            <View className="flex-col items-center">
+                <Text>Valid Session Found!</Text>
+                <Text
+                    className="text-primary underline"
+                    onPress={() => console.log("open session info")}
+                >
+                    View Information
+                </Text>
+            </View>
+        );
+    }
+
     return (
-        <View className="px-8">
+        <View className="px-8 gap-1">
             <Text className="text-center">Scan Result:</Text>
             <Text
                 numberOfLines={1}
                 ellipsizeMode="tail"
-                className="text-center underline text-primary"
-                onPress={() => handleOpenUrl(result.data)}
+                className={`text-center ${canOpenUrl ? 'underline text-primary' : undefined}`}
+                onPress={canOpenUrl ? () => handleOpenUrl(result.data) : undefined}
             >
-                {session
-                    ? `Valid Session Found`
-                    : result.data}
+                {result.data}
             </Text>
             <CurrentSessionInfoPopup session={session} popupRef={popupRef} />
         </View>
