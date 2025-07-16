@@ -36,7 +36,6 @@ export default {
       favicon: "./assets/images/forked-icon.png"
     },
     plugins: [
-      "expo-barcode-scanner",
       "expo-router",
       [
         "expo-splash-screen",
