@@ -1,7 +1,7 @@
-import {Pressable, StyleSheet, Text, View} from "react-native";
+import {Pressable, StyleSheet, Text} from "react-native";
 import React, {ComponentProps} from "react";
 import {LinearGradient} from "expo-linear-gradient";
-import {Feather, MaterialCommunityIcons} from "@expo/vector-icons";
+import {MaterialCommunityIcons} from "@expo/vector-icons";
 
 type BigActionButtonProps = {
     label: string;

@@ -190,7 +190,7 @@ export default function ProfileScreen() {
                 <View className="gap-2">
                     <ChevronButton label={"Settings"} iconName={"settings-outline"} onPress={() => {}} />
                     <ChevronButton label={"Sessions"} iconName={"rocket-outline"} onPress={() => {router.push("/profile/swipe-session")}} />
-                    <ChevronButton label={"QR Code Scanner"} iconName={"qr-code-outline"} onPress={() => console.log('qr code scan')} />
+                    <ChevronButton label={"QR Code Scanner"} iconName={"qr-code-outline"} onPress={() => router.push("/profile/qr-code-scanner")} />
                 </View>
                 <View className="gap-1 mt-12">
                     <CriticalActionButton label={"Log Out"} iconName={"log-out-outline"} onPress={handleSignout} />

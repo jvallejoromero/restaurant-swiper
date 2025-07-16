@@ -43,6 +43,9 @@ export default function ProfileLayout() {
             <Stack.Screen
                 name="edit-username"
             />
+            <Stack.Screen
+                name="qr-code-scanner"
+            />
         </Stack>
     );
 }
