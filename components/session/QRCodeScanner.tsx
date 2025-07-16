@@ -1,10 +1,22 @@
-import {Linking, Text, TouchableOpacity, View, StyleSheet, SafeAreaView, Pressable} from "react-native";
-import React, {useEffect, useState} from "react";
+import {
+    Linking,
+    Text,
+    TouchableOpacity,
+    View,
+    StyleSheet,
+    SafeAreaView,
+    ActivityIndicator
+} from "react-native";
+import React, {useEffect, useRef, useState} from "react";
 import {BarcodeScanningResult, Camera, CameraView, PermissionResponse} from "expo-camera";
 import GenericLoadingScreen from "@/components/screens/GenericLoadingScreen";
 import {CameraType} from "expo-image-picker";
 import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import Separator from "@/components/ui/Separator";
+import {SwipingSession} from "@/services/DatabaseService";
+import {useServices} from "@/context/ServicesContext";
+import CurrentSessionInfoPopup from "@/components/popups/CurrentSessionInfoPopup";
+import {PopupMessageRef} from "@/components/popups/PopupMessage";
 
 let lastScanTime = 0;
 
@@ -20,28 +32,59 @@ const MiniButton = ({ label, onPress }: { label: string, onPress: () => void }) 
 }
 
 const ScanResults = ({ result }: { result: BarcodeScanningResult}) => {
+    const [canOpenUrl, setCanOpenUrl] = useState<boolean | undefined>(undefined);
+    const [session, setSession] = useState<SwipingSession | null | undefined>(undefined);
+    const popupRef = useRef<PopupMessageRef>(null);
+
+    const { database } = useServices();
+
+    useEffect(() => {
+        setCanOpenUrl(undefined);
+        setSession(undefined);
+
+        (async() => {
+            const canOpenUrl = await Linking.canOpenURL(result.data);
+            if (canOpenUrl) {
+                setSession(null);
+                setTimeout(() => {
+                    setCanOpenUrl(canOpenUrl);
+                }, 500);
+                return;
+            }
+            setCanOpenUrl(false);
+            const requestedSession = await database.getSession(result.data);
+            setSession(requestedSession);
+        })();
+    }, [result.data]);
+
+    useEffect(() => {
+        if (session) {
+            popupRef.current?.open();
+        }
+    }, [session]);
 
     const handleOpenUrl = async (url: string) => {
-        const canOpenUrl = await Linking.canOpenURL(url);
-        if (!canOpenUrl) {
-            alert(`Cannot open URL: ${url}`);
-            return;
-        }
-        
         await Linking.openURL(url);
     }
 
+    if ((canOpenUrl === undefined || session === undefined)) {
+        return <ActivityIndicator size={12} />;
+    }
+
     return (
-        <View>
-            <Text className="text-center">
-                Scan Result:
-            </Text>
+        <View className="px-8">
+            <Text className="text-center">Scan Result:</Text>
             <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
                 className="text-center underline text-primary"
                 onPress={() => handleOpenUrl(result.data)}
             >
-                {result.data}
+                {session
+                    ? `Valid Session Found`
+                    : result.data}
             </Text>
+            <CurrentSessionInfoPopup session={session} popupRef={popupRef} />
         </View>
     );
 }

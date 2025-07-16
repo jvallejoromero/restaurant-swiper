@@ -130,6 +130,9 @@ export class FirebaseDatabaseService implements DatabaseService {
         let session;
         try {
             const snap = await getDoc(sessionRef);
+            if (!snap.exists()) {
+                return null;
+            }
             session = snap.data() as SwipingSession;
         } catch (err) {
             console.error("Could not retrieve session:", err);
