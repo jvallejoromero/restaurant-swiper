@@ -4,12 +4,13 @@ import {IMAGES} from "@/constants/images";
 import {cacheProfilePicture} from "@/utils/CacheUtils";
 
 type CachedAvatarProps = {
-    photoUrl: string | undefined;
     userId: string;
+    photoUrl: string | undefined;
+    size?: number;
     className?: string;
 }
 
-const CachedAvatar = ({ photoUrl, userId, className }: CachedAvatarProps) => {
+const CachedAvatar = ({ photoUrl, userId, size=144, className }: CachedAvatarProps) => {
     const [localUri, setLocalUri] = useState<string | null>(null);
 
     useEffect(() => {
@@ -27,10 +28,14 @@ const CachedAvatar = ({ photoUrl, userId, className }: CachedAvatarProps) => {
     }, [photoUrl]);
 
     return (
-        <View className={`h-[144] w-[144] rounded-full shadow-neutral-900 border-neutral-800/40 overflow-hidden ${className}`}>
+        <View
+            style={{ width: size, height: size }}
+            className={`${className ? className : 'rounded-full shadow-neutral-900 border-neutral-800/40 overflow-hidden'}`}
+        >
             <Image
                 source={localUri ? { uri: localUri } : IMAGES.default_avatar}
-                className="h-[165] w-[165] self-center"
+                resizeMode="cover"
+                className="w-full h-full self-center"
             />
         </View>
     );
