@@ -1,7 +1,6 @@
 import {
     Linking,
     Text,
-    TouchableOpacity,
     View,
     SafeAreaView,
     ActivityIndicator
@@ -16,19 +15,9 @@ import {useServices} from "@/context/ServicesContext";
 import CurrentSessionInfoPopup from "@/components/popups/CurrentSessionInfoPopup";
 import {PopupMessageRef} from "@/components/popups/PopupMessage";
 import QRCodeScanner from "@/components/session/QRCodeScanner";
+import MiniButton from "@/components/buttons/MiniButton";
 
 let lastScanTime = 0;
-
-const MiniButton = ({ label, onPress }: { label: string, onPress: () => void }) => {
-    return (
-        <TouchableOpacity
-            className="bg-primary px-4 py-3 rounded-md shadow shadow-black/20"
-            onPress={onPress}
-        >
-            <Text className="font-medium text-white">{label}</Text>
-        </TouchableOpacity>
-    );
-}
 
 const ScanResults = ({ result }: { result: BarcodeScanningResult}) => {
     const [canOpenUrl, setCanOpenUrl] = useState<boolean | undefined>(undefined);
