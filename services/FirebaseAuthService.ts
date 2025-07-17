@@ -84,7 +84,6 @@ export class FirebaseAuthService implements AuthService {
 
         // write profile and other associated information
         await setDoc(doc(firestore, "users", uid), {
-            email: email,
             username: usernameKey,
             createdAt: serverTimestamp(),
         });

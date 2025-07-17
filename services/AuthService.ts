@@ -4,7 +4,6 @@ export interface AuthService {
     signUp(email: string, pass: string, username: string): Promise<User>;
     signIn(identifier: string, pass: string): Promise<User>;
     signOut(): Promise<void>;
-
 }
 
 export type User = {
