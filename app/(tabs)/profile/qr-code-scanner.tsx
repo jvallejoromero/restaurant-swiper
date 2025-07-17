@@ -11,65 +11,43 @@ import GenericLoadingScreen from "@/components/screens/GenericLoadingScreen";
 import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import Separator from "@/components/ui/Separator";
 import {SwipingSession} from "@/services/DatabaseService";
-import {useServices} from "@/context/ServicesContext";
-import CurrentSessionInfoPopup from "@/components/popups/CurrentSessionInfoPopup";
-import {PopupMessageRef} from "@/components/popups/PopupMessage";
 import QRCodeScanner from "@/components/session/QRCodeScanner";
 import MiniButton from "@/components/buttons/MiniButton";
+import JoinSessionBottomSheet from "@/components/screens/session/JoinSessionBottomSheet";
+import BottomSheet from "@gorhom/bottom-sheet";
+import {useQRCodeAnalyzer} from "@/hooks/QRCodeAnalyzerHook";
 
 let lastScanTime = 0;
 
-const ScanResults = ({ result }: { result: BarcodeScanningResult}) => {
-    const [canOpenUrl, setCanOpenUrl] = useState<boolean | undefined>(undefined);
-    const [session, setSession] = useState<SwipingSession | null | undefined>(undefined);
-    const popupRef = useRef<PopupMessageRef>(null);
+type ScanResultsProps = {
+    canOpenUrl: boolean | undefined;
+    url: string;
+    session: SwipingSession | null | undefined;
+    bottomSheetRef: React.RefObject<BottomSheet | null>;
+}
 
-    const { database } = useServices();
-
-    useEffect(() => {
-        setCanOpenUrl(undefined);
-        setSession(undefined);
-
-        (async() => {
-            const canOpenUrl = await Linking.canOpenURL(result.data);
-            if (canOpenUrl) {
-                setSession(null);
-                setTimeout(() => {
-                    setCanOpenUrl(canOpenUrl);
-                }, 500);
-                return;
-            }
-            setCanOpenUrl(false);
-            const requestedSession = await database.getSession(result.data);
-            setSession(requestedSession);
-        })();
-    }, [result.data]);
-
-    useEffect(() => {
-        if (session) {
-            popupRef.current?.open();
-        }
-    }, [session]);
-
+const ScanResults = ({ canOpenUrl, url, session, bottomSheetRef }: ScanResultsProps) => {
     const handleOpenUrl = async (url: string) => {
         await Linking.openURL(url);
     }
 
-    if ((canOpenUrl === undefined || session === undefined)) {
-        return <ActivityIndicator size={12} />;
+    if (canOpenUrl === undefined || session === undefined) {
+        return <ActivityIndicator size={12} />
     }
 
     if (session) {
         return (
-            <View className="flex-col items-center">
-                <Text>Valid Session Found!</Text>
-                <Text
-                    className="text-primary underline"
-                    onPress={() => console.log("open session info")}
-                >
-                    View Information
-                </Text>
-            </View>
+            <>
+                <View className="flex-col items-center">
+                    <Text>Valid Session Found!</Text>
+                    <Text
+                        className="text-primary underline"
+                        onPress={() => bottomSheetRef.current?.expand()}
+                    >
+                        View Information
+                    </Text>
+                </View>
+            </>
         );
     }
 
@@ -80,25 +58,39 @@ const ScanResults = ({ result }: { result: BarcodeScanningResult}) => {
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 className={`text-center ${canOpenUrl ? 'underline text-primary' : undefined}`}
-                onPress={canOpenUrl ? () => handleOpenUrl(result.data) : undefined}
+                onPress={canOpenUrl ? () => handleOpenUrl(url) : undefined}
             >
-                {result.data}
+                {url}
             </Text>
-            <CurrentSessionInfoPopup session={session} popupRef={popupRef} />
         </View>
     );
 }
 
 const QRCodeScannerScreen = () => {
     const [permission, setPermission] = useState<PermissionResponse | null>(null);
-    const [scanned, setScanned] = useState<boolean>(false);
     const [scanResult, setScannedResult] = useState<BarcodeScanningResult | null>(null);
+
+    const joinSessionSheetRef = useRef<BottomSheet>(null);
+    const { canOpenUrl, session } = useQRCodeAnalyzer(scanResult);
 
     useEffect(() => {
         (async() => {
             await requestPermission();
         })();
     }, []);
+
+    useEffect(() => {
+        if (!session) {
+            return;
+        }
+        const timeout = setTimeout(() => {
+            joinSessionSheetRef.current?.expand();
+        }, 100);
+
+        return () => {
+            clearTimeout(timeout);
+        }
+    }, [session]);
 
     const requestPermission = async () => {
         const res = await Camera.requestCameraPermissionsAsync();
@@ -109,13 +101,10 @@ const QRCodeScannerScreen = () => {
         const now = Date.now();
         if (now - lastScanTime < 500) return;
         lastScanTime = now;
-
-        setScanned(true);
         setScannedResult(result);
     };
 
     const resetScanned = () => {
-        setScanned(false);
         setScannedResult(null);
     }
 
@@ -150,21 +139,26 @@ const QRCodeScannerScreen = () => {
         <SafeAreaView className="relative flex-1 bg-background">
             <BackNavigationHeader label="QR Code Scanner" />
             <Separator className="mt-4 mx-6" />
-
             <View className="items-center mt-20 gap-8">
                 <QRCodeScanner
-                    scanned={scanned}
+                    scanned={scanResult != null}
                     onBarcodeScanned={handleBarcodeScanned}
                 />
                 {scanResult ? (
-                    <ScanResults result={scanResult} />
+                    <ScanResults canOpenUrl={canOpenUrl} url={scanResult.data} session={session} bottomSheetRef={joinSessionSheetRef} />
                 ) : (
                     <Text className="text-center font-medium text-ellipsis">
                         Align the QR code inside the frame to scan automatically.
                     </Text>
                 )}
-                {scanned && <MiniButton label={"Scan Again"} onPress={resetScanned} />}
+                {scanResult && <MiniButton label={"Scan Again"} onPress={resetScanned} />}
             </View>
+            <JoinSessionBottomSheet
+                loading={false}
+                sheetRef={joinSessionSheetRef}
+                session={session}
+                onJoinSession={() => console.log("join session!")}
+            />
         </SafeAreaView>
     );
 }
