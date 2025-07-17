@@ -145,13 +145,15 @@ const QRCodeScannerScreen = () => {
                     onBarcodeScanned={handleBarcodeScanned}
                 />
                 {scanResult ? (
-                    <ScanResults canOpenUrl={canOpenUrl} url={scanResult.data} session={session} bottomSheetRef={joinSessionSheetRef} />
+                    <>
+                        <ScanResults canOpenUrl={canOpenUrl} url={scanResult.data} session={session} bottomSheetRef={joinSessionSheetRef} />
+                        <MiniButton label={"Scan Again"} onPress={resetScanned} />
+                    </>
                 ) : (
                     <Text className="text-center font-medium text-ellipsis">
                         Align the QR code inside the frame to scan automatically.
                     </Text>
                 )}
-                {scanResult && <MiniButton label={"Scan Again"} onPress={resetScanned} />}
             </View>
             <JoinSessionBottomSheet
                 loading={false}
