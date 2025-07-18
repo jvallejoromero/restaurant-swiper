@@ -67,11 +67,21 @@ const JoinSessionBottomSheet = ({ loading, sheetRef, onChange, session, onJoinSe
             <BottomSheetScrollView className="py-4 px-6" onLayout={handleLayout}>
                 <View className="gap-4 mb-8">
                     <View>
-                        <Text className="text-2xl font-bold text-center">
+                        <Text
+                            className="text-2xl font-bold text-center"
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                        >
                             {session.title ?? "Untitled Session"}
                         </Text>
                         {session.description ? (
-                            <Text className="text-gray-600 text-center">{session.description}</Text>
+                            <Text
+                                numberOfLines={2}
+                                ellipsizeMode="tail"
+                                className="text-gray-600 text-center"
+                            >
+                                {session.description}
+                            </Text>
                         ) : null}
                     </View>
 
