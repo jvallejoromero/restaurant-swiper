@@ -1,22 +1,24 @@
-import {Text, View, TouchableOpacity} from "react-native";
+import {Text, View, TouchableOpacity, ScrollView} from "react-native";
 import React, {useEffect, useMemo, useState} from "react";
 import BottomSheet, {BottomSheetScrollView} from "@gorhom/bottom-sheet";
-import {SwipingSession} from "@/services/DatabaseService";
+import {AppUserProfile, SwipingSession} from "@/services/DatabaseService";
 import { Ionicons } from "@expo/vector-icons";
 import { useServices } from "@/context/ServicesContext";
+import MapView, {Marker} from "react-native-maps";
+import CachedAvatar from "@/components/avatar/CachedAvatar";
 
 type JoinSessionBottomSheetProps = {
     loading: boolean;
     sheetRef: React.RefObject<BottomSheet | null>;
-    index?: number;
     onChange?: (index: number) => void;
     session: SwipingSession | null | undefined;
     onJoinSession: () => void;
 }
 
-const snapPoints = useMemo(() => ["25%", "50%", "75%"], []);
+const JoinSessionBottomSheet = ({ loading, sheetRef, onChange, session, onJoinSession }: JoinSessionBottomSheetProps) => {
+    const [sessionOwner, setSessionOwner] = useState<AppUserProfile | null>(null);
+    const snapPoints = useMemo(() => ["25%", "50%", "75%", "90%"], []);
 
-const JoinSessionBottomSheet = ({ loading, sheetRef, index, onChange, session, onJoinSession }: JoinSessionBottomSheetProps) => {
     const { database } = useServices();
 
     useEffect(() => {
@@ -24,50 +26,120 @@ const JoinSessionBottomSheet = ({ loading, sheetRef, index, onChange, session, o
             (async () => {
                 console.log("getting owner data..");
                 console.log("user id:", session.createdBy);
-                let profile;
-                try {
-                    profile = await database.getUserProfile(session.createdBy);
-                } catch (err) {
-                    console.log(err);
-                    alert("error fetching owner data.");
-                }
-                console.log(profile);
+                const profile = await database.getUserProfile(session.createdBy);
+                setSessionOwner(profile);
             })();
-
         }
     }, [session?.id]);
 
-    if (session === undefined  || session === null) {
+    const handleLayout = () => {
+        if (sessionOwner) {
+            sheetRef.current?.expand();
+        }
+    }
+
+    if (!session || sessionOwner === null) {
         return null;
     }
+
+    const Header = () => (
+        <View className="px-6 pt-4 pb-2 bg-white rounded-t-2xl flex-row items-center justify-between">
+            <View className="w-12 h-1.5 bg-gray-300 rounded mx-auto" />
+            <TouchableOpacity onPress={() => sheetRef.current?.close()}>
+                <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+        </View>
+    );
 
     return (
         <BottomSheet
             ref={sheetRef}
-            index={index}
+            index={-1}
             onChange={onChange}
             snapPoints={snapPoints}
             enablePanDownToClose
             backgroundStyle={{ borderRadius: 16 }}
+            handleComponent={Header}
             handleIndicatorStyle={{ backgroundColor: "#d52e4c", width: 40 }}
         >
-            <BottomSheetScrollView className="py-4 px-6">
-                <Text className="text-2xl font-bold text-center">
-                    {session.title ?? "Untitled Session"}
-                </Text>
+            <BottomSheetScrollView className="py-4 px-6" onLayout={handleLayout}>
+                <View className="gap-4 mb-8">
+                    <View>
+                        <Text className="text-2xl font-bold text-center">
+                            {session.title ?? "Untitled Session"}
+                        </Text>
+                        {session.description ? (
+                            <Text className="text-gray-600 text-center">{session.description}</Text>
+                        ) : null}
+                    </View>
 
-                <View className="flex-row items-center">
-                    <Ionicons name="person-circle-outline" size={24} color="#555" />
-                    <Text className="ml-2 text-gray-700">
-                        {session.createdBy}·{" "}
-                        {session.createdAt.toDate().toLocaleTimeString()}
-                    </Text>
+                    <MapView
+                        style={{ height: 200, borderRadius: 12 }}
+                        initialRegion={{
+                            latitude: session.location.coords.latitude,
+                            longitude: session.location.coords.longitude,
+                            latitudeDelta: 0.02,
+                            longitudeDelta: 0.02,
+                        }}
+                        scrollEnabled={false}
+                        zoomEnabled={false}
+                    >
+                        <Marker coordinate={session.location.coords} />
+                    </MapView>
+
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        {session.filters?.map((f) => (
+                            <View
+                                key={f}
+                                className="bg-gray-200 px-3 py-1 rounded-full mr-2"
+                            >
+                                <Text className="text-gray-700">{f}</Text>
+                            </View>
+                        ))}
+                    </ScrollView>
+
+                    {sessionOwner && (
+                        <View>
+                            <View className="flex-row items-center gap-2">
+                                <Text className="text-gray-700 text-lg">Session By: </Text>
+                                <CachedAvatar
+                                    userId={session.createdBy}
+                                    photoUrl={sessionOwner.photoURL}
+                                    size={24}
+                                />
+                                <Text className="text-gray-700 text-lg">
+                                    {sessionOwner.displayName ?? sessionOwner.username}
+                                </Text>
+                            </View>
+                            <View className="flex-row items-center gap-2">
+                                <Text className="text-gray-700 text-lg">Created On: </Text>
+                                <Text className="text-gray-700 text-lg">
+                                    {session.createdAt.toDate().toLocaleString()}
+                                </Text>
+                            </View>
+                        </View>
+                    )}
+
+                    <View className="gap-2 mt-4 bg-white rounded-lg p-4 shadow-sm mb-4">
+                        <Text className="font-medium text-gray-800 mb-1">How it works:</Text>
+                        <Text className="text-gray-600">• You’ll swipe cards one at a time.</Text>
+                        <Text className="text-gray-600">• Swipe right to like, left to skip.</Text>
+                        <Text className="text-gray-600">• Matches appear when one or more people like the same place</Text>
+                    </View>
                 </View>
-
-                {session.description ? (
-                    <Text className="text-gray-600">{session.description}</Text>
-                ) : null}
-
+            </BottomSheetScrollView>
+            <View className="py-4 px-6 border-t border-gray-200 bg-white">
+                <Text className="text-sm text-gray-500 mb-2">
+                    {session.participantCount > 1 ? (
+                        <Text>
+                            {`Join ${sessionOwner.displayName ?? sessionOwner.username} and ${session.participantCount} others`}
+                        </Text>
+                    ) : (
+                        <Text>
+                            {`Be the first to join ${sessionOwner.displayName ?? sessionOwner.username}'s session`}
+                        </Text>
+                    )}
+                </Text>
                 <TouchableOpacity
                     onPress={onJoinSession}
                     disabled={loading}
@@ -79,7 +151,7 @@ const JoinSessionBottomSheet = ({ loading, sheetRef, index, onChange, session, o
                         {loading ? "Joining…" : "Join Session"}
                     </Text>
                 </TouchableOpacity>
-            </BottomSheetScrollView>
+            </View>
         </BottomSheet>
     );
 }

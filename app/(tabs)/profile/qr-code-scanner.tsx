@@ -79,19 +79,6 @@ const QRCodeScannerScreen = () => {
         })();
     }, []);
 
-    useEffect(() => {
-        if (!session) {
-            return;
-        }
-        const timeout = setTimeout(() => {
-            joinSessionSheetRef.current?.expand();
-        }, 100);
-
-        return () => {
-            clearTimeout(timeout);
-        }
-    }, [session]);
-
     const requestPermission = async () => {
         const res = await Camera.requestCameraPermissionsAsync();
         setPermission(res);

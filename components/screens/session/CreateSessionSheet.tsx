@@ -45,8 +45,6 @@ const LocationMap = ({ title, location }: {title: string, location: LocationObje
         </View>
     );
 }
-
-const snapPoints = useMemo(() => ["10%", "20%", "50%", "90%"], []);
 const availableFilters = ["coming-soon"];
 
 export default function CreateSessionSheet({ loading, sheetRef, index, onChange, onCreate }: CreateSessionSheetProps) {
@@ -55,6 +53,8 @@ export default function CreateSessionSheet({ loading, sheetRef, index, onChange,
     const [radius, setRadius] = useState<number>(10_000);
     const [filters, setFilters] = useState<string[]>([]);
     const [locationName, setLocationName] = useState<string>("your area");
+
+    const snapPoints = useMemo(() => ["10%", "20%", "50%", "90%"], []);
 
     const { fetchingLocation, userLocation } = useContext(UserLocationContext);
 

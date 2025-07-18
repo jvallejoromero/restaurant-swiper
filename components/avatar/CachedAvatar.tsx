@@ -1,7 +1,7 @@
-import {Image, View} from "react-native";
-import React, {useEffect, useState} from "react";
+import {View} from "react-native";
+import React from "react";
 import {IMAGES} from "@/constants/images";
-import {cacheProfilePicture} from "@/utils/CacheUtils";
+import {Image} from "expo-image";
 
 type CachedAvatarProps = {
     userId: string;
@@ -11,21 +11,6 @@ type CachedAvatarProps = {
 }
 
 const CachedAvatar = ({ photoUrl, userId, size=144, className }: CachedAvatarProps) => {
-    const [localUri, setLocalUri] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (!photoUrl) {
-            setLocalUri(null);
-            return;
-        }
-
-        let mounted = true;
-        cacheProfilePicture(photoUrl, userId)
-            .then(path => mounted && setLocalUri(path))
-            .catch(() => mounted && setLocalUri(null));
-
-        return () => { mounted = false; };
-    }, [photoUrl]);
 
     return (
         <View
@@ -33,9 +18,20 @@ const CachedAvatar = ({ photoUrl, userId, size=144, className }: CachedAvatarPro
             className={`${className ? className : 'rounded-full shadow-neutral-900 border-neutral-800/40 overflow-hidden'}`}
         >
             <Image
-                source={localUri ? { uri: localUri } : IMAGES.default_avatar}
-                resizeMode="cover"
-                className="w-full h-full self-center"
+                source={photoUrl ? { uri: photoUrl } : IMAGES.default_avatar}
+                style={{ width: "100%", height: "100%" }}
+                contentFit="cover"
+                contentPosition="center"
+                cachePolicy="disk"
+                onLoad={(e) => {
+                    (async() => {
+                        console.log(" ");
+                        console.log("loaded image for", userId, "via", e.cacheType);
+                        const src = await Image.getCachePathAsync(e.source.url);
+                        console.log("Used file at:", src);
+                        console.log(" ");
+                    })();
+                }}
             />
         </View>
     );
