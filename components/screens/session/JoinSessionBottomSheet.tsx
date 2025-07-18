@@ -78,8 +78,8 @@ const JoinSessionBottomSheet = ({ loading, sheetRef, onChange, session, onJoinSe
                         initialRegion={{
                             latitude: session.location.coords.latitude,
                             longitude: session.location.coords.longitude,
-                            latitudeDelta: 0.02,
-                            longitudeDelta: 0.02,
+                            latitudeDelta: 0.1,
+                            longitudeDelta: 0.1,
                         }}
                         scrollEnabled={false}
                         zoomEnabled={false}
@@ -124,7 +124,7 @@ const JoinSessionBottomSheet = ({ loading, sheetRef, onChange, session, onJoinSe
                         <Text className="font-medium text-gray-800 mb-1">How it works:</Text>
                         <Text className="text-gray-600">• You’ll swipe cards one at a time.</Text>
                         <Text className="text-gray-600">• Swipe right to like, left to skip.</Text>
-                        <Text className="text-gray-600">• Matches appear when one or more people like the same place</Text>
+                        <Text className="text-gray-600">• A match happens when everyone likes the same spot.</Text>
                     </View>
                 </View>
             </BottomSheetScrollView>
