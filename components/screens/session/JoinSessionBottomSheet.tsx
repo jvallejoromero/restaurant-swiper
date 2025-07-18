@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useServices } from "@/context/ServicesContext";
 import MapView, {Marker} from "react-native-maps";
 import CachedAvatar from "@/components/avatar/CachedAvatar";
+import {useLocationName} from "@/hooks/LocationNameHook";
 
 type JoinSessionBottomSheetProps = {
     loading: boolean;
@@ -20,6 +21,7 @@ const JoinSessionBottomSheet = ({ loading, sheetRef, onChange, session, onJoinSe
     const snapPoints = useMemo(() => ["25%", "50%", "75%", "90%"], []);
 
     const { database } = useServices();
+    const { locationName } = useLocationName(session?.location);
 
     useEffect(() => {
         if (session) {
@@ -86,6 +88,25 @@ const JoinSessionBottomSheet = ({ loading, sheetRef, onChange, session, onJoinSe
                     >
                         <Marker coordinate={session.location.coords} />
                     </MapView>
+
+                    <View className="flex-row items-center justify-between">
+                        <View className="flex-row items-center gap-1 flex-1 mr-8">
+                            <Ionicons name="map-outline"  size={20} color="#555" />
+                            <Text
+                                className="text-gray-700"
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                            >
+                                {locationName ?? "Loading location…"}
+                            </Text>
+                        </View>
+                        <View className="flex-row items-center gap-1 flex-shrink-0">
+                            <Ionicons name="scan-circle-outline" size={20} color="#555" />
+                            <Text className="text-gray-700">
+                                Radius: {session.radius} km
+                            </Text>
+                        </View>
+                    </View>
 
                     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                         {session.filters?.map((f) => (
