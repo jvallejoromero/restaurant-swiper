@@ -7,6 +7,7 @@ import { useServices } from "@/context/ServicesContext";
 import MapView, {Marker} from "react-native-maps";
 import CachedAvatar from "@/components/avatar/CachedAvatar";
 import {useLocationName} from "@/hooks/LocationNameHook";
+import {getTimeSince} from "@/utils/DateUtils";
 
 type JoinSessionBottomSheetProps = {
     loading: boolean;
@@ -132,7 +133,7 @@ const JoinSessionBottomSheet = ({ loading, sheetRef, onChange, session, onJoinSe
                     {sessionOwner && (
                         <View>
                             <View className="flex-row items-center gap-2">
-                                <Text className="text-gray-700 text-lg">Session By: </Text>
+                                <Text className="text-gray-700 text-lg">Session By:</Text>
                                 <CachedAvatar
                                     userId={session.createdBy}
                                     photoUrl={sessionOwner.photoURL}
@@ -143,9 +144,9 @@ const JoinSessionBottomSheet = ({ loading, sheetRef, onChange, session, onJoinSe
                                 </Text>
                             </View>
                             <View className="flex-row items-center gap-2">
-                                <Text className="text-gray-700 text-lg">Created On: </Text>
+                                <Text className="text-gray-700 text-lg">Created:</Text>
                                 <Text className="text-gray-700 text-lg">
-                                    {session.createdAt.toDate().toLocaleString()}
+                                    {getTimeSince(session.createdAt.toDate())}
                                 </Text>
                             </View>
                         </View>
