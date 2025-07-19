@@ -22,7 +22,7 @@ import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
 import PopupMessage, { PopupMessageRef } from "@/components/popups/PopupMessage";
 import GenericButton from "@/components/buttons/GenericButton";
 import CurrentSessionInfoPopup from "@/components/popups/CurrentSessionInfoPopup";
-import {useNavigation} from "expo-router";
+import {router, useNavigation} from "expo-router";
 import BigActionButton from "@/components/buttons/BigActionButton";
 
 type MockData = {
@@ -210,7 +210,7 @@ export default function SessionsScreen() {
                             <BigActionButton
                                 label={"Scan QR Code"}
                                 iconName={"qrcode-scan"}
-                                onPress={() => console.log('qr code scan')}
+                                onPress={() => router.push("/profile/qr-code-scanner")}
                             />
                         </View>
                     )}
