@@ -150,11 +150,11 @@ export class FirebaseDatabaseService implements DatabaseService {
             joinedAt: serverTimestamp(),
         }
         await setDoc(participantRef, participant);
-        await updateDoc(sessionRef, {
-            participantCount: increment(1),
-        });
         await this.updateUserProfile(userId, {
             activeSessionId: sessionId,
+        });
+        await updateDoc(sessionRef, {
+            participantCount: increment(1),
         });
         console.log(`User ${userId} added to session ${sessionId}`);
     }

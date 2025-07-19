@@ -16,6 +16,8 @@ import MiniButton from "@/components/buttons/MiniButton";
 import JoinSessionBottomSheet from "@/components/screens/session/JoinSessionBottomSheet";
 import BottomSheet from "@gorhom/bottom-sheet";
 import {useQRCodeAnalyzer} from "@/hooks/QRCodeAnalyzerHook";
+import {useServices} from "@/context/ServicesContext";
+import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
 
 let lastScanTime = 0;
 
@@ -69,9 +71,12 @@ const ScanResults = ({ canOpenUrl, url, session, bottomSheetRef }: ScanResultsPr
 const QRCodeScannerScreen = () => {
     const [permission, setPermission] = useState<PermissionResponse | null>(null);
     const [scanResult, setScannedResult] = useState<BarcodeScanningResult | null>(null);
+    const [isJoiningSession, setIsJoiningSession] = useState<boolean>(false);
 
     const joinSessionSheetRef = useRef<BottomSheet>(null);
     const { canOpenUrl, session } = useQRCodeAnalyzer(scanResult);
+    const { user, database } = useServices();
+    const { activeSession, participants } = useActiveSwipingSession();
 
     useEffect(() => {
         (async() => {
@@ -82,6 +87,23 @@ const QRCodeScannerScreen = () => {
     const requestPermission = async () => {
         const res = await Camera.requestCameraPermissionsAsync();
         setPermission(res);
+    }
+
+    const handleJoinSession = async (sessionId: string) => {
+        if (!user?.uid) return;
+        if (activeSession !== null) {
+            console.log(participants);
+            if (participants.some(u => u.id === user.uid)) {
+                alert("You are already in this session!");
+                return;
+            }
+            alert("You are already in a session, please leave that one before joining this one.");
+            return;
+        }
+        setIsJoiningSession(true);
+        await database.addUserToSession(sessionId, user?.uid);
+        setIsJoiningSession(false);
+        joinSessionSheetRef.current?.close();
     }
 
     const handleBarcodeScanned = (result: BarcodeScanningResult) => {
@@ -143,10 +165,10 @@ const QRCodeScannerScreen = () => {
                 )}
             </View>
             <JoinSessionBottomSheet
-                loading={false}
+                loading={isJoiningSession}
                 sheetRef={joinSessionSheetRef}
                 session={session}
-                onJoinSession={() => console.log("join session!")}
+                onJoinSession={handleJoinSession}
             />
         </SafeAreaView>
     );

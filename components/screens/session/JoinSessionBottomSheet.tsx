@@ -14,7 +14,7 @@ type JoinSessionBottomSheetProps = {
     sheetRef: React.RefObject<BottomSheet | null>;
     onChange?: (index: number) => void;
     session: SwipingSession | null | undefined;
-    onJoinSession: () => void;
+    onJoinSession: (sessionId: string) => void;
 }
 
 const JoinSessionBottomSheet = ({ loading, sheetRef, onChange, session, onJoinSession }: JoinSessionBottomSheetProps) => {
@@ -173,7 +173,7 @@ const JoinSessionBottomSheet = ({ loading, sheetRef, onChange, session, onJoinSe
                     )}
                 </Text>
                 <TouchableOpacity
-                    onPress={onJoinSession}
+                    onPress={() => onJoinSession(session.id)}
                     disabled={loading}
                     className={`py-3 rounded-lg items-center ${
                         loading ? "bg-gray-300" : "bg-red-600"
