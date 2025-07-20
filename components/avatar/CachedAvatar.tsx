@@ -19,7 +19,10 @@ const CachedAvatar = ({ photoUrl, userId, size=144, className }: CachedAvatarPro
         >
             <Image
                 source={photoUrl ? { uri: photoUrl } : IMAGES.default_avatar}
-                style={{ width: "100%", height: "100%" }}
+                style={{
+                    width: "100%",
+                    height: "100%",
+                }}
                 contentFit="cover"
                 contentPosition="center"
                 cachePolicy="disk"
