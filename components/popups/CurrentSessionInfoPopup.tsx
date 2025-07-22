@@ -8,6 +8,7 @@ import {COLORS} from "@/constants/colors";
 import SessionQRCode from "@/components/session/SessionQRCode";
 import { SwipingSession } from "@/services/DatabaseService";
 import {useServices} from "@/context/ServicesContext";
+import { useToast } from "@/context/ToastContext";
 
 type CurrentSessionInfoProps = {
     session: SwipingSession | null;
@@ -23,6 +24,8 @@ type GeoInfo = {
 
 const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps) => {
     const { user, database } = useServices();
+    const { showToast } = useToast();
+
     const [inviteUrl, setInviteUrl] = useState("");
     const [geoInfo, setGeoInfo] = useState<GeoInfo>({ city: null, region: null, country: null, fallback: "Your area" });
     const [endingSession, setEndingSession] = useState<boolean>(false);
@@ -42,7 +45,8 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
 
     const onCopyLink = useCallback(() => {
         void Clipboard.setStringAsync(inviteUrl);
-    }, [inviteUrl]);
+        showToast("Copied to Clipboard");
+    }, [inviteUrl, showToast]);
 
     const onShare = useCallback(async () => {
         try {
@@ -68,7 +72,7 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
             ref={popupRef}
             className="bg-neutral-100 rounded-xl p-6 w-[90%] max-w-sm shadow-xl shadow-neutral-900/40"
         >
-            <View className="px-4 gap-4">
+            <View className="relative px-4 gap-4">
                 <View className="flex-row justify-between">
                     <Text className="text-xl font-semibold">
                         {session.title}
