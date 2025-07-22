@@ -2,13 +2,13 @@ import {ActivityIndicator, Share, Text, TouchableOpacity, View} from "react-nati
 import React, {RefObject, useCallback, useEffect, useState} from "react";
 import * as Location from "expo-location";
 import * as Clipboard from "expo-clipboard";
-import PopupMessage, { PopupMessageRef } from "@/components/popups/PopupMessage";
+import PopupMessage, {PopupMessageRef} from "@/components/popups/PopupMessage";
 import {MaterialCommunityIcons} from "@expo/vector-icons";
 import {COLORS} from "@/constants/colors";
 import SessionQRCode from "@/components/session/SessionQRCode";
-import { SwipingSession } from "@/services/DatabaseService";
+import {SwipingSession} from "@/services/DatabaseService";
 import {useServices} from "@/context/ServicesContext";
-import { useToast } from "@/context/ToastContext";
+import {useToast} from "@/context/ToastContext";
 
 type CurrentSessionInfoProps = {
     session: SwipingSession | null;

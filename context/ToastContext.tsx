@@ -1,10 +1,10 @@
 import React, {createContext, useContext} from "react";
-import {useToastHook} from "@/hooks/ToastHook";
+import {Toast, ToastType, useToastHook} from "@/hooks/ToastHook";
 import { View } from "react-native";
 import ToastMessage from "@/components/ToastMessage";
 
 type ToastContextProps = {
-    showToast: (message: string) => void;
+    showToast: (message: string, type?: ToastType) => void;
 }
 
 export const ToastContext = createContext<ToastContextProps | null>(null);
@@ -15,7 +15,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode}) => {
         <ToastContext.Provider value={{showToast}}>
             <View className="flex-1 relative">
                 {children}
-                <ToastMessage message={toast} />
+                {toast && <ToastMessage message={toast.message} toastType={toast.toastType} />}
             </View>
         </ToastContext.Provider>
     );
