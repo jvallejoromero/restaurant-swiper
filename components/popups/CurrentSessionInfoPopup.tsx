@@ -72,7 +72,7 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
             ref={popupRef}
             className="bg-neutral-100 rounded-xl p-6 w-[90%] max-w-sm shadow-xl shadow-neutral-900/40"
         >
-            <View className="relative px-4 gap-4">
+            <View className="px-4 gap-4">
                 <View className="flex-row justify-between">
                     <Text className="text-xl font-semibold">
                         {session.title}
