@@ -124,7 +124,7 @@ export default function EditProfileScreen() {
             showToast("Could not upload profile picture", ToastType.ERROR);
             return;
         }
-        showToast("Updated profile picture", ToastType.SUCCESS);
+        showToast("Updated Profile Picture", ToastType.SUCCESS);
     }
 
     const handleTakePicture = async() => {
@@ -160,7 +160,7 @@ export default function EditProfileScreen() {
             showToast("Could not upload profile picture", ToastType.ERROR);
             return;
         }
-        showToast("Updated profile picture", ToastType.SUCCESS);
+        showToast("Updated Profile Picture", ToastType.SUCCESS);
     }
 
     const ProfileInfoEntry = ({ label, value, iconName, onPress }: {label: string, value: string | undefined, iconName: React.ComponentProps<typeof Ionicons>["name"], onPress: () => void }) => {

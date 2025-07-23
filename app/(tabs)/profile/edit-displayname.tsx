@@ -9,12 +9,15 @@ import {ConfirmChangesModal} from "@/components/modals/ConfirmChangesModal";
 import GenericLoadingScreen from "@/components/screens/GenericLoadingScreen";
 import BackDoneNavigationHeader from "@/components/headers/BackDoneNavigationHeader";
 import Separator from "@/components/ui/Separator";
+import {ToastType} from "@/hooks/ToastHook";
+import {useToast} from "@/context/ToastContext";
 
 
 export default function EditDisplayNameScreen() {
     const router = useRouter();
     const navigation = useNavigation();
     const { user, database } = useServices();
+    const { showToast } = useToast();
 
     const [isFocused, setIsFocused] = useState<boolean>(false);
     const [isEdited, setIsEdited] = useState<boolean>(false);
@@ -45,7 +48,7 @@ export default function EditDisplayNameScreen() {
         setShowConfirmModal(true);
     });
 
-    const updateDisplayName = () => {
+    const updateDisplayName = async() => {
         if (!userUid) return;
         setPressedDone(true);
 
@@ -55,16 +58,22 @@ export default function EditDisplayNameScreen() {
         }
 
         if (displayName?.trim() === '') {
-            database.updateUserProfile(userUid, {displayName: user?.username ?? ""})
-                .then(() => {
-                    router.back();
-                })
-            return;
+            try {
+                await database.updateUserProfile(userUid, { displayName: user?.username ?? "" });
+            } catch (error) {
+                showToast("An error occurred while updating profile.", ToastType.ERROR);
+                return;
+            }
+        } else {
+            try {
+                await database.updateUserProfile(userUid, { displayName: displayName?.trim() });
+            } catch (error) {
+                showToast("An error occurred while updating profile.", ToastType.ERROR);
+                return;
+            }
         }
-        database.updateUserProfile(userUid, {displayName: displayName?.trim()})
-            .then(() => {
-                router.back();
-            })
+        showToast("Updated Display Name", ToastType.SUCCESS);
+        router.back();
     }
 
     // auto focus floating label input

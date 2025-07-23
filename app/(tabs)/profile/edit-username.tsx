@@ -8,12 +8,15 @@ import {ConfirmChangesModal} from "@/components/modals/ConfirmChangesModal";
 import GenericLoadingScreen from "@/components/screens/GenericLoadingScreen";
 import BackDoneNavigationHeader from "@/components/headers/BackDoneNavigationHeader";
 import Separator from "@/components/ui/Separator";
+import { useToast } from "@/context/ToastContext";
+import {ToastType} from "@/hooks/ToastHook";
 
 
 export default function EditDisplayNameScreen() {
     const router = useRouter();
     const navigation = useNavigation();
     const {user, database} = useServices();
+    const { showToast } = useToast();
 
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -53,7 +56,7 @@ export default function EditDisplayNameScreen() {
     });
 
     // calls when pressing the "Done" button
-    const updateUsername = () => {
+    const updateUsername = async () => {
         if (!userUid) return;
         if (verifyingUsername) return;
 
@@ -82,11 +85,16 @@ export default function EditDisplayNameScreen() {
 
         // update to new username
         const oldUsername = user?.username;
-        database.updateUsernameDoc(userUid, oldUsername, username!.trim(), user?.email).then(() => {});
-        database.updateUserProfile(userUid, {username: username?.trim()})
-            .then(() => {
-                router.back();
-            })
+        try {
+            await database.updateUsernameDoc(userUid, oldUsername, username!.trim(), user?.email);
+            await database.updateUserProfile(userUid, {username: username?.trim()});
+        } catch (error) {
+            router.back();
+            showToast("An error occurred while updating profile.", ToastType.ERROR);
+            return;
+        }
+        router.back();
+        showToast("Updated Username", ToastType.SUCCESS);
     }
 
     const triggerShake = () => {
