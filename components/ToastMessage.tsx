@@ -12,14 +12,14 @@ type ToastMessageProps = {
 const NeutralToastMessage = ({ message }: { message: string }) => {
     return (
         <View className="min-h-[60] mt-20 mx-6
-                           bg-white/95 rounded-lg border-l-4 border-l-primary/95
+                           bg-white rounded-lg border-l-4 border-l-primary/95
                              border border-accent-grey/20
                              shadow-md shadow-black/10
                             ">
             <View className="flex-1 flex-row py-2 px-4 items-center justify-between">
                 <View className="flex-1 mr-2">
                     <Text
-                        className="text-black font-medium text-lg"
+                        className="text-black font-medium text-lg leading-tight"
                         numberOfLines={2}
                         ellipsizeMode="tail"
                     >
@@ -35,14 +35,14 @@ const NeutralToastMessage = ({ message }: { message: string }) => {
 const InfoToastMessage = ({ message }: { message: string }) => {
     return (
         <View className="min-h-[60] mt-20 mx-6
-                           bg-white/95 rounded-lg border-l-4 border-l-primary/95
+                           bg-white rounded-lg border-l-4 border-l-primary/95
                              border border-accent-grey/20
                              shadow-md shadow-black/10
                             ">
             <View className="flex-1 flex-row py-2 px-4 items-center justify-between">
                 <View className="flex-1 mr-2">
                     <Text
-                        className="text-black font-medium text-lg"
+                        className="text-black font-medium text-lg leading-tight"
                         numberOfLines={2}
                         ellipsizeMode="tail"
                     >
@@ -60,14 +60,14 @@ const InfoToastMessage = ({ message }: { message: string }) => {
 const SuccessToastMessage = ({ message }: { message: string }) => {
     return (
         <View className="min-h-[60] mt-20 mx-6
-                           bg-green-600/95  rounded-lg border-l-4 border-l-green-800/95
+                           bg-green-600  rounded-lg border-l-4 border-l-green-800/95
                              border border-accent-grey/20
                              shadow-md shadow-black/10
                             ">
             <View className="flex-1 flex-row py-2 px-4 items-center justify-between">
                 <View className="flex-1 mr-2">
                     <Text
-                        className="text-white font-medium text-lg"
+                        className="text-white font-medium text-lg leading-tight"
                         numberOfLines={2}
                         ellipsizeMode="tail"
                     >
@@ -85,14 +85,14 @@ const SuccessToastMessage = ({ message }: { message: string }) => {
 const ErrorToastMessage = ({ message }: { message: string }) => {
     return (
         <View className="min-h-[60] mt-20 mx-6
-                           bg-red-600/95  rounded-lg border-l-4 border-l-red-800/95
+                           bg-red-600 rounded-lg border-l-4 border-l-red-800/95
                              border border-accent-grey/20
                              shadow-md shadow-black/10
                             ">
             <View className="flex-1 flex-row py-2 px-4 items-center justify-between">
                 <View className="flex-1 mr-2">
                     <Text
-                        className="text-white font-medium text-lg"
+                        className="text-white font-medium text-lg leading-tight"
                         numberOfLines={2}
                         ellipsizeMode="tail"
                     >
@@ -110,14 +110,14 @@ const ErrorToastMessage = ({ message }: { message: string }) => {
 const WarningToastMessage = ({ message }: { message: string }) => {
     return (
         <View className="min-h-[60] mt-20 mx-6
-                           bg-yellow-400/95  rounded-lg border-l-4 border-l-amber-400/95
+                           bg-yellow-400  rounded-lg border-l-4 border-l-amber-400/95
                              border border-accent-grey/20
                              shadow-md shadow-black/10
                             ">
             <View className="flex-1 flex-row py-2 px-4 items-center justify-between">
                 <View className="flex-1 mr-2">
                     <Text
-                        className="text-white font-medium text-lg"
+                        className="text-white font-medium text-lg leading-tight"
                         numberOfLines={2}
                         ellipsizeMode="tail"
                     >
