@@ -110,7 +110,7 @@ const QRCodeScannerScreen = () => {
         setIsJoiningSession(false);
 
         joinSessionSheetRef.current?.close();
-        
+        router.dismissAll();
         router.push("/profile/swipe-session");
         showToast("You joined the session.", ToastType.SUCCESS);
     }
