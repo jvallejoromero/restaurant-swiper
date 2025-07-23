@@ -35,7 +35,7 @@ const ModifyProfilePictureSheet = ({ sheetRef, entries, onOptionPress }: ModifyP
             handleComponent={Header}
             backgroundStyle={{ backgroundColor: "white", borderTopLeftRadius: 20, borderTopRightRadius: 20, shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 10 }}
         >
-            <BottomSheetView className="py-4 px-6 pb-safe">
+            <BottomSheetView className="py-4 px-6 mb-safe">
                 {entries.map(({ label, iconName }, index) => {
                     const isLast = index === entries.length - 1;
                     const isDelete = label.toLowerCase().includes("delete");

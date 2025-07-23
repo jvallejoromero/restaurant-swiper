@@ -1,11 +1,12 @@
-import BottomSheet, {BottomSheetScrollView} from "@gorhom/bottom-sheet";
+import {BottomSheetModal, BottomSheetScrollView} from "@gorhom/bottom-sheet";
 import React, {useContext, useEffect, useMemo, useState} from "react";
 import {UserLocationContext} from "@/context/UserLocationContext";
-import {ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
+import {ActivityIndicator, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import Slider from "@react-native-community/slider";
 import MapView, {Marker} from "react-native-maps";
 import { LocationObject } from "expo-location";
 import * as Location from "expo-location";
+import {Ionicons} from "@expo/vector-icons";
 
 export type CreateSessionOptions = {
     title: string;
@@ -18,9 +19,7 @@ export type CreateSessionOptions = {
 
 type CreateSessionSheetProps = {
     loading: boolean;
-    sheetRef: React.RefObject<BottomSheet | null>;
-    index?: number;
-    onChange?: (index: number) => void;
+    sheetRef: React.RefObject<BottomSheetModal | null>;
     onCreate: (selectedOptions: CreateSessionOptions) => void;
 }
 
@@ -47,14 +46,14 @@ const LocationMap = ({ title, location }: {title: string, location: LocationObje
 }
 const availableFilters = ["coming-soon"];
 
-export default function CreateSessionSheet({ loading, sheetRef, index, onChange, onCreate }: CreateSessionSheetProps) {
+export default function CreateSessionSheet({ loading, sheetRef, onCreate }: CreateSessionSheetProps) {
     const [title, setTitle] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [radius, setRadius] = useState<number>(10_000);
     const [filters, setFilters] = useState<string[]>([]);
     const [locationName, setLocationName] = useState<string>("your area");
 
-    const snapPoints = useMemo(() => ["10%", "20%", "50%", "90%"], []);
+    const snapPoints = useMemo(() => ["25%", "50%", "85%"], []);
 
     const { fetchingLocation, userLocation } = useContext(UserLocationContext);
 
@@ -124,23 +123,25 @@ export default function CreateSessionSheet({ loading, sheetRef, index, onChange,
         );
     }
 
+    const Header = () => (
+        <View className="px-6 pt-8 pb-4 bg-white rounded-full flex-row items-center justify-between">
+            <Text className="text-xl font-semibold mx-auto">Create New Session</Text>
+            <TouchableOpacity onPress={() => sheetRef.current?.dismiss()}>
+                <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+        </View>
+    );
 
     return (
-        <BottomSheet
+        <BottomSheetModal
             ref={sheetRef}
-            index={index ?? -1}
-            onChange={onChange}
-            animateOnMount={false}
+            index={3}
             snapPoints={snapPoints}
             enablePanDownToClose
-            backgroundStyle={{ borderRadius: 20, backgroundColor: "#fff" }}
-            handleIndicatorStyle={{
-                marginTop: 5,
-                backgroundColor: "#d52e4c",
-                width: 35,
-            }}
+            handleComponent={Header}
+            backgroundStyle={{ shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 10 }}
         >
-            <BottomSheetScrollView className="py-4 px-6">
+            <BottomSheetScrollView className="px-6 mb-safe">
                 <View className="gap-2">
                     <View className="gap-2">
                         <Text className="text-lg font-semibold">Location</Text>
@@ -191,7 +192,7 @@ export default function CreateSessionSheet({ loading, sheetRef, index, onChange,
                     </Pressable>
                 </View>
             </BottomSheetScrollView>
-        </BottomSheet>
+        </BottomSheetModal>
     );
 
 }

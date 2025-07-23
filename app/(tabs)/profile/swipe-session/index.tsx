@@ -14,7 +14,7 @@ import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import Separator from "@/components/ui/Separator";
 import {Feather} from "@expo/vector-icons";
 import {CardsSwipeAnimation} from "@/components/animations/LoadingAnimations";
-import BottomSheet from "@gorhom/bottom-sheet";
+import {BottomSheetModal} from "@gorhom/bottom-sheet";
 import CreateSessionSheet, { CreateSessionOptions } from "@/components/screens/session/CreateSessionSheet";
 import {useServices} from "@/context/ServicesContext";
 import {Place} from "@/types/Places.types";
@@ -91,7 +91,7 @@ const renderSession: ListRenderItem<MockData> = ({ item }) => (
 );
 
 export default function SessionsScreen() {
-    const sheetRef = useRef<BottomSheet>(null);
+    const sheetRef = useRef<BottomSheetModal>(null);
     const cannotCreateSessionRef = useRef<PopupMessageRef>(null);
     const activeSessionPopupRef = useRef<PopupMessageRef>(null);
 
@@ -116,7 +116,7 @@ export default function SessionsScreen() {
     }, [navigation]);
 
     const openBottomSheet = useCallback(() => {
-        sheetRef.current?.expand();
+        sheetRef.current?.present();
     }, []);
 
     if (loading || !user) {
@@ -139,7 +139,7 @@ export default function SessionsScreen() {
             return;
         }
         setLoadingSession(false);
-        sheetRef.current?.close();
+        sheetRef.current?.dismiss();
         showToast("Created new session", ToastType.SUCCESS);
     }
 
