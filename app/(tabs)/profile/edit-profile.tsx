@@ -7,6 +7,7 @@ import {
     Animated,
     Modal,
     Pressable,
+    Linking,
 } from "react-native";
 import {Ionicons} from "@expo/vector-icons";
 import {useRouter} from "expo-router";
@@ -19,6 +20,8 @@ import CachedAvatar from "@/components/avatar/CachedAvatar";
 import { LinearGradient } from "expo-linear-gradient";
 import {useToast} from "@/context/ToastContext";
 import {ToastType} from "@/hooks/ToastHook";
+import PopupMessage, {PopupMessageRef} from "@/components/popups/PopupMessage";
+import GenericButton from "@/components/buttons/GenericButton";
 
 type ProfileEntry = {
     label: string;
@@ -38,14 +41,16 @@ const modifyPfpOptions: ModifyPfpEntry[] = [
 ];
 
 export default function EditProfileScreen() {
+    const [isPfpOptionsOpen, setIsPfpOptionsOpen] = useState<boolean>(false);
+    const [anchor, setAnchor] = useState({ x: 0, y: 0, width: 0, height: 0 });
+
+    const modifyPfpButtonRef = useRef<React.ComponentRef<typeof TouchableOpacity> | null>(null);
+    const noGalleryPermissionPopupRef = useRef<PopupMessageRef>(null);
+    const noCameraPermissionPopupRef = useRef<PopupMessageRef>(null);
+
     const router = useRouter();
     const { user, userProfile, database, storage, loading } = useServices();
     const { showToast } = useToast();
-
-    const [isPfpOptionsOpen, setIsPfpOptionsOpen] = useState<boolean>(false);
-
-    const modifyPfpButtonRef = useRef<React.ComponentRef<typeof TouchableOpacity> | null>(null);
-    const [anchor, setAnchor] = useState({ x: 0, y: 0, width: 0, height: 0 });
 
     const profileEntries: ProfileEntry[] = [
         { label: "Email", value: user?.email, iconName: "mail-outline" },
@@ -98,7 +103,7 @@ export default function EditProfileScreen() {
 
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== "granted") {
-            alert("Permission to access photos is required to change the profile picture!");
+            noGalleryPermissionPopupRef?.current?.open();
             return;
         }
 
@@ -135,7 +140,7 @@ export default function EditProfileScreen() {
         const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
         const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (cameraStatus !== "granted" || mediaStatus !== "granted") {
-            alert("Camera access is required to take a picture!");
+            noCameraPermissionPopupRef.current?.open();
             return;
         }
 
@@ -276,7 +281,7 @@ export default function EditProfileScreen() {
                                             onClose();
                                             setTimeout(() => {
                                                 void handlePfpOptionPress(label);
-                                            }, 100);
+                                            }, 200);
                                         }}
                                     >
                                         <Ionicons name={iconName} size={24} color="white" />
@@ -291,6 +296,64 @@ export default function EditProfileScreen() {
         );
     }
 
+    const NoCameraPermissionsPopup = () => {
+        return (
+            <PopupMessage
+                ref={noCameraPermissionPopupRef}
+                className="bg-neutral-100 rounded-xl p-6 w-[90%] max-w-sm"
+                bgClassname="bg-black/60"
+            >
+                <View className="items-center gap-3">
+                    <Text className="text-2xl font-bold text-primary">
+                        No Camera Access
+                    </Text>
+                    <Text className="text-lg text-gray-600 text-center leading-snug">
+                        Permission to access the camera is required to take photos!
+                    </Text>
+                    <View className="w-[90%] gap-1">
+                        <GenericButton
+                            text="Go To Settings"
+                            onPress={() => Linking.openSettings()}
+                        />
+                        <GenericButton
+                            text="Okay"
+                            onPress={() => noCameraPermissionPopupRef.current?.close()}
+                        />
+                    </View>
+                </View>
+            </PopupMessage>
+        );
+    }
+
+    const NoGalleryPermissionsPopup = () => {
+        return (
+            <PopupMessage
+                ref={noGalleryPermissionPopupRef}
+                className="bg-neutral-100 rounded-xl p-6 w-[90%] max-w-sm"
+                bgClassname="bg-black/60"
+            >
+                <View className="items-center gap-3">
+                    <Text className="text-2xl font-bold text-primary">
+                        No Gallery Access
+                    </Text>
+                    <Text className="text-lg text-gray-600 text-center leading-snug">
+                        Permission to access photos is required to change the profile picture!
+                    </Text>
+                    <View className="w-[90%] gap-1">
+                        <GenericButton
+                            text="Go To Settings"
+                            onPress={() => Linking.openSettings()}
+                        />
+                        <GenericButton
+                            text="Okay"
+                            onPress={() => noGalleryPermissionPopupRef.current?.close()}
+                        />
+                    </View>
+                </View>
+            </PopupMessage>
+        );
+    }
+
     return (
         <SafeAreaView className="relative flex-1 bg-background">
             <BackNavigationHeader label={"Edit Profile"} />
@@ -298,6 +361,8 @@ export default function EditProfileScreen() {
             <Separator className={"my-4 mx-6"} />
             <ProfileInfoEntries />
             <ProfilePictureOptionsModal isOpen={isPfpOptionsOpen} onClose={() => setIsPfpOptionsOpen(false)}/>
+            <NoCameraPermissionsPopup />
+            <NoGalleryPermissionsPopup />
         </SafeAreaView>
     );
 }

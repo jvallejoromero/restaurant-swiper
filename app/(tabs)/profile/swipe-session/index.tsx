@@ -150,7 +150,7 @@ export default function SessionsScreen() {
                 className="bg-neutral-100 rounded-xl p-6 w-[90%] max-w-sm"
                 bgClassname="bg-black/60"
             >
-                <View className="items-center  gap-1">
+                <View className="items-center gap-3">
                     <Text className="text-2xl font-bold text-primary">
                         Warning
                     </Text>
