@@ -98,10 +98,10 @@ const QRCodeScannerScreen = () => {
         if (!user?.uid) return;
         if (activeSession !== null) {
             if (activeSession.id === sessionId) {
-                alert("You are already in this session!");
+                showToast("You’re already in this session.", ToastType.INFO);
                 return;
             }
-            alert("You are already in a session, please leave that one before joining this one.");
+            showToast("Please leave your current session first.", ToastType.ERROR);
             return;
         }
 
