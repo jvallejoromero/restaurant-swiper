@@ -80,7 +80,7 @@ const QRCodeScannerScreen = () => {
     const joinSessionSheetRef = useRef<BottomSheet>(null);
     const { canOpenUrl, session } = useQRCodeAnalyzer(scanResult);
     const { user, database } = useServices();
-    const { activeSession, participants } = useActiveSwipingSession();
+    const { activeSession } = useActiveSwipingSession();
     const { showToast } = useToast();
 
     useEffect(() => {
@@ -97,8 +97,7 @@ const QRCodeScannerScreen = () => {
     const handleJoinSession = async (sessionId: string) => {
         if (!user?.uid) return;
         if (activeSession !== null) {
-            console.log(participants);
-            if (participants.some(u => u.id === user.uid)) {
+            if (activeSession.id === sessionId) {
                 alert("You are already in this session!");
                 return;
             }
@@ -189,7 +188,7 @@ const QRCodeScannerScreen = () => {
             <JoinSessionBottomSheet
                 sheetRef={joinSessionSheetRef}
                 session={session}
-                participants={participants}
+                alreadyInSession={session?.id === activeSession?.id}
                 onJoinSession={handleJoinSession}
                 onLeaveSession={handleLeaveSession}
                 isJoiningSession={isJoiningSession}

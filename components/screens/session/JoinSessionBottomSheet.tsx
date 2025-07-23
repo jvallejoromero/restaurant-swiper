@@ -1,7 +1,7 @@
 import {Text, View, TouchableOpacity, ScrollView} from "react-native";
 import React, {useEffect, useMemo, useState} from "react";
 import BottomSheet, {BottomSheetScrollView} from "@gorhom/bottom-sheet";
-import {AppUserProfile, SessionParticipant, SwipingSession} from "@/services/DatabaseService";
+import {AppUserProfile, SwipingSession} from "@/services/DatabaseService";
 import { Ionicons } from "@expo/vector-icons";
 import { useServices } from "@/context/ServicesContext";
 import MapView, {Marker} from "react-native-maps";
@@ -15,16 +15,46 @@ type JoinSessionBottomSheetProps = {
     sheetRef: React.RefObject<BottomSheet | null>;
     onChange?: (index: number) => void;
     session: SwipingSession | null | undefined;
-    participants?: SessionParticipant[];
+    alreadyInSession: boolean;
     onJoinSession: (sessionId: string) => void;
     onLeaveSession: (sessionId: string) => void;
 }
 
-const JoinSessionBottomSheet = ({ isJoiningSession, isLeavingSession, sheetRef, onChange, session, participants, onJoinSession, onLeaveSession }: JoinSessionBottomSheetProps) => {
+const ActionButton = ({ label, loadingLabel, loading, onPress}: { label: string, loadingLabel: string, loading: boolean, onPress: () => void }) => {
+    return (
+        <TouchableOpacity
+            onPress={onPress}
+            disabled={loading}
+            className={`py-3 rounded-lg items-center ${
+                loading ? "bg-gray-300" : "bg-red-600"
+            }`}
+        >
+            <Text className="text-white text-lg font-semibold">
+                {loading ? loadingLabel : label}
+            </Text>
+        </TouchableOpacity>
+    );
+}
+
+const getActionButtonDescription = (ownerName: string, participantCount: number, alreadyInSession: boolean): string => {
+    if (alreadyInSession) {
+        return "You are currently in this session.";
+    }
+    const countWithoutOwner =  Math.max(0, participantCount - 1);
+    if (countWithoutOwner <= 0) {
+        return `Be the first to join ${ownerName}'s session.`;
+    } else if (countWithoutOwner === 1) {
+        return `Join ${ownerName} and 1 other`;
+    } else {
+        return `Join ${ownerName} and ${countWithoutOwner} others`;
+    }
+}
+
+const JoinSessionBottomSheet = ({ isJoiningSession, isLeavingSession, sheetRef, onChange, session, alreadyInSession, onJoinSession, onLeaveSession }: JoinSessionBottomSheetProps) => {
     const [sessionOwner, setSessionOwner] = useState<AppUserProfile | null>(null);
     const snapPoints = useMemo(() => ["25%", "50%", "75%", "90%"], []);
 
-    const { user, database } = useServices();
+    const { database } = useServices();
     const { locationName } = useLocationName(session?.location);
 
     useEffect(() => {
@@ -165,40 +195,26 @@ const JoinSessionBottomSheet = ({ isJoiningSession, isLeavingSession, sheetRef, 
             </BottomSheetScrollView>
             <View className="py-4 px-6 border-t border-gray-200 bg-white">
                 <Text className="text-sm text-gray-500 mb-2">
-                    {session.participantCount > 1 ? (
-                        <Text>
-                            {`Join ${sessionOwner.displayName ?? sessionOwner.username} and ${session.participantCount} others`}
-                        </Text>
+                    {isLeavingSession ? (
+                        "You are currently in this session."
                     ) : (
-                        <Text>
-                            {`Be the first to join ${sessionOwner.displayName ?? sessionOwner.username}'s session`}
-                        </Text>
+                        getActionButtonDescription(sessionOwner.displayName ?? sessionOwner.username, session.participantCount, alreadyInSession)
                     )}
                 </Text>
-                {(participants && participants.some(u => u.id === user?.uid)) && !isJoiningSession ? (
-                    <TouchableOpacity
+                {alreadyInSession && !isJoiningSession ? (
+                    <ActionButton
+                        label={"Leave Session"}
+                        loadingLabel={"Leaving..."}
+                        loading={isLeavingSession}
                         onPress={() => onLeaveSession(session.id)}
-                        disabled={isLeavingSession}
-                        className={`py-3 rounded-lg items-center ${
-                            isLeavingSession ? "bg-gray-300" : "bg-red-600"
-                        }`}
-                    >
-                        <Text className="text-white text-lg font-semibold">
-                            {isLeavingSession ? "Leaving..." : "Leave Session"}
-                        </Text>
-                    </TouchableOpacity>
+                    />
                 ) : (
-                    <TouchableOpacity
+                    <ActionButton
+                        label={"Join Session"}
+                        loadingLabel={"Joining..."}
+                        loading={isJoiningSession}
                         onPress={() => onJoinSession(session.id)}
-                        disabled={isJoiningSession}
-                        className={`py-3 rounded-lg items-center ${
-                            isJoiningSession ? "bg-gray-300" : "bg-red-600"
-                        }`}
-                    >
-                        <Text className="text-white text-lg font-semibold">
-                            {isJoiningSession ? "Joining..." : "Join Session"}
-                        </Text>
-                    </TouchableOpacity>
+                    />
                 )}
             </View>
         </BottomSheet>
