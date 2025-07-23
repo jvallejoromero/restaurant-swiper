@@ -17,6 +17,8 @@ import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import * as ImagePicker from "expo-image-picker";
 import CachedAvatar from "@/components/avatar/CachedAvatar";
 import { LinearGradient } from "expo-linear-gradient";
+import {useToast} from "@/context/ToastContext";
+import {ToastType} from "@/hooks/ToastHook";
 
 type ProfileEntry = {
     label: string;
@@ -38,6 +40,7 @@ const modifyPfpOptions: ModifyPfpEntry[] = [
 export default function EditProfileScreen() {
     const router = useRouter();
     const { user, userProfile, database, storage, loading } = useServices();
+    const { showToast } = useToast();
 
     const [isPfpOptionsOpen, setIsPfpOptionsOpen] = useState<boolean>(false);
 
@@ -78,9 +81,13 @@ export default function EditProfileScreen() {
         } else if (pressed === "takeapicture") {
             await handleTakePicture();
         } else if (pressed === "deleteprofilepicture") {
-            if (!userProfile?.photoURL) return;
+            if (!userProfile?.photoURL) {
+                showToast("Your profile picture is already empty!");
+                return;
+            }
             await database.updateUserProfile(user?.uid!, {photoURL: ""});
             await storage.deleteProfilePicture(user?.uid!);
+            showToast("Deleted Profile Picture", ToastType.SUCCESS);
         }
     }
 
@@ -113,8 +120,11 @@ export default function EditProfileScreen() {
             const pfpUrl = await storage.uploadProfilePicture(user.uid, uri);
             await database.updateUserProfile(user.uid, { photoURL: pfpUrl });
         } catch (error) {
-            console.log("Could not upload profile picture", error);
+            console.warn("Could not upload profile picture", error);
+            showToast("Could not upload profile picture", ToastType.ERROR);
+            return;
         }
+        showToast("Updated profile picture", ToastType.SUCCESS);
     }
 
     const handleTakePicture = async() => {
@@ -146,8 +156,11 @@ export default function EditProfileScreen() {
             const pfpUrl = await storage.uploadProfilePicture(user.uid, uri);
             await database.updateUserProfile(user.uid, { photoURL: pfpUrl });
         } catch (error) {
-            console.log("Could not upload profile picture", error);
+            console.warn("Could not upload profile picture", error);
+            showToast("Could not upload profile picture", ToastType.ERROR);
+            return;
         }
+        showToast("Updated profile picture", ToastType.SUCCESS);
     }
 
     const ProfileInfoEntry = ({ label, value, iconName, onPress }: {label: string, value: string | undefined, iconName: React.ComponentProps<typeof Ionicons>["name"], onPress: () => void }) => {
