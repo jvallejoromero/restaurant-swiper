@@ -156,7 +156,6 @@ export class FirebaseDatabaseService implements DatabaseService {
     async addUserToSession(sessionId: string, userId: string): Promise<void> {
         const participantRef = doc(firestore, 'sessions', sessionId, 'participants', userId);
         const sessionRef = doc(firestore, "sessions", sessionId);
-
         const participant: NewParticipant = {
             currentIndex: 0,
             joinedAt: serverTimestamp(),
@@ -209,19 +208,15 @@ export class FirebaseDatabaseService implements DatabaseService {
             batch.delete(doc.ref);
         });
 
-        try {
-            await updateDoc(sessionRef, {
-                participantCount: increment(-1),
-            });
-            await batch.commit();
-            await this.updateUserProfile(userId, {
-                activeSessionId: null,
-            });
-            console.log(`User ${userId} removed from session ${sessionId}`);
-        } catch (err) {
-            console.warn("Failed to remove user from session:", err);
-            throw new Error("Failed to remove user from session.");
-        }
+        await updateDoc(sessionRef, {
+            participantCount: increment(-1),
+        });
+        await batch.commit();
+        await this.updateUserProfile(userId, {
+            activeSessionId: null,
+        });
+
+        console.log(`User ${userId} removed from session ${sessionId}`);
     }
 
     async removeUsersFromSession(sessionId: string, userIds: string[]): Promise<void> {

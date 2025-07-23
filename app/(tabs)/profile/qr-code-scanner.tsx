@@ -106,7 +106,13 @@ const QRCodeScannerScreen = () => {
         }
 
         setIsJoiningSession(true);
-        await database.addUserToSession(sessionId, user.uid);
+        try {
+            await database.addUserToSession(sessionId, user.uid);
+        } catch (error) {
+            showToast("An error occurred while joining the session. Please contact the developer.", ToastType.ERROR);
+            setIsJoiningSession(false);
+            return;
+        }
         setIsJoiningSession(false);
 
         joinSessionSheetRef.current?.close();
@@ -118,7 +124,13 @@ const QRCodeScannerScreen = () => {
     const handleLeaveSession = async (sessionId: string) => {
         if (!user?.uid) return;
         setIsLeavingSession(true);
-        await database.removeUserFromSession(sessionId, user.uid);
+        try {
+            await database.removeUserFromSession(sessionId, user.uid);
+        } catch (error) {
+            showToast("An error occurred while leaving the session. Please contact the developer.", ToastType.ERROR);
+            setIsLeavingSession(false);
+            return;
+        }
         setIsLeavingSession(false);
 
         joinSessionSheetRef.current?.close();

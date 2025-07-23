@@ -100,11 +100,7 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
         try {
             await database.removeUserFromSession(session.id, user.uid);
         } catch (error) {
-            if (error instanceof Error) {
-                showToast(error.message, ToastType.ERROR);
-            } else {
-                showToast(`An unknown error occurred:\n${String(error)}`);
-            }
+            showToast("An error occurred while leaving the session. Please contact the developer.", ToastType.ERROR);
             setIsButtonActive(false);
             return;
         }
