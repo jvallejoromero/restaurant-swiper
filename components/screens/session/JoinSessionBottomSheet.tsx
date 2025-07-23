@@ -1,6 +1,6 @@
 import {Text, View, TouchableOpacity, ScrollView} from "react-native";
 import React, {useEffect, useMemo, useState} from "react";
-import BottomSheet, {BottomSheetScrollView} from "@gorhom/bottom-sheet";
+import {BottomSheetModal, BottomSheetScrollView} from "@gorhom/bottom-sheet";
 import {AppUserProfile, SwipingSession} from "@/services/DatabaseService";
 import { Ionicons } from "@expo/vector-icons";
 import { useServices } from "@/context/ServicesContext";
@@ -12,7 +12,7 @@ import {getTimeSince} from "@/utils/DateUtils";
 type JoinSessionBottomSheetProps = {
     isJoiningSession: boolean;
     isLeavingSession: boolean;
-    sheetRef: React.RefObject<BottomSheet | null>;
+    sheetRef: React.RefObject<BottomSheetModal | null>;
     onChange?: (index: number) => void;
     session: SwipingSession | null | undefined;
     alreadyInSession: boolean;
@@ -52,7 +52,7 @@ const getActionButtonDescription = (ownerName: string, participantCount: number,
 
 const JoinSessionBottomSheet = ({ isJoiningSession, isLeavingSession, sheetRef, onChange, session, alreadyInSession, onJoinSession, onLeaveSession }: JoinSessionBottomSheetProps) => {
     const [sessionOwner, setSessionOwner] = useState<AppUserProfile | null>(null);
-    const snapPoints = useMemo(() => ["25%", "50%", "75%", "90%"], []);
+    const snapPoints = useMemo(() => ["25%", "50%", "80%", "90%"], []);
 
     const { database } = useServices();
     const { locationName } = useLocationName(session?.location);
@@ -64,41 +64,41 @@ const JoinSessionBottomSheet = ({ isJoiningSession, isLeavingSession, sheetRef, 
                 console.log("user id:", session.createdBy);
                 const profile = await database.getUserProfile(session.createdBy);
                 setSessionOwner(profile);
+                sheetRef.current?.present();
             })();
         }
     }, [session?.id]);
 
-    const handleLayout = () => {
+    useEffect(() => {
         if (sessionOwner) {
-            sheetRef.current?.expand();
+            sheetRef.current?.present();
         }
-    }
+    }, [sessionOwner]);
 
     if (!session || sessionOwner === null) {
         return null;
     }
 
     const Header = () => (
-        <View className="px-6 pt-4 pb-2 bg-white rounded-t-2xl flex-row items-center justify-between">
+        <View className="px-6 pt-4 pb-2 bg-white rounded-full flex-row items-center justify-between">
             <View className="w-12 h-1.5 bg-gray-300 rounded mx-auto" />
-            <TouchableOpacity onPress={() => sheetRef.current?.close()}>
+            <TouchableOpacity onPress={() => sheetRef.current?.dismiss()}>
                 <Ionicons name="close" size={24} color="#333" />
             </TouchableOpacity>
         </View>
     );
 
     return (
-        <BottomSheet
+        <BottomSheetModal
             ref={sheetRef}
-            index={-1}
+            index={4}
             onChange={onChange}
             snapPoints={snapPoints}
             enablePanDownToClose
-            backgroundStyle={{ borderRadius: 16 }}
             handleComponent={Header}
-            handleIndicatorStyle={{ backgroundColor: "#d52e4c", width: 40 }}
+            backgroundStyle={{ shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 10 }}
         >
-            <BottomSheetScrollView className="py-4 px-6" onLayout={handleLayout}>
+            <BottomSheetScrollView className="py-4 px-6">
                 <View className="gap-4 mb-8">
                     <View>
                         <Text
@@ -193,7 +193,7 @@ const JoinSessionBottomSheet = ({ isJoiningSession, isLeavingSession, sheetRef, 
                     </View>
                 </View>
             </BottomSheetScrollView>
-            <View className="py-4 px-6 border-t border-gray-200 bg-white">
+            <View className="py-4 px-6 mb-safe border-t border-gray-200 bg-white">
                 <Text className="text-sm text-gray-500 mb-2">
                     {isLeavingSession ? (
                         "You are currently in this session."
@@ -217,7 +217,7 @@ const JoinSessionBottomSheet = ({ isJoiningSession, isLeavingSession, sheetRef, 
                     />
                 )}
             </View>
-        </BottomSheet>
+        </BottomSheetModal>
     );
 }
 

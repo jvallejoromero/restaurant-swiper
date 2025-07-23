@@ -14,7 +14,7 @@ import {SwipingSession} from "@/services/DatabaseService";
 import QRCodeScanner from "@/components/session/QRCodeScanner";
 import MiniButton from "@/components/buttons/MiniButton";
 import JoinSessionBottomSheet from "@/components/screens/session/JoinSessionBottomSheet";
-import BottomSheet from "@gorhom/bottom-sheet";
+import {BottomSheetModal} from "@gorhom/bottom-sheet";
 import {useQRCodeAnalyzer} from "@/hooks/QRCodeAnalyzerHook";
 import {useServices} from "@/context/ServicesContext";
 import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
@@ -28,7 +28,7 @@ type ScanResultsProps = {
     canOpenUrl: boolean | undefined;
     url: string;
     session: SwipingSession | null | undefined;
-    bottomSheetRef: React.RefObject<BottomSheet | null>;
+    bottomSheetRef: React.RefObject<BottomSheetModal | null>;
 }
 
 const ScanResults = ({ canOpenUrl, url, session, bottomSheetRef }: ScanResultsProps) => {
@@ -47,7 +47,7 @@ const ScanResults = ({ canOpenUrl, url, session, bottomSheetRef }: ScanResultsPr
                     <Text>Valid Session Found!</Text>
                     <Text
                         className="text-primary underline"
-                        onPress={() => bottomSheetRef.current?.expand()}
+                        onPress={() => bottomSheetRef.current?.present()}
                     >
                         View Information
                     </Text>
@@ -77,7 +77,7 @@ const QRCodeScannerScreen = () => {
     const [isJoiningSession, setIsJoiningSession] = useState<boolean>(false);
     const [isLeavingSession, setIsLeavingSession] = useState<boolean>(false);
 
-    const joinSessionSheetRef = useRef<BottomSheet>(null);
+    const joinSessionSheetRef = useRef<BottomSheetModal>(null);
     const { canOpenUrl, session } = useQRCodeAnalyzer(scanResult);
     const { user, database } = useServices();
     const { activeSession } = useActiveSwipingSession();
