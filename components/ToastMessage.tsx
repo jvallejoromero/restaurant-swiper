@@ -11,7 +11,7 @@ type ToastMessageProps = {
 
 const NeutralToastMessage = ({ message }: { message: string }) => {
     return (
-        <View className="min-h-[60] mt-20 mx-6
+        <View className="min-h-[60] mt-16 mx-6
                            bg-white rounded-lg border-l-4 border-l-primary/95
                              border border-accent-grey/20
                              shadow-md shadow-black/10
@@ -34,7 +34,7 @@ const NeutralToastMessage = ({ message }: { message: string }) => {
 
 const InfoToastMessage = ({ message }: { message: string }) => {
     return (
-        <View className="min-h-[60] mt-20 mx-6
+        <View className="min-h-[60] mt-16 mx-6
                            bg-white rounded-lg border-l-4 border-l-primary/95
                              border border-accent-grey/20
                              shadow-md shadow-black/10
@@ -59,7 +59,7 @@ const InfoToastMessage = ({ message }: { message: string }) => {
 
 const SuccessToastMessage = ({ message }: { message: string }) => {
     return (
-        <View className="min-h-[60] mt-20 mx-6
+        <View className="min-h-[60] mt-16 mx-6
                            bg-green-600  rounded-lg border-l-4 border-l-green-800/95
                              border border-accent-grey/20
                              shadow-md shadow-black/10
@@ -84,7 +84,7 @@ const SuccessToastMessage = ({ message }: { message: string }) => {
 
 const ErrorToastMessage = ({ message }: { message: string }) => {
     return (
-        <View className="min-h-[60] mt-20 mx-6
+        <View className="min-h-[60] mt-16 mx-6
                            bg-red-600 rounded-lg border-l-4 border-l-red-800/95
                              border border-accent-grey/20
                              shadow-md shadow-black/10
@@ -109,7 +109,7 @@ const ErrorToastMessage = ({ message }: { message: string }) => {
 
 const WarningToastMessage = ({ message }: { message: string }) => {
     return (
-        <View className="min-h-[60] mt-20 mx-6
+        <View className="min-h-[60] mt-16 mx-6
                            bg-yellow-400  rounded-lg border-l-4 border-l-amber-400/95
                              border border-accent-grey/20
                              shadow-md shadow-black/10
