@@ -24,6 +24,8 @@ import GenericButton from "@/components/buttons/GenericButton";
 import CurrentSessionInfoPopup from "@/components/popups/CurrentSessionInfoPopup";
 import {router, useNavigation} from "expo-router";
 import BigActionButton from "@/components/buttons/BigActionButton";
+import {useToast} from "@/context/ToastContext";
+import {ToastType} from "@/hooks/ToastHook";
 
 type MockData = {
     id: string;
@@ -97,6 +99,7 @@ export default function SessionsScreen() {
 
     const { loading, user, database } = useServices();
     const { activeSession } = useActiveSwipingSession();
+    const { showToast } = useToast();
 
     const navigation = useNavigation();
     React.useLayoutEffect(() => {
@@ -124,15 +127,20 @@ export default function SessionsScreen() {
         const places: Place[] = [];
         const allParticipants = [...participants, user.uid];
         setLoadingSession(true);
-        const session = await database.createSession(user.uid, title, description, radius, filters, places, allParticipants, location);
-        if (!session) {
-            //TODO: alert user that session creation failed
+        try {
+            await database.createSession(user.uid, title, description, radius, filters, places, allParticipants, location);
+        } catch (err) {
+            if (err instanceof Error) {
+                showToast(err.message, ToastType.ERROR);
+            } else {
+                showToast(`An unknown error occurred\n${String(err)}`, ToastType.ERROR);
+            }
             setLoadingSession(false);
             return;
         }
         setLoadingSession(false);
         sheetRef.current?.close();
-        console.log("Created new session with id", session.id, session.createdAt.toDate().toLocaleString());
+        showToast("Created new session", ToastType.SUCCESS);
     }
 
     const ActiveSessionWarning = () => {

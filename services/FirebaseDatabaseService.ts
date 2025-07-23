@@ -74,7 +74,7 @@ export class FirebaseDatabaseService implements DatabaseService {
                         filters: string[],
                         places: Place[],
                         participants: string[],
-                        location: LocationObject): Promise<SwipingSession | null> {
+                        location: LocationObject): Promise<SwipingSession> {
         const sessionId = uuid.v4();
         const sessionRef = doc(firestore, 'sessions', sessionId);
 
@@ -94,11 +94,20 @@ export class FirebaseDatabaseService implements DatabaseService {
         try {
             await setDoc(sessionRef, session);
         } catch (error) {
-            console.error("Could not create swiping session:", error);
-            return null;
+            console.warn("Could not create swiping session:", error);
+            throw new Error("Session creation failed. Please contact the developer.");
         }
-        await this.addUsersToSession(sessionId, participants);
-        return this.getSession(sessionId);
+        try {
+            await this.addUsersToSession(sessionId, participants);
+        } catch (error) {
+            console.warn("Could not add users to session:", error);
+            throw new Error("An error occurred while adding users to the session.");
+        }
+        const createdSession = await this.getSession(sessionId);
+        if (!createdSession) {
+            throw new Error("An error occurred while fetching session data.");
+        }
+        return createdSession;
     }
 
     async endSession(sessionId: string): Promise<void> {
@@ -107,7 +116,8 @@ export class FirebaseDatabaseService implements DatabaseService {
         try {
             await this.deleteCachedPlaceData(sessionId);
         } catch (err) {
-            console.error(`Could not delete place data from session with id: ${sessionId}`, err);
+            console.warn(`Could not delete place data from session with id: ${sessionId}`, err);
+            throw new Error("An error occurred while deleting place data from session.");
         }
         try {
             const participants = await this.getSessionParticipants(sessionId);
@@ -116,12 +126,14 @@ export class FirebaseDatabaseService implements DatabaseService {
                 .filter((id): id is string => id !== undefined);
             await this.removeUsersFromSession(sessionId, participantIds);
         } catch (err) {
-            console.error(`Could not remove users from session with id: ${sessionId}`, err);
+            console.warn(`Could not remove users from session with id: ${sessionId}`, err);
+            throw new Error("An error occurred while deleting users from the session.");
         }
         try {
             await deleteDoc(sessionRef);
         } catch (error) {
-            console.error(`Could not delete swiping session with id ${sessionId}`, error);
+            console.warn(`Could not delete swiping session with id ${sessionId}`, error);
+            throw new Error("Could not delete session. Please contact the developer.");
         }
     }
 
@@ -135,7 +147,7 @@ export class FirebaseDatabaseService implements DatabaseService {
             }
             session = snap.data() as SwipingSession;
         } catch (err) {
-            console.error("Could not retrieve session:", err);
+            console.warn("Could not retrieve session:", err);
             return null;
         }
         return session;
@@ -162,28 +174,24 @@ export class FirebaseDatabaseService implements DatabaseService {
     async addUsersToSession(sessionId: string, userIds: string[]): Promise<void> {
         const batch = writeBatch(firestore);
         const sessionRef = doc(firestore, "sessions", sessionId);
-        try {
-            userIds.forEach((uid) => {
-                const participantRef = doc(firestore, 'sessions', sessionId, 'participants', uid);
-                const participant: NewParticipant = {
-                    currentIndex: 0,
-                    joinedAt: serverTimestamp(),
-                }
-                batch.set(participantRef, participant);
-                const userRef = doc(firestore, 'users', uid);
-                batch.update(userRef, {
-                    activeSessionId: sessionId
-                });
+        userIds.forEach((uid) => {
+            const participantRef = doc(firestore, 'sessions', sessionId, 'participants', uid);
+            const participant: NewParticipant = {
+                currentIndex: 0,
+                joinedAt: serverTimestamp(),
+            }
+            batch.set(participantRef, participant);
+            const userRef = doc(firestore, 'users', uid);
+            batch.update(userRef, {
+                activeSessionId: sessionId
             });
+        });
 
-            await batch.commit();
-            await updateDoc(sessionRef, {
-                participantCount: increment(userIds.length),
-            });
-            console.log(`Added ${userIds.length} participants to session with id ${sessionId}`);
-        } catch (err) {
-            console.error("Could not add users to session:", err);
-        }
+        await batch.commit();
+        await updateDoc(sessionRef, {
+            participantCount: increment(userIds.length),
+        });
+        console.log(`Added ${userIds.length} participants to session with id ${sessionId}`);
     }
 
     async removeUserFromSession(sessionId: string, userId: string): Promise<void> {
@@ -211,7 +219,8 @@ export class FirebaseDatabaseService implements DatabaseService {
             });
             console.log(`User ${userId} removed from session ${sessionId}`);
         } catch (err) {
-            console.error("Failed to remove user from session:", err);
+            console.warn("Failed to remove user from session:", err);
+            throw new Error("Failed to remove user from session.");
         }
     }
 
@@ -293,7 +302,7 @@ export class FirebaseDatabaseService implements DatabaseService {
         try {
             snapshot = await getDocs(participantsCol);
         } catch (err) {
-            console.error(`Could not get participants in session with id:${sessionId}`, err);
+            console.warn(`Could not get participants in session with id:${sessionId}`, err);
             return [];
         }
         return snapshot.docs.map((doc) => {

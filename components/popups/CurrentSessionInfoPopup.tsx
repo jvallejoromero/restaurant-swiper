@@ -9,6 +9,7 @@ import SessionQRCode from "@/components/session/SessionQRCode";
 import {SwipingSession} from "@/services/DatabaseService";
 import {useServices} from "@/context/ServicesContext";
 import {useToast} from "@/context/ToastContext";
+import {ToastType} from "@/hooks/ToastHook";
 
 type CurrentSessionInfoProps = {
     session: SwipingSession | null;
@@ -77,15 +78,36 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
 
     const handleEndSession = async() => {
         setIsButtonActive(true);
-        await database.endSession(session.id);
+        try {
+            await database.endSession(session.id);
+        } catch (error) {
+            if (error instanceof Error) {
+                showToast(error.message, ToastType.ERROR);
+            } else {
+                showToast(`An unknown error occurred:\n${String(error)}`);
+            }
+            setIsButtonActive(false);
+            return;
+        }
         setIsButtonActive(false);
         popupRef.current?.close();
+        showToast("You ended the session.");
     }
 
     const handleLeaveSession = async() => {
         if (!user?.uid) return;
         setIsButtonActive(true);
-        await database.removeUserFromSession(session.id, user.uid);
+        try {
+            await database.removeUserFromSession(session.id, user.uid);
+        } catch (error) {
+            if (error instanceof Error) {
+                showToast(error.message, ToastType.ERROR);
+            } else {
+                showToast(`An unknown error occurred:\n${String(error)}`);
+            }
+            setIsButtonActive(false);
+            return;
+        }
         setIsButtonActive(false);
         showToast(`You left the session.`);
     }
