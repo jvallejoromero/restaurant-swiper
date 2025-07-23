@@ -17,7 +17,7 @@ import {useToast} from "@/context/ToastContext";
 import {ToastType} from "@/hooks/ToastHook";
 import PopupMessage, {PopupMessageRef} from "@/components/popups/PopupMessage";
 import GenericButton from "@/components/buttons/GenericButton";
-import BottomSheet from "@gorhom/bottom-sheet";
+import {BottomSheetModal} from "@gorhom/bottom-sheet";
 import ModifyProfilePictureSheet, { ModifyPfpEntry } from "@/components/screens/profile/ModifyProfilePictureSheet";
 
 type ProfileEntry = {
@@ -33,7 +33,7 @@ const modifyPfpOptions: ModifyPfpEntry[] = [
 ];
 
 export default function EditProfileScreen() {
-    const modifyPfpBottomSheetRef = useRef<BottomSheet>(null);
+    const modifyPfpBottomSheetRef = useRef<BottomSheetModal>(null);
     const noGalleryPermissionPopupRef = useRef<PopupMessageRef>(null);
     const noCameraPermissionPopupRef = useRef<PopupMessageRef>(null);
 
@@ -186,7 +186,7 @@ export default function EditProfileScreen() {
         return (
             <View className="items-center justify-center mt-8 gap-2">
                 <CachedAvatar photoUrl={userProfile?.photoURL} userId={user?.uid!} />
-                <TouchableOpacity activeOpacity={1} onPress={() => modifyPfpBottomSheetRef.current?.expand()}>
+                <TouchableOpacity activeOpacity={1} onPress={() => modifyPfpBottomSheetRef.current?.present()}>
                     <Text className="text-lg font-medium color-primary">Modify profile picture</Text>
                 </TouchableOpacity>
             </View>
