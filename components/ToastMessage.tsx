@@ -20,7 +20,7 @@ const NeutralToastMessage = ({ message }: { message: string }) => {
                 <View className="flex-1 mr-2">
                     <Text
                         className="text-black font-medium text-lg leading-tight"
-                        numberOfLines={2}
+                        numberOfLines={3}
                         ellipsizeMode="tail"
                     >
                         {message}
@@ -43,7 +43,7 @@ const InfoToastMessage = ({ message }: { message: string }) => {
                 <View className="flex-1 mr-2">
                     <Text
                         className="text-black font-medium text-lg leading-tight"
-                        numberOfLines={2}
+                        numberOfLines={3}
                         ellipsizeMode="tail"
                     >
                         {message}
@@ -68,7 +68,7 @@ const SuccessToastMessage = ({ message }: { message: string }) => {
                 <View className="flex-1 mr-2">
                     <Text
                         className="text-white font-medium text-lg leading-tight"
-                        numberOfLines={2}
+                        numberOfLines={3}
                         ellipsizeMode="tail"
                     >
                         {message}
@@ -93,7 +93,7 @@ const ErrorToastMessage = ({ message }: { message: string }) => {
                 <View className="flex-1 mr-2">
                     <Text
                         className="text-white font-medium text-lg leading-tight"
-                        numberOfLines={2}
+                        numberOfLines={3}
                         ellipsizeMode="tail"
                     >
                         {message}
@@ -118,7 +118,7 @@ const WarningToastMessage = ({ message }: { message: string }) => {
                 <View className="flex-1 mr-2">
                     <Text
                         className="text-white font-medium text-lg leading-tight"
-                        numberOfLines={2}
+                        numberOfLines={3}
                         ellipsizeMode="tail"
                     >
                         {message}
