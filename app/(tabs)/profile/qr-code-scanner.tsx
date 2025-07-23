@@ -20,6 +20,7 @@ import {useServices} from "@/context/ServicesContext";
 import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
 import { useToast } from "@/context/ToastContext";
 import {ToastType} from "@/hooks/ToastHook";
+import {router} from "expo-router";
 
 let lastScanTime = 0;
 
@@ -103,10 +104,14 @@ const QRCodeScannerScreen = () => {
             alert("You are already in a session, please leave that one before joining this one.");
             return;
         }
+
         setIsJoiningSession(true);
         await database.addUserToSession(sessionId, user?.uid);
         setIsJoiningSession(false);
+
         joinSessionSheetRef.current?.close();
+        
+        router.push("/profile/swipe-session");
         showToast("You joined the session.", ToastType.SUCCESS);
     }
 
