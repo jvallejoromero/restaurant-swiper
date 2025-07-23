@@ -22,13 +22,28 @@ type GeoInfo = {
     fallback: string;
 }
 
+const ActionButton = ({ label, loading, onPress }: { label: string, loading: boolean, onPress: () => {}}) => {
+    return (
+        <TouchableOpacity
+            onPress={onPress}
+            className="mt-4 py-2 bg-primary rounded-lg"
+        >
+            {loading ? (
+                <ActivityIndicator size={22} color={"white"} />
+            ) : (
+                <Text className="text-white text-lg text-center font-semibold">{label}</Text>
+            )}
+        </TouchableOpacity>
+    );
+}
+
 const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps) => {
     const { user, database } = useServices();
     const { showToast } = useToast();
 
     const [inviteUrl, setInviteUrl] = useState("");
     const [geoInfo, setGeoInfo] = useState<GeoInfo>({ city: null, region: null, country: null, fallback: "Your area" });
-    const [endingSession, setEndingSession] = useState<boolean>(false);
+    const [isButtonActive, setIsButtonActive] = useState<boolean>(false);
 
     useEffect(() => {
         if (!session) {
@@ -61,10 +76,18 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
     }
 
     const handleEndSession = async() => {
-        setEndingSession(true);
+        setIsButtonActive(true);
         await database.endSession(session.id);
-        setEndingSession(false);
+        setIsButtonActive(false);
         popupRef.current?.close();
+    }
+
+    const handleLeaveSession = async() => {
+        if (!user?.uid) return;
+        setIsButtonActive(true);
+        await database.removeUserFromSession(session.id, user.uid);
+        setIsButtonActive(false);
+        showToast(`You left the session.`);
     }
 
     return (
@@ -134,17 +157,10 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
                         <Text className="text-white">Share</Text>
                     </TouchableOpacity>
                 </View>
-                {user?.uid === session.createdBy && (
-                    <TouchableOpacity
-                        onPress={handleEndSession}
-                        className="mt-4 py-2 bg-primary rounded-lg"
-                    >
-                        {endingSession ? (
-                            <ActivityIndicator size={22} color={"white"} />
-                        ) : (
-                            <Text className="text-white text-lg text-center font-semibold">End Session</Text>
-                        )}
-                    </TouchableOpacity>
+                {user?.uid === session.createdBy ? (
+                    <ActionButton label={"End Session"} loading={isButtonActive} onPress={handleEndSession} />
+                ) : (
+                    <ActionButton label={"Leave Session"} loading={isButtonActive} onPress={handleLeaveSession} />
                 )}
             </View>
         </PopupMessage>

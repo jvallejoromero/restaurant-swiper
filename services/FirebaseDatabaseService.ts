@@ -202,12 +202,12 @@ export class FirebaseDatabaseService implements DatabaseService {
         });
 
         try {
+            await updateDoc(sessionRef, {
+                participantCount: increment(-1),
+            });
             await batch.commit();
             await this.updateUserProfile(userId, {
                 activeSessionId: null,
-            });
-            await updateDoc(sessionRef, {
-                participantCount: increment(-1),
             });
             console.log(`User ${userId} removed from session ${sessionId}`);
         } catch (err) {
