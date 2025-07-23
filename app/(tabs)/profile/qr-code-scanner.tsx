@@ -18,6 +18,8 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import {useQRCodeAnalyzer} from "@/hooks/QRCodeAnalyzerHook";
 import {useServices} from "@/context/ServicesContext";
 import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
+import { useToast } from "@/context/ToastContext";
+import {ToastType} from "@/hooks/ToastHook";
 
 let lastScanTime = 0;
 
@@ -77,6 +79,7 @@ const QRCodeScannerScreen = () => {
     const { canOpenUrl, session } = useQRCodeAnalyzer(scanResult);
     const { user, database } = useServices();
     const { activeSession, participants } = useActiveSwipingSession();
+    const { showToast } = useToast();
 
     useEffect(() => {
         (async() => {
@@ -104,6 +107,7 @@ const QRCodeScannerScreen = () => {
         await database.addUserToSession(sessionId, user?.uid);
         setIsJoiningSession(false);
         joinSessionSheetRef.current?.close();
+        showToast("You joined the session.", ToastType.SUCCESS);
     }
 
     const handleBarcodeScanned = (result: BarcodeScanningResult) => {
