@@ -75,6 +75,7 @@ const QRCodeScannerScreen = () => {
     const [permission, setPermission] = useState<PermissionResponse | null>(null);
     const [scanResult, setScannedResult] = useState<BarcodeScanningResult | null>(null);
     const [isJoiningSession, setIsJoiningSession] = useState<boolean>(false);
+    const [isLeavingSession, setIsLeavingSession] = useState<boolean>(false);
 
     const joinSessionSheetRef = useRef<BottomSheet>(null);
     const { canOpenUrl, session } = useQRCodeAnalyzer(scanResult);
@@ -106,13 +107,25 @@ const QRCodeScannerScreen = () => {
         }
 
         setIsJoiningSession(true);
-        await database.addUserToSession(sessionId, user?.uid);
+        await database.addUserToSession(sessionId, user.uid);
         setIsJoiningSession(false);
 
         joinSessionSheetRef.current?.close();
         router.dismissAll();
         router.push("/profile/swipe-session");
         showToast("You joined the session.", ToastType.SUCCESS);
+    }
+
+    const handleLeaveSession = async (sessionId: string) => {
+        if (!user?.uid) return;
+        setIsLeavingSession(true);
+        await database.removeUserFromSession(sessionId, user.uid);
+        setIsLeavingSession(false);
+
+        joinSessionSheetRef.current?.close();
+        router.dismissAll();
+        router.push("/profile/swipe-session");
+        showToast("You left the session.");
     }
 
     const handleBarcodeScanned = (result: BarcodeScanningResult) => {
@@ -174,10 +187,13 @@ const QRCodeScannerScreen = () => {
                 )}
             </View>
             <JoinSessionBottomSheet
-                loading={isJoiningSession}
                 sheetRef={joinSessionSheetRef}
                 session={session}
+                participants={participants}
                 onJoinSession={handleJoinSession}
+                onLeaveSession={handleLeaveSession}
+                isJoiningSession={isJoiningSession}
+                isLeavingSession={isLeavingSession}
             />
         </SafeAreaView>
     );

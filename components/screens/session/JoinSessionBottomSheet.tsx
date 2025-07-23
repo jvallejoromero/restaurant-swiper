@@ -1,7 +1,7 @@
 import {Text, View, TouchableOpacity, ScrollView} from "react-native";
 import React, {useEffect, useMemo, useState} from "react";
 import BottomSheet, {BottomSheetScrollView} from "@gorhom/bottom-sheet";
-import {AppUserProfile, SwipingSession} from "@/services/DatabaseService";
+import {AppUserProfile, SessionParticipant, SwipingSession} from "@/services/DatabaseService";
 import { Ionicons } from "@expo/vector-icons";
 import { useServices } from "@/context/ServicesContext";
 import MapView, {Marker} from "react-native-maps";
@@ -10,18 +10,21 @@ import {useLocationName} from "@/hooks/LocationNameHook";
 import {getTimeSince} from "@/utils/DateUtils";
 
 type JoinSessionBottomSheetProps = {
-    loading: boolean;
+    isJoiningSession: boolean;
+    isLeavingSession: boolean;
     sheetRef: React.RefObject<BottomSheet | null>;
     onChange?: (index: number) => void;
     session: SwipingSession | null | undefined;
+    participants?: SessionParticipant[];
     onJoinSession: (sessionId: string) => void;
+    onLeaveSession: (sessionId: string) => void;
 }
 
-const JoinSessionBottomSheet = ({ loading, sheetRef, onChange, session, onJoinSession }: JoinSessionBottomSheetProps) => {
+const JoinSessionBottomSheet = ({ isJoiningSession, isLeavingSession, sheetRef, onChange, session, participants, onJoinSession, onLeaveSession }: JoinSessionBottomSheetProps) => {
     const [sessionOwner, setSessionOwner] = useState<AppUserProfile | null>(null);
     const snapPoints = useMemo(() => ["25%", "50%", "75%", "90%"], []);
 
-    const { database } = useServices();
+    const { user, database } = useServices();
     const { locationName } = useLocationName(session?.location);
 
     useEffect(() => {
@@ -172,17 +175,31 @@ const JoinSessionBottomSheet = ({ loading, sheetRef, onChange, session, onJoinSe
                         </Text>
                     )}
                 </Text>
-                <TouchableOpacity
-                    onPress={() => onJoinSession(session.id)}
-                    disabled={loading}
-                    className={`py-3 rounded-lg items-center ${
-                        loading ? "bg-gray-300" : "bg-red-600"
-                    }`}
-                >
-                    <Text className="text-white text-lg font-semibold">
-                        {loading ? "Joining…" : "Join Session"}
-                    </Text>
-                </TouchableOpacity>
+                {(participants && participants.some(u => u.id === user?.uid)) && !isJoiningSession ? (
+                    <TouchableOpacity
+                        onPress={() => onLeaveSession(session.id)}
+                        disabled={isLeavingSession}
+                        className={`py-3 rounded-lg items-center ${
+                            isLeavingSession ? "bg-gray-300" : "bg-red-600"
+                        }`}
+                    >
+                        <Text className="text-white text-lg font-semibold">
+                            {isLeavingSession ? "Leaving..." : "Leave Session"}
+                        </Text>
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity
+                        onPress={() => onJoinSession(session.id)}
+                        disabled={isJoiningSession}
+                        className={`py-3 rounded-lg items-center ${
+                            isJoiningSession ? "bg-gray-300" : "bg-red-600"
+                        }`}
+                    >
+                        <Text className="text-white text-lg font-semibold">
+                            {isJoiningSession ? "Joining..." : "Join Session"}
+                        </Text>
+                    </TouchableOpacity>
+                )}
             </View>
         </BottomSheet>
     );
