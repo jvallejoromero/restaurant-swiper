@@ -3,36 +3,28 @@ import {
     SafeAreaView,
     Text,
     TouchableOpacity,
-    StyleSheet,
-    Animated,
-    Modal,
-    Pressable,
     Linking,
 } from "react-native";
 import {Ionicons} from "@expo/vector-icons";
 import {useRouter} from "expo-router";
-import React, {useEffect, useRef, useState} from "react";
+import React, {useRef} from "react";
 import {useServices} from "@/context/ServicesContext";
 import Separator from "@/components/ui/Separator";
 import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import * as ImagePicker from "expo-image-picker";
 import CachedAvatar from "@/components/avatar/CachedAvatar";
-import { LinearGradient } from "expo-linear-gradient";
 import {useToast} from "@/context/ToastContext";
 import {ToastType} from "@/hooks/ToastHook";
 import PopupMessage, {PopupMessageRef} from "@/components/popups/PopupMessage";
 import GenericButton from "@/components/buttons/GenericButton";
+import BottomSheet from "@gorhom/bottom-sheet";
+import ModifyProfilePictureSheet, { ModifyPfpEntry } from "@/components/screens/profile/ModifyProfilePictureSheet";
 
 type ProfileEntry = {
     label: string;
     value?: string;
     iconName: React.ComponentProps<typeof Ionicons>["name"];
 };
-
-type ModifyPfpEntry = {
-    label: string;
-    iconName: React.ComponentProps<typeof Ionicons>["name"];
-}
 
 const modifyPfpOptions: ModifyPfpEntry[] = [
     { label: "Choose from library", iconName: "images-outline" },
@@ -41,10 +33,7 @@ const modifyPfpOptions: ModifyPfpEntry[] = [
 ];
 
 export default function EditProfileScreen() {
-    const [isPfpOptionsOpen, setIsPfpOptionsOpen] = useState<boolean>(false);
-    const [anchor, setAnchor] = useState({ x: 0, y: 0, width: 0, height: 0 });
-
-    const modifyPfpButtonRef = useRef<React.ComponentRef<typeof TouchableOpacity> | null>(null);
+    const modifyPfpBottomSheetRef = useRef<BottomSheet>(null);
     const noGalleryPermissionPopupRef = useRef<PopupMessageRef>(null);
     const noCameraPermissionPopupRef = useRef<PopupMessageRef>(null);
 
@@ -67,16 +56,6 @@ export default function EditProfileScreen() {
         } else if (pressed === "username") {
             router.push("/profile/edit-username");
         }
-    }
-
-    const openPfpOptionsMenu = () => {
-        if (!modifyPfpButtonRef.current) {
-            return;
-        }
-        modifyPfpButtonRef.current.measureInWindow((x, y, width, height) => {
-            setAnchor({ x: x, y: y, width: width, height: height });
-            setIsPfpOptionsOpen(true);
-        });
     }
 
     const handlePfpOptionPress = async (option: string) => {
@@ -207,92 +186,10 @@ export default function EditProfileScreen() {
         return (
             <View className="items-center justify-center mt-8 gap-2">
                 <CachedAvatar photoUrl={userProfile?.photoURL} userId={user?.uid!} />
-                <TouchableOpacity ref={modifyPfpButtonRef} activeOpacity={1} onPress={openPfpOptionsMenu}>
+                <TouchableOpacity activeOpacity={1} onPress={() => modifyPfpBottomSheetRef.current?.expand()}>
                     <Text className="text-lg font-medium color-primary">Modify profile picture</Text>
                 </TouchableOpacity>
             </View>
-        );
-    }
-
-    const ProfilePictureOptionsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
-        const opacity = useRef(new Animated.Value(0)).current;
-        const scale   = useRef(new Animated.Value(1.0)).current;
-
-        useEffect(() => {
-            if (isOpen) {
-                opacity.setValue(0);
-                scale.setValue(1.15);
-
-                Animated.timing(opacity, {
-                    toValue: 1,
-                    duration: 200,
-                    useNativeDriver: true,
-                }).start();
-                Animated.spring(scale, {
-                    toValue: 1,
-                    friction: 8,
-                    tension: 200,
-                    useNativeDriver: true,
-                }).start();
-            } else {
-                opacity.setValue(0);
-                scale.setValue(1);
-            }
-        }, [isOpen]);
-
-        return (
-            <Modal
-                transparent
-                visible={isOpen}
-                onRequestClose={onClose}
-                statusBarTranslucent={true}
-            >
-                <View className="flex-1" pointerEvents={"box-none"}>
-                    <Pressable style={StyleSheet.absoluteFill} onPress={onClose} pointerEvents={"auto"} />
-                    <Animated.View
-                        style={{
-                            opacity,
-                            transform: [{ scale }],
-                        }}
-                    >
-                        <LinearGradient
-                            style={{
-                                position: "absolute",
-                                minWidth: 0,
-                                minHeight: 0,
-                                borderRadius: 12,
-                                backgroundColor: 'rgba(0,0,0,0.8)',
-                                top: anchor.y + anchor.height + 4,
-                                left: anchor.x,
-                            }}
-                            colors={["#00000033", "#0000004D"]}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 0, y: 1 }}
-                        >
-                            {modifyPfpOptions.map(({ label, iconName }, index) => {
-                                const isLast = index === modifyPfpOptions.length - 1;
-                                return (
-                                    <TouchableOpacity
-                                        key={label}
-                                        className={`flex-row items-center p-3  gap-2 
-                                        ${!isLast && "border-b border-accent-grey/20"
-                                        }`}
-                                        onPress={() => {
-                                            onClose();
-                                            setTimeout(() => {
-                                                void handlePfpOptionPress(label);
-                                            }, 200);
-                                        }}
-                                    >
-                                        <Ionicons name={iconName} size={24} color="white" />
-                                        <Text className="text-white text-lg">{label}</Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </LinearGradient>
-                    </Animated.View>
-                </View>
-            </Modal>
         );
     }
 
@@ -360,7 +257,11 @@ export default function EditProfileScreen() {
             <ProfilePictureHeader />
             <Separator className={"my-4 mx-6"} />
             <ProfileInfoEntries />
-            <ProfilePictureOptionsModal isOpen={isPfpOptionsOpen} onClose={() => setIsPfpOptionsOpen(false)}/>
+            <ModifyProfilePictureSheet
+                sheetRef={modifyPfpBottomSheetRef}
+                entries={modifyPfpOptions}
+                onOptionPress={handlePfpOptionPress}
+            />
             <NoCameraPermissionsPopup />
             <NoGalleryPermissionsPopup />
         </SafeAreaView>
