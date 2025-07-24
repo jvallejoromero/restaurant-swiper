@@ -45,6 +45,7 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
     const [inviteUrl, setInviteUrl] = useState("");
     const [geoInfo, setGeoInfo] = useState<GeoInfo>({ city: null, region: null, country: null, fallback: "Your area" });
     const [isButtonActive, setIsButtonActive] = useState<boolean>(false);
+    const [liveParticipantCount, setLiveParticipantCount] = useState<number | undefined>(undefined);
 
     useEffect(() => {
         if (!session) {
@@ -56,7 +57,12 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
                 setGeoInfo({ city, region, country, fallback: "Your area" });
             }
         });
+        const unsub = database.onSessionUpdates(session.id, (realTimeSession: SwipingSession) => {
+            setLiveParticipantCount(realTimeSession.participantCount);
+        });
         setInviteUrl(`https://forked-app.com/join-session?id=${session?.id}`);
+
+        return unsub;
     }, [session]);
 
     const onCopyLink = useCallback(() => {
@@ -149,7 +155,7 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
                             color={COLORS.primary}
                         />
                         <Text className="font-semibold">
-                            {session.participantCount}{" "}Participating
+                            {liveParticipantCount}{" "}Participating
                         </Text>
                     </View>
                 </View>
