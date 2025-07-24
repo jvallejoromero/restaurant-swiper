@@ -76,7 +76,6 @@ const JoinSessionBottomSheet = ({
         (async () => {
             const profile = await database.getUserProfile(session.createdBy);
             setSessionOwner(profile);
-            sheetRef.current?.present();
         })();
         return database.onSessionUpdates(session.id, (realTimeSession: (SwipingSession | null)) => {
             if (!realTimeSession) {
