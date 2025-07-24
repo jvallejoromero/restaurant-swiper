@@ -254,7 +254,11 @@ const JoinSessionBottomSheet = ({
                 </View>
             </BottomSheetScrollView>
             <View className="py-4 px-6 mb-safe border-t border-gray-200 bg-white">
-                <Text className="text-sm text-gray-500 mb-2">
+                <Text
+                    className="text-sm text-gray-500 mb-2"
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                >
                     {descriptionText}
                 </Text>
                 <ActionButton

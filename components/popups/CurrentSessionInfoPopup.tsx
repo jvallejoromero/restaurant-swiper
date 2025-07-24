@@ -122,7 +122,11 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
         >
             <View className="px-4 gap-4">
                 <View className="flex-row justify-between">
-                    <Text className="text-xl font-semibold">
+                    <Text
+                        className="text-xl font-semibold mr-2"
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                    >
                         {session.title}
                     </Text>
                     <TouchableOpacity
