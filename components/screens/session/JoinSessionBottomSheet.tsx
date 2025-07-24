@@ -1,13 +1,16 @@
-import {Text, View, TouchableOpacity, ScrollView} from "react-native";
-import React, {useEffect, useMemo, useState} from "react";
+import {ScrollView, Text, TouchableOpacity, View} from "react-native";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import {BottomSheetModal, BottomSheetScrollView} from "@gorhom/bottom-sheet";
 import {AppUserProfile, SwipingSession} from "@/services/DatabaseService";
-import { Ionicons } from "@expo/vector-icons";
-import { useServices } from "@/context/ServicesContext";
+import {Ionicons} from "@expo/vector-icons";
+import {useServices} from "@/context/ServicesContext";
 import MapView, {Marker} from "react-native-maps";
 import CachedAvatar from "@/components/avatar/CachedAvatar";
 import {useLocationName} from "@/hooks/LocationNameHook";
 import {getTimeSince} from "@/utils/DateUtils";
+import {useToast} from "@/context/ToastContext";
+import {ToastType} from "@/hooks/ToastHook";
+import {router} from "expo-router";
 
 type JoinSessionBottomSheetProps = {
     isJoiningSession: boolean;
@@ -58,21 +61,36 @@ const JoinSessionBottomSheet = ({
     onJoinSession, onLeaveSession, onEndSession
 }: JoinSessionBottomSheetProps) => {
     const [sessionOwner, setSessionOwner] = useState<AppUserProfile | null>(null);
+    const [liveParticipantCount, setLiveParticipantCount] = useState<number>(0);
+    const sawSession = useRef<boolean>(false);
     const snapPoints = useMemo(() => ["25%", "50%", "80%", "90%"], []);
 
     const { user, database } = useServices();
     const { locationName } = useLocationName(session?.location);
+    const { showToast } = useToast();
 
     useEffect(() => {
-        if (session) {
-            (async () => {
-                console.log("getting owner data..");
-                console.log("user id:", session.createdBy);
-                const profile = await database.getUserProfile(session.createdBy);
-                setSessionOwner(profile);
-                sheetRef.current?.present();
-            })();
+        if (!session) {
+            return;
         }
+        (async () => {
+            const profile = await database.getUserProfile(session.createdBy);
+            setSessionOwner(profile);
+            sheetRef.current?.present();
+        })();
+        return database.onSessionUpdates(session.id, (realTimeSession: (SwipingSession | null)) => {
+            if (!realTimeSession) {
+                if (sawSession.current) {
+                    sheetRef.current?.dismiss();
+                    router.dismissAll();
+                    router.push("/profile/swipe-session");
+                    showToast("That session was deleted by the owner!", ToastType.ERROR);
+                }
+                return;
+            }
+            sawSession.current = true;
+            setLiveParticipantCount(realTimeSession.participantCount);
+        });
     }, [session?.id]);
 
     useEffect(() => {
@@ -128,7 +146,7 @@ const JoinSessionBottomSheet = ({
             : "You are currently in this session")
         : (viewerIsOwner
             ? "You are the owner of this session."
-            : getActionButtonDescription(sessionOwner.displayName ?? sessionOwner.username, session.participantCount, alreadyInSession));
+            : getActionButtonDescription(sessionOwner.displayName ?? sessionOwner.username, liveParticipantCount, alreadyInSession));
 
 
     return (
