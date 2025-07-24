@@ -90,6 +90,12 @@ const QRCodeScannerScreen = () => {
         })();
     }, []);
 
+    const resetView = () => {
+        joinSessionSheetRef.current?.close();
+        router.dismissAll();
+        router.push("/profile/swipe-session");
+    }
+
     const requestPermission = async () => {
         const res = await Camera.requestCameraPermissionsAsync();
         setPermission(res);
@@ -108,6 +114,13 @@ const QRCodeScannerScreen = () => {
 
         setIsJoiningSession(true);
         try {
+            const sessionToJoin = await database.getSession(sessionId);
+            if (!sessionToJoin) {
+                setIsJoiningSession(false);
+                resetView();
+                showToast("That session no longer exists!", ToastType.ERROR);
+                return;
+            }
             await database.addUserToSession(sessionId, user.uid);
         } catch (error) {
             showToast("An error occurred while joining the session. Please contact the developer.", ToastType.ERROR);
@@ -115,10 +128,7 @@ const QRCodeScannerScreen = () => {
             return;
         }
         setIsJoiningSession(false);
-
-        joinSessionSheetRef.current?.close();
-        router.dismissAll();
-        router.push("/profile/swipe-session");
+        resetView();
         showToast("You joined the session.", ToastType.SUCCESS);
     }
 
@@ -133,10 +143,7 @@ const QRCodeScannerScreen = () => {
             return;
         }
         setIsLeavingSession(false);
-
-        joinSessionSheetRef.current?.close();
-        router.dismissAll();
-        router.push("/profile/swipe-session");
+        resetView();
         showToast("You left the session.");
     }
 
@@ -154,10 +161,7 @@ const QRCodeScannerScreen = () => {
             return;
         }
         setIsEndingSession(false);
-
-        joinSessionSheetRef.current?.close();
-        router.dismissAll();
-        router.push("/profile/swipe-session");
+        resetView();
         showToast("You ended the session.");
     }
 
