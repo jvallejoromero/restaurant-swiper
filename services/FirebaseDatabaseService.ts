@@ -340,6 +340,15 @@ export class FirebaseDatabaseService implements DatabaseService {
         });
     }
 
+    onSessionUpdates(sessionId: string, callback: (session: SwipingSession) => void): () => void {
+        const ref = doc(firestore, 'sessions', sessionId);
+        return onSnapshot(ref, snap => {
+            if (snap.exists()) {
+                callback(snap.data() as SwipingSession);
+            }
+        });
+    }
+
     onParticipantUpdates(sessionId: string, callback: (participants: SessionParticipant[]) => void) {
         const participantsCol = collection(firestore, 'sessions', sessionId, 'participants');
         const unsub = onSnapshot(

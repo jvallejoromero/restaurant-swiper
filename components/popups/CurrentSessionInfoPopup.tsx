@@ -130,7 +130,7 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
                     </TouchableOpacity>
                 </View>
 
-                <Text className="text-lg">The session’s live—swipe and dive in!</Text>
+                <Text className="text-lg">Invite your friends and start swiping!</Text>
                 <View className="flex-row justify-between">
                     <View className="flex-row items-center gap-2">
                         <MaterialCommunityIcons
