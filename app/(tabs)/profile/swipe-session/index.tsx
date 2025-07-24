@@ -1,13 +1,13 @@
 import {
-    SafeAreaView,
-    View,
-    Text,
-    Pressable,
     FlatList,
     Image,
     ListRenderItem,
-    ScrollView,
+    Pressable,
     RefreshControl,
+    SafeAreaView,
+    ScrollView,
+    Text,
+    View,
 } from "react-native";
 import React, {useCallback, useRef, useState} from "react";
 import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
@@ -15,14 +15,14 @@ import Separator from "@/components/ui/Separator";
 import {Feather} from "@expo/vector-icons";
 import {CardsSwipeAnimation} from "@/components/animations/LoadingAnimations";
 import {BottomSheetModal} from "@gorhom/bottom-sheet";
-import CreateSessionSheet, { CreateSessionOptions } from "@/components/screens/session/CreateSessionSheet";
+import CreateSessionSheet, {CreateSessionOptions} from "@/components/screens/session/CreateSessionSheet";
 import {useServices} from "@/context/ServicesContext";
 import {Place} from "@/types/Places.types";
 import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
-import PopupMessage, { PopupMessageRef } from "@/components/popups/PopupMessage";
+import PopupMessage, {PopupMessageRef} from "@/components/popups/PopupMessage";
 import GenericButton from "@/components/buttons/GenericButton";
 import CurrentSessionInfoPopup from "@/components/popups/CurrentSessionInfoPopup";
-import {router, useNavigation} from "expo-router";
+import {router} from "expo-router";
 import BigActionButton from "@/components/buttons/BigActionButton";
 import {useToast} from "@/context/ToastContext";
 import {ToastType} from "@/hooks/ToastHook";
@@ -101,20 +101,6 @@ export default function SessionsScreen() {
     const { activeSession } = useActiveSwipingSession();
     const { showToast } = useToast();
 
-    const navigation = useNavigation();
-    React.useLayoutEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <Pressable
-                    onPress={() => {}}
-                    style={{ padding: 8 }}
-                >
-                    <Feather name="camera" size={24} color="#333" />
-                </Pressable>
-            ),
-        });
-    }, [navigation]);
-
     const openBottomSheet = useCallback(() => {
         sheetRef.current?.present();
     }, []);
@@ -124,6 +110,12 @@ export default function SessionsScreen() {
     }
 
     const handleCreateSession = async({title, description, radius, filters, participants, location} : CreateSessionOptions) => {
+        if (activeSession) {
+            sheetRef.current?.dismiss();
+            showToast("You already have an active session. Please end it before creating a new one.", ToastType.ERROR);
+            return;
+        }
+
         const places: Place[] = [];
         const allParticipants = [...participants, user.uid];
         setLoadingSession(true);
