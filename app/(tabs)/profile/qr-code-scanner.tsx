@@ -76,6 +76,7 @@ const QRCodeScannerScreen = () => {
     const [scanResult, setScannedResult] = useState<BarcodeScanningResult | null>(null);
     const [isJoiningSession, setIsJoiningSession] = useState<boolean>(false);
     const [isLeavingSession, setIsLeavingSession] = useState<boolean>(false);
+    const [isEndingSession, setIsEndingSession] = useState<boolean>(false);
 
     const joinSessionSheetRef = useRef<BottomSheetModal>(null);
     const { canOpenUrl, session } = useQRCodeAnalyzer(scanResult);
@@ -137,6 +138,27 @@ const QRCodeScannerScreen = () => {
         router.dismissAll();
         router.push("/profile/swipe-session");
         showToast("You left the session.");
+    }
+
+    const handleEndSession = async (sessionId: string) => {
+        setIsEndingSession(true);
+        try {
+            await database.endSession(sessionId);
+        } catch (error) {
+            if (error instanceof Error) {
+                showToast(error.message, ToastType.ERROR);
+            } else {
+                showToast(`An unknown error occurred:\n${String(error)}`);
+            }
+            setIsEndingSession(false);
+            return;
+        }
+        setIsEndingSession(false);
+
+        joinSessionSheetRef.current?.close();
+        router.dismissAll();
+        router.push("/profile/swipe-session");
+        showToast("You ended the session.");
     }
 
     const handleBarcodeScanned = (result: BarcodeScanningResult) => {
@@ -203,8 +225,10 @@ const QRCodeScannerScreen = () => {
                 alreadyInSession={session?.id === activeSession?.id}
                 onJoinSession={handleJoinSession}
                 onLeaveSession={handleLeaveSession}
+                onEndSession={handleEndSession}
                 isJoiningSession={isJoiningSession}
                 isLeavingSession={isLeavingSession}
+                isEndingSession={isEndingSession}
             />
         </SafeAreaView>
     );

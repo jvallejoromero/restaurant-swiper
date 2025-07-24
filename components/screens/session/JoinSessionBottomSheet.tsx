@@ -12,12 +12,14 @@ import {getTimeSince} from "@/utils/DateUtils";
 type JoinSessionBottomSheetProps = {
     isJoiningSession: boolean;
     isLeavingSession: boolean;
+    isEndingSession: boolean;
     sheetRef: React.RefObject<BottomSheetModal | null>;
     onChange?: (index: number) => void;
     session: SwipingSession | null | undefined;
     alreadyInSession: boolean;
     onJoinSession: (sessionId: string) => void;
     onLeaveSession: (sessionId: string) => void;
+    onEndSession: (sessionId: string) => void;
 }
 
 const ActionButton = ({ label, loadingLabel, loading, onPress}: { label: string, loadingLabel: string, loading: boolean, onPress: () => void }) => {
@@ -50,11 +52,15 @@ const getActionButtonDescription = (ownerName: string, participantCount: number,
     }
 }
 
-const JoinSessionBottomSheet = ({ isJoiningSession, isLeavingSession, sheetRef, onChange, session, alreadyInSession, onJoinSession, onLeaveSession }: JoinSessionBottomSheetProps) => {
+const JoinSessionBottomSheet = ({
+    isJoiningSession, isLeavingSession, isEndingSession,
+    sheetRef, onChange, session, alreadyInSession,
+    onJoinSession, onLeaveSession, onEndSession
+}: JoinSessionBottomSheetProps) => {
     const [sessionOwner, setSessionOwner] = useState<AppUserProfile | null>(null);
     const snapPoints = useMemo(() => ["25%", "50%", "80%", "90%"], []);
 
-    const { database } = useServices();
+    const { user, database } = useServices();
     const { locationName } = useLocationName(session?.location);
 
     useEffect(() => {
@@ -87,6 +93,43 @@ const JoinSessionBottomSheet = ({ isJoiningSession, isLeavingSession, sheetRef, 
             </TouchableOpacity>
         </View>
     );
+
+    const viewerIsOwner = user?.uid === session.createdBy;
+    const canJoin = !alreadyInSession;
+    const canEnd = alreadyInSession && viewerIsOwner;
+    const canLeave = alreadyInSession && !viewerIsOwner;
+    let actionLabel: string, loadingLabel: string, actionLoading: boolean, onAction: () => void;
+
+    if (canJoin) {
+        actionLabel = "Join Session";
+        loadingLabel = "Joining...";
+        actionLoading = isJoiningSession;
+        onAction = () => onJoinSession(session.id);
+    } else if (canLeave) {
+        actionLabel = "Leave Session";
+        loadingLabel = "Leaving...";
+        actionLoading = isLeavingSession;
+        onAction = () => onLeaveSession(session.id);
+    } else if (canEnd) {
+        actionLabel = "End Session";
+        loadingLabel = "Ending...";
+        actionLoading = isEndingSession;
+        onAction = () => onEndSession(session.id);
+    } else {
+        actionLabel = "Join Session";
+        loadingLabel = "Joining...";
+        actionLoading = isJoiningSession;
+        onAction = () => onJoinSession(session.id);
+    }
+
+    const descriptionText = isLeavingSession
+        ? (viewerIsOwner
+            ? "You are the owner of this session."
+            : "You are currently in this session")
+        : (viewerIsOwner
+            ? "You are the owner of this session."
+            : getActionButtonDescription(sessionOwner.displayName ?? sessionOwner.username, session.participantCount, alreadyInSession));
+
 
     return (
         <BottomSheetModal
@@ -195,27 +238,14 @@ const JoinSessionBottomSheet = ({ isJoiningSession, isLeavingSession, sheetRef, 
             </BottomSheetScrollView>
             <View className="py-4 px-6 mb-safe border-t border-gray-200 bg-white">
                 <Text className="text-sm text-gray-500 mb-2">
-                    {isLeavingSession ? (
-                        "You are currently in this session."
-                    ) : (
-                        getActionButtonDescription(sessionOwner.displayName ?? sessionOwner.username, session.participantCount, alreadyInSession)
-                    )}
+                    {descriptionText}
                 </Text>
-                {alreadyInSession && !isJoiningSession ? (
-                    <ActionButton
-                        label={"Leave Session"}
-                        loadingLabel={"Leaving..."}
-                        loading={isLeavingSession}
-                        onPress={() => onLeaveSession(session.id)}
-                    />
-                ) : (
-                    <ActionButton
-                        label={"Join Session"}
-                        loadingLabel={"Joining..."}
-                        loading={isJoiningSession}
-                        onPress={() => onJoinSession(session.id)}
-                    />
-                )}
+                <ActionButton
+                    label={actionLabel}
+                    loadingLabel={loadingLabel}
+                    loading={actionLoading}
+                    onPress={onAction}
+                />
             </View>
         </BottomSheetModal>
     );
