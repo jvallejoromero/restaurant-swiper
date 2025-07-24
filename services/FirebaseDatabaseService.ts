@@ -340,11 +340,13 @@ export class FirebaseDatabaseService implements DatabaseService {
         });
     }
 
-    onSessionUpdates(sessionId: string, callback: (session: SwipingSession) => void): () => void {
+    onSessionUpdates(sessionId: string, callback: (session: SwipingSession | null) => void): () => void {
         const ref = doc(firestore, 'sessions', sessionId);
         return onSnapshot(ref, snap => {
             if (snap.exists()) {
                 callback(snap.data() as SwipingSession);
+            } else {
+                callback(null);
             }
         });
     }

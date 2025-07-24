@@ -57,7 +57,8 @@ const CurrentSessionInfoPopup = ({ session, popupRef }: CurrentSessionInfoProps)
                 setGeoInfo({ city, region, country, fallback: "Your area" });
             }
         });
-        const unsub = database.onSessionUpdates(session.id, (realTimeSession: SwipingSession) => {
+        const unsub = database.onSessionUpdates(session.id, (realTimeSession: SwipingSession | null) => {
+            if (!realTimeSession) return;
             setLiveParticipantCount(realTimeSession.participantCount);
         });
         setInviteUrl(`https://forked-app.com/join-session?id=${session?.id}`);
