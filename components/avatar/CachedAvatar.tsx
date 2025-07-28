@@ -1,4 +1,4 @@
-import {View} from "react-native";
+import {Pressable, View} from "react-native";
 import React from "react";
 import {IMAGES} from "@/constants/images";
 import {Image} from "expo-image";
@@ -8,12 +8,15 @@ type CachedAvatarProps = {
     photoUrl: string | undefined;
     size?: number;
     className?: string;
+    onPress?: () => void;
 }
 
-const CachedAvatar = ({ photoUrl, userId, size=144, className }: CachedAvatarProps) => {
+const CachedAvatar = ({ photoUrl, userId, size=144, className, onPress }: CachedAvatarProps) => {
+    const Container = onPress ? Pressable : View;
 
     return (
-        <View
+        <Container
+            onPress={onPress}
             style={{ width: size, height: size }}
             className={`${className ? className : 'rounded-full shadow-neutral-900 border-neutral-800/40 overflow-hidden'}`}
         >
@@ -36,7 +39,7 @@ const CachedAvatar = ({ photoUrl, userId, size=144, className }: CachedAvatarPro
                     })();
                 }}
             />
-        </View>
+        </Container>
     );
 }
 

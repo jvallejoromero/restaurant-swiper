@@ -185,7 +185,11 @@ export default function EditProfileScreen() {
     const ProfilePictureHeader = () => {
         return (
             <View className="items-center justify-center mt-8 gap-2">
-                <CachedAvatar photoUrl={userProfile?.photoURL} userId={user?.uid!} />
+                <CachedAvatar
+                    photoUrl={userProfile?.photoURL}
+                    userId={user?.uid!}
+                    onPress={() => modifyPfpBottomSheetRef.current?.present()}
+                />
                 <TouchableOpacity activeOpacity={1} onPress={() => modifyPfpBottomSheetRef.current?.present()}>
                     <Text className="text-lg font-medium color-primary">Modify profile picture</Text>
                 </TouchableOpacity>
