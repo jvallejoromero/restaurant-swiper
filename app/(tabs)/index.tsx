@@ -1,12 +1,17 @@
-import {View} from "react-native";
+import {SafeAreaView, View} from "react-native";
 import RestaurantView from "@/components/screens/RestaurantView";
+import AppLogoHeader from "@/components/headers/AppLogoHeader";
+import React from "react";
 
-export default function Index() {
+const Index = () => {
   return (
-    <View className="flex-1 bg-background">
-        <View className="flex-1 mt-5">
-            <RestaurantView />
-        </View>
-    </View>
+      <SafeAreaView className="flex-1">
+          <View className="px-5 mt-4">
+              <AppLogoHeader />
+          </View>
+          <RestaurantView />
+      </SafeAreaView>
   );
 }
+
+export default Index;

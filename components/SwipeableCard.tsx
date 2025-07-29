@@ -47,6 +47,7 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
                 showSecondCard={true}
                 backgroundColor={"transparent"}
                 stackSize={2}
+                cardStyle={{ marginTop: 10 }}
                 cardVerticalMargin={50}
                 cardHorizontalMargin={15}
                 stackSeparation={0}

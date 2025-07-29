@@ -47,28 +47,25 @@ const PlaceView = ({ type }: PlaceViewProps) => {
         return <GenericErrorScreen message={errorLoading} />;
     }
 
-    if (lastLocationUsed && (lastLocationUsed.coords.latitude === 0 && lastLocationUsed.coords.longitude === 0)) {
-        if (!lastLocationUsed.mocked) {
-            return;
-        }
-        return <GenericErrorScreen message={"No places found on null island."} />
-    }
+    // if (lastLocationUsed && (lastLocationUsed.coords.latitude === 0 && lastLocationUsed.coords.longitude === 0)) {
+    //     if (!lastLocationUsed.mocked) {
+    //         return;
+    //     }
+    //     return <GenericErrorScreen message={"No places found on null island."} />
+    // }
 
     return (
-        <View style={{flex: 1, backgroundColor: COLORS.background_color, zIndex: 9999}}>
-            <AppLogoHeader />
-            <SwipeableCard
-                swiperRef={swiperRef}
-                places={places}
-                fetchingData={loadingPlaces}
-                cardIndex={cardIndex}
-                onSwipeLeft={() => console.log("<==== Swiped left")}
-                onSwipeRight={() => console.log("Swiped right ====>")}
-                onSwipeUp={(index) => {handleTopSwipe(index)}}
-                onCardIndexChange={(index) => {setCardIndex(index)}}
-                onExhaustOptions={loadMorePlaces}
-            />
-        </View>
+        <SwipeableCard
+            swiperRef={swiperRef}
+            places={places}
+            fetchingData={loadingPlaces}
+            cardIndex={cardIndex}
+            onSwipeLeft={() => console.log("<==== Swiped left")}
+            onSwipeRight={() => console.log("Swiped right ====>")}
+            onSwipeUp={(index) => {handleTopSwipe(index)}}
+            onCardIndexChange={(index) => {setCardIndex(index)}}
+            onExhaustOptions={loadMorePlaces}
+        />
     );
 }
 
