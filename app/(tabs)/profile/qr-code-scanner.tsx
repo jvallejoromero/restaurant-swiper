@@ -93,7 +93,7 @@ const QRCodeScannerScreen = () => {
     const resetView = () => {
         joinSessionSheetRef.current?.close();
         router.dismissAll();
-        router.push("/profile/swipe-session");
+        router.push("/");
     }
 
     const requestPermission = async () => {
