@@ -132,6 +132,8 @@ export default function SessionsScreen() {
         }
         setLoadingSession(false);
         sheetRef.current?.dismiss();
+        router.dismissAll();
+        router.push("/");
         showToast("Created new session", ToastType.SUCCESS);
     }
 
