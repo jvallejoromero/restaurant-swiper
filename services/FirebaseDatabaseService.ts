@@ -5,7 +5,8 @@ import {
     FieldValue,
     getDoc,
     getDocs,
-    onSnapshot, orderBy,
+    onSnapshot,
+    orderBy,
     query,
     serverTimestamp,
     setDoc,
@@ -14,7 +15,14 @@ import {
     writeBatch,
 } from 'firebase/firestore';
 import {firestore} from '@/firebase';
-import {AppUserProfile, DatabaseService, SessionParticipant, SwipeAction, SwipingSession} from './DatabaseService';
+import {
+    AppUserProfile,
+    DatabaseService,
+    SessionParticipant,
+    SessionStatus,
+    SwipeAction,
+    SwipingSession
+} from './DatabaseService';
 import {LocationObject} from "expo-location";
 import {uuid} from "expo-modules-core";
 import {Place} from "@/types/Places.types";
@@ -82,6 +90,8 @@ export class FirebaseDatabaseService implements DatabaseService {
             id: sessionId,
             createdBy: ownerId,
             createdAt: serverTimestamp(),
+            status: SessionStatus.WAITING_FOR_USERS,
+            expiresAt: Timestamp.fromDate(new Date(Date.now() + 60 * 60 * 1000 * 24)),
             participantCount: 0,
             title: title,
             description: description,
@@ -151,6 +161,21 @@ export class FirebaseDatabaseService implements DatabaseService {
             return null;
         }
         return session;
+    }
+
+    async updateSession(sessionId: string, data: Partial<SwipingSession>): Promise<void> {
+        const sessionRef = doc(firestore, 'sessions', sessionId);
+        try {
+            await updateDoc(sessionRef, data);
+            const updatedFields = Object.entries(data)
+                .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+                .join(", ");
+
+            console.log(`Session ${sessionId} updated with ${updatedFields}`);
+        } catch (err) {
+            console.warn(`Failed to update session ${sessionId}:`, err);
+            throw new Error("Could not update session.");
+        }
     }
 
     async addUserToSession(sessionId: string, userId: string): Promise<void> {

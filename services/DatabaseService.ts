@@ -3,11 +3,21 @@ import {LocationObject} from "expo-location";
 import {Timestamp} from "firebase/firestore";
 import {PlaceDetails} from "@/types/GoogleResponse.types";
 
+export enum SessionStatus {
+    CREATED = "created",
+    WAITING_FOR_USERS = "waiting_for_users",
+    READY = "ready",
+    LOADING_PLACES = "loading_places",
+    SWIPING = "swiping",
+    FINISHED = "finished",
+    EXPIRED = "expired",
+}
+
 export interface SwipeAction {
     userId:  string;
     placeId: string;
     direction: string;
-    liked:   boolean;
+    liked: boolean;
     swipedAt: Timestamp;
 }
 
@@ -15,6 +25,8 @@ export interface SwipingSession {
     id: string;
     createdBy: string;
     createdAt: Timestamp;
+    expiresAt: Timestamp;
+    status: SessionStatus;
     participantCount: number;
     location: LocationObject;
     places: Place[];
@@ -41,6 +53,7 @@ export interface DatabaseService {
     createSession(ownerId: string, title: string, description: string, radius: number, filters: string[], places: Place[], participants: string[], location: LocationObject): Promise<SwipingSession>;
     endSession(sessionId: string): Promise<void>;
     getSession(sessionId: string): Promise<SwipingSession | null>;
+    updateSession(sessionId: string, data: Partial<SwipingSession>): Promise<void>;
     getSessionParticipants(sessionId: string): Promise<SessionParticipant[]>;
     getSessionSwipes(sessionId: string): Promise<SwipeAction[]>;
     getSessionPlaces(sessionId: string): Promise<Place[]>;
