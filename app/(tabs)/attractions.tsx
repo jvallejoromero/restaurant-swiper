@@ -1,5 +1,5 @@
 import React from "react";
-import SwipingScreenLayout from "@/components/screens/SwipingScreenLayout";
+import SwipingScreenLayout from "@/components/layouts/SwipingScreenLayout";
 import PlaceView from "@/components/screens/PlaceView";
 
 const placeType = "tourist_attraction";
