@@ -5,7 +5,7 @@ import {
     FieldValue,
     getDoc,
     getDocs,
-    onSnapshot,
+    onSnapshot, orderBy,
     query,
     serverTimestamp,
     setDoc,
@@ -298,7 +298,7 @@ export class FirebaseDatabaseService implements DatabaseService {
             snapshot = await getDocs(participantsCol);
         } catch (err) {
             console.warn(`Could not get participants in session with id:${sessionId}`, err);
-            return [];
+            throw new Error(`Could not get participants data: ${err}`);
         }
         return snapshot.docs.map((doc) => {
             return {
@@ -306,6 +306,29 @@ export class FirebaseDatabaseService implements DatabaseService {
                 ...doc.data(),
             };
         }) as SessionParticipant[];
+    }
+
+    async getSessionSwipes(sessionId: string): Promise<SwipeAction[]> {
+        const swipesCol = collection(firestore, 'sessions', sessionId, 'swipes');
+        const swipeQuery = query(swipesCol, orderBy("swipedAt", "desc"));
+        try {
+            const snap = await getDocs(swipeQuery);
+            return snap.docs.map(doc => doc.data() as SwipeAction);
+        } catch (err) {
+            console.warn(`Could not fetch swipes for session ${sessionId}:`, err);
+            throw new Error(`Could not get swipe data: ${err}`);
+        }
+    }
+
+    async getSessionPlaces(sessionId: string): Promise<Place[]> {
+        const placesCol = collection(firestore, 'sessions', sessionId, 'places');
+        try {
+            const snap = await getDocs(placesCol);
+            return snap.docs.map(doc => doc.data() as Place);
+        } catch (err) {
+            console.warn(`Could not fetch places for session ${sessionId}:`, err);
+            throw new Error(`Could not get place data: ${err}`);
+        }
     }
 
     async deleteCachedPlaceData(sessionId:string): Promise<void> {
@@ -330,30 +353,20 @@ export class FirebaseDatabaseService implements DatabaseService {
         await batch.commit();
     }
 
-    onSessionSwipes(sessionId: string, callback: (swipes: SwipeAction[]) => void): () => void {
-        const swipesCol = collection(firestore, 'sessions', sessionId, 'swipes');
-        return onSnapshot(swipesCol, snap => {
-            const all: SwipeAction[] = snap.docs.map(doc => {
-                return doc.data() as SwipeAction;
-            });
-            callback(all);
-        });
-    }
-
-    onSessionUpdates(sessionId: string, callback: (session: SwipingSession | null) => void): () => void {
+    onSessionUpdates(sessionId: string, callback: (session: SwipingSession | null) => void, onError?: (error: Error) => void): () => void {
         const ref = doc(firestore, 'sessions', sessionId);
-        return onSnapshot(ref, snap => {
-            if (snap.exists()) {
-                callback(snap.data() as SwipingSession);
-            } else {
-                callback(null);
-            }
-        });
+        return onSnapshot(
+            ref,
+            snap => {
+                callback(snap.exists() ? (snap.data() as SwipingSession) : null);
+            },
+            error => onError?.(error)
+        );
     }
 
-    onParticipantUpdates(sessionId: string, callback: (participants: SessionParticipant[]) => void) {
+    onParticipantUpdates(sessionId: string, callback: (participants: SessionParticipant[]) => void, onError?: (error: Error) => void) {
         const participantsCol = collection(firestore, 'sessions', sessionId, 'participants');
-        const unsub = onSnapshot(
+        return onSnapshot(
             participantsCol,
             snap => {
                 const list: SessionParticipant[] = snap.docs.map(doc => {
@@ -366,14 +379,32 @@ export class FirebaseDatabaseService implements DatabaseService {
                 });
                 callback(list);
             },
-            error => {
-                if (error.code === 'permission-denied') {
-                    unsub();
-                } else {
-                    console.error('Participant listener error:', error);
-                }
-            }
+            error => onError?.(error)
         );
-        return unsub;
+    }
+
+    onSwipeUpdates(sessionId: string, callback: (swipes: SwipeAction[]) => void, onError?: (error: Error) => void): () => void {
+        const swipesCol = collection(firestore, 'sessions', sessionId, 'swipes');
+        const swipeQuery = query(swipesCol, orderBy("swipedAt", "desc"));
+        return onSnapshot(
+            swipeQuery,
+            snap => {
+                const swipes = snap.docs.map(doc => doc.data() as SwipeAction);
+                callback(swipes);
+            },
+            error => onError?.(error)
+        );
+    }
+
+    onPlaceUpdates(sessionId: string, callback: (places: Place[]) => void, onError?: (error: Error) => void): () => void {
+        const placesCol = collection(firestore, 'sessions', sessionId, 'places');
+        return onSnapshot(
+            placesCol,
+            snap => {
+                const places = snap.docs.map(doc => doc.data() as Place);
+                callback(places);
+            },
+            error => onError?.(error)
+        );
     }
 }

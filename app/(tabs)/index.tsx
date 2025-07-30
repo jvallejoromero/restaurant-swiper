@@ -1,7 +1,7 @@
-import {SafeAreaView, View} from "react-native";
+import {SafeAreaView, View, Text, ScrollView} from "react-native";
 import RestaurantView from "@/components/screens/RestaurantView";
 import AppLogoHeader from "@/components/headers/AppLogoHeader";
-import React, {useRef} from "react";
+import React, {useEffect, useRef} from "react";
 import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
 import SessionStatusButton from "@/components/buttons/SessionStatusButton";
 import {useServices} from "@/context/ServicesContext";
@@ -11,6 +11,7 @@ import {PopupMessageRef} from "@/components/popups/PopupMessage";
 const Index = () => {
     const { user } = useServices();
     const { activeSession } = useActiveSwipingSession();
+
     const activeSessionPopupRef = useRef<PopupMessageRef>(null);
 
     const handleSessionButtonPress = async () => {

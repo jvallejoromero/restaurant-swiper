@@ -42,6 +42,8 @@ export interface DatabaseService {
     endSession(sessionId: string): Promise<void>;
     getSession(sessionId: string): Promise<SwipingSession | null>;
     getSessionParticipants(sessionId: string): Promise<SessionParticipant[]>;
+    getSessionSwipes(sessionId: string): Promise<SwipeAction[]>;
+    getSessionPlaces(sessionId: string): Promise<Place[]>;
     addUserToSession(sessionId: string, userId: string): Promise<void>;
     addUsersToSession(sessionId: string, userIds: string[]): Promise<void>;
     removeUserFromSession(sessionId: string, userId: string): Promise<void>;
@@ -53,8 +55,9 @@ export interface DatabaseService {
     updateUserProfile(uid: string, data: Partial<AppUserProfile>): Promise<void>;
     updateUsernameDoc(userId: string, oldUsername: string, newUsername: string, email: string): Promise<void>;
     usernameExists(username: string): Promise<boolean>;
-    onSessionUpdates(sessionId: string, callback: (session: SwipingSession | null) => void): () => void;
-    onSessionSwipes(sessionId: string, callback: (swipes: SwipeAction[]) => void): () => void;
-    onParticipantUpdates(sessionId: string, callback: (participants: SessionParticipant[]) => void): () => void;
+    onSessionUpdates(sessionId: string, callback: (session: SwipingSession | null) => void, onError?: (error: Error) => void): () => void;
+    onSwipeUpdates(sessionId: string, callback: (swipes: SwipeAction[]) => void, onError?: (error: Error) => void): () => void;
+    onParticipantUpdates(sessionId: string, callback: (participants: SessionParticipant[]) => void, onError?: (error: Error) => void): () => void;
+    onPlaceUpdates(sessionId: string, callback: (places: Place[]) => void, onError?: (error: Error) => void): () => void;
     onUserProfile(uid: string, callback: (profile: AppUserProfile | null) => void): () => void;
 }
