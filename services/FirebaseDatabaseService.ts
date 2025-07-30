@@ -90,7 +90,7 @@ export class FirebaseDatabaseService implements DatabaseService {
             id: sessionId,
             createdBy: ownerId,
             createdAt: serverTimestamp(),
-            status: SessionStatus.WAITING_FOR_USERS,
+            status: SessionStatus.CREATED,
             expiresAt: Timestamp.fromDate(new Date(Date.now() + 60 * 60 * 1000 * 24)),
             participantCount: 0,
             title: title,
@@ -165,6 +165,16 @@ export class FirebaseDatabaseService implements DatabaseService {
 
     async updateSession(sessionId: string, data: Partial<SwipingSession>): Promise<void> {
         const sessionRef = doc(firestore, 'sessions', sessionId);
+        const snap = await getDoc(sessionRef);
+        if (!snap.exists()) return;
+
+        const current = snap.data() as SwipingSession;
+        const hasChanged = Object.entries(data).some(([key, value]) => {
+            return JSON.stringify(current[key as keyof SwipingSession]) !== JSON.stringify(value);
+        });
+
+        if (!hasChanged) return;
+
         try {
             await updateDoc(sessionRef, data);
             const updatedFields = Object.entries(data)

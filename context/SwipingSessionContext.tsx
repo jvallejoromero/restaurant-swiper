@@ -3,6 +3,7 @@ import React, {createContext, ReactNode, useContext, useEffect, useRef, useState
 import {useServices} from "@/context/ServicesContext";
 import {Place} from "@/types/Places.types";
 import {isDeepEqual} from "@/utils/ComparisonUtils";
+import {useSessionFlowController} from "@/hooks/SessionControllerHook";
 
 type SwipingSessionContextProps = {
     activeSession: SwipingSession | null;
@@ -24,7 +25,7 @@ export const SwipingSessionContext = createContext<SwipingSessionContextProps>({
 });
 
 export function SwipingSessionProvider({ children }: { children: ReactNode }) {
-    const { database, userProfile, loading: servicesLoading } = useServices();
+    const { database, user, userProfile, loading: servicesLoading } = useServices();
 
     const [activeSession, setActiveSession] = useState<SwipingSession | null>(null);
     const [participants, setParticipants] = useState<SessionParticipant[]>([]);
@@ -34,19 +35,31 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
     const [sessionResolved, setSessionResolved] = useState<boolean>(false);
     const [error, setError] = useState<Error | null>(null);
 
+    const [participantsLoaded, setParticipantsLoaded] = useState<boolean>(false);
+    const [placesLoaded, setPlacesLoaded] = useState<boolean>(false);
+    const [swipesLoaded, setSwipesLoaded] = useState<boolean>(false);
+
     const prevSessionIdRef = useRef<string | null>(null);
 
+    useSessionFlowController({
+        activeSession,
+        participants,
+        user,
+        sessionResolved,
+        participantsLoaded,
+        updateSession: database.updateSession.bind(database),
+        setError,
+    });
+
     useEffect(() => {
-        if (servicesLoading) {
-            return;
-        }
+        if (servicesLoading) return;
 
         const sessionId = userProfile?.activeSessionId ?? null;
         if (prevSessionIdRef.current === sessionId && sessionResolved) {
             return;
         }
-
         prevSessionIdRef.current = sessionId;
+
         if (!sessionId) {
             setActiveSession(null);
             setParticipants([]);
@@ -92,10 +105,12 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
                                 }
                                 return prev;
                             });
+                            setParticipantsLoaded(true);
                         },
                         err => {
                             console.warn("Session participants error:", err);
                             setError(prev => prev ?? new Error(`Failed to load participants: ${err.message}`));
+                            setParticipantsLoaded(true);
                         }
                     );
                     unsubSwipes = database.onSwipeUpdates(
@@ -107,10 +122,12 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
                                 }
                                 return prev;
                             });
+                            setSwipesLoaded(true);
                         },
                         err => {
                             console.warn("Session swipes error:", err);
                             setError(prev => prev ?? new Error(`Failed to load swipes: ${err.message}`));
+                            setSwipesLoaded(true);
                         }
                     );
                     unsubPlaces = database.onPlaceUpdates(
@@ -123,10 +140,12 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
                                 }
                                 return prev;
                             });
+                            setPlacesLoaded(true);
                         },
                         err => {
                             console.warn("Session places error:", err);
                             setError(prev => prev ?? new Error(`Failed to load places: ${err.message}`));
+                            setPlacesLoaded(true);
                         }
                     );
                     setLoading(false);
@@ -146,7 +165,7 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
             unsubSwipes?.();
             unsubPlaces?.();
         };
-    }, [servicesLoading, userProfile?.activeSessionId]);
+    }, [database, servicesLoading, userProfile?.activeSessionId]);
 
     return (
         <SwipingSessionContext.Provider

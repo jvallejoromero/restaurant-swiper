@@ -6,12 +6,19 @@ import {PlaceDetails} from "@/types/GoogleResponse.types";
 export enum SessionStatus {
     CREATED = "created",
     WAITING_FOR_USERS = "waiting_for_users",
-    READY = "ready",
+    READY_FOR_START = "ready_for_start",
     LOADING_PLACES = "loading_places",
     SWIPING = "swiping",
-    FINISHED = "finished",
+    ENDED = "ended",
     EXPIRED = "expired",
 }
+
+export const SESSION_STARTED_STATUSES = [
+    SessionStatus.LOADING_PLACES,
+    SessionStatus.SWIPING,
+    SessionStatus.ENDED,
+    SessionStatus.EXPIRED,
+];
 
 export interface SwipeAction {
     userId:  string;
