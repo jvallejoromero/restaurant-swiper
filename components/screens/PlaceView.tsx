@@ -1,12 +1,9 @@
-import { View } from "react-native";
 import React, {useState, useRef} from "react";
 import Swiper from "react-native-deck-swiper";
 import {useRouter} from "expo-router";
-import {COLORS} from "@/constants/colors";
 import { ForkAnimation } from "../animations/LoadingAnimations";
 import {useGooglePlacesAPI} from "@/hooks/GooglePlacesAPIHook";
 import GenericErrorScreen from "@/components/screens/GenericErrorScreen";
-import AppLogoHeader from "@/components/headers/AppLogoHeader";
 import SwipeableCard from "@/components/SwipeableCard";
 import {Place, PlaceType} from "@/types/Places.types";
 
