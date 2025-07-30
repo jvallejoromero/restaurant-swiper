@@ -43,12 +43,6 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
         setPlacesLoaded(false);
     }
 
-    function setIfChanged<T>(setter: React.Dispatch<React.SetStateAction<T>>, prevValue: T, newValue: T) {
-        if (!isDeepEqual(newValue, prevValue)) {
-            setter(newValue);
-        }
-    }
-
     useEffect(() => {
         if (!userProfile || !userProfile.activeSessionId) {
             setActiveSession(null);
@@ -78,7 +72,9 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
                     return;
                 }
                 setActiveSession(prev => {
-                    setIfChanged(setActiveSession, prev, session);
+                    if (!isDeepEqual(prev, session)) {
+                        return session;
+                    }
                     return prev;
                 });
                 setLoading(false);
@@ -87,10 +83,12 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
                         sessionId,
                         newParticipants => {
                             setParticipants(prev => {
-                                setIfChanged(setParticipants, prev, newParticipants);
-                                setParticipantsLoaded(true);
+                                if (!isDeepEqual(prev, newParticipants)) {
+                                    return newParticipants;
+                                }
                                 return prev;
-                            })
+                            });
+                            setParticipantsLoaded(true);
                         },
                         err => {
                             console.warn("Session participants error:", err);
@@ -102,10 +100,12 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
                         sessionId,
                         newSwipes => {
                             setSwipes(prev => {
-                                setIfChanged(setSwipes, prev, newSwipes);
-                                setSwipesLoaded(true);
+                                if (!isDeepEqual(prev, newSwipes)) {
+                                    return newSwipes;
+                                }
                                 return prev;
                             });
+                            setSwipesLoaded(true);
                         },
                         err => {
                             console.warn("Session swipes error:", err);
@@ -117,10 +117,13 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
                         sessionId,
                         newPlaces => {
                             setPlaces(prev => {
-                                setIfChanged(setPlaces, prev, newPlaces);
-                                setPlacesLoaded(true);
+                                if (!isDeepEqual(prev, newPlaces)) {
+                                    console.log("[database] places updated");
+                                    return newPlaces;
+                                }
                                 return prev;
                             });
+                            setPlacesLoaded(true);
                         },
                         err => {
                             console.warn("Session places error:", err);
