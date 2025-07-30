@@ -44,10 +44,11 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
     useSessionFlowController({
         activeSession,
         participants,
+        places,
         user,
         sessionResolved,
         participantsLoaded,
-        updateSession: database.updateSession.bind(database),
+        database,
         setError,
     });
 

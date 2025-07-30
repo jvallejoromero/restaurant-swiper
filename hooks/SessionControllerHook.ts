@@ -1,23 +1,32 @@
 import { User } from "@/services/AuthService";
-import {SESSION_STARTED_STATUSES, SessionParticipant, SessionStatus, SwipingSession } from "@/services/DatabaseService";
+import {
+    DatabaseService,
+    SESSION_STARTED_STATUSES,
+    SessionParticipant,
+    SessionStatus,
+    SwipingSession
+} from "@/services/DatabaseService";
 import {useEffect, useRef} from "react";
+import {Place} from "@/types/Places.types";
 
 export function useSessionFlowController(
     {
         activeSession,
         participants,
+        places,
         user,
         sessionResolved,
         participantsLoaded,
-        updateSession,
+        database,
         setError,
     }: {
         activeSession: SwipingSession | null;
         participants: SessionParticipant[];
+        places: Place[];
         user: User | null;
         sessionResolved: boolean;
         participantsLoaded: boolean;
-        updateSession: (sessionId: string, data: Partial<SwipingSession>) => Promise<void>;
+        database: DatabaseService;
         setError: (err: Error) => void;
 }) {
     const prevParticipantCount = useRef<number | null>(null);
@@ -25,18 +34,20 @@ export function useSessionFlowController(
     useEffect(() => {
         if (!activeSession || !sessionResolved || !participantsLoaded || !user) return;
 
-        const isOwner = activeSession.createdBy === user.uid;
-        const participantCount = participants.length;
+        const FINAL_STATUSES = [SessionStatus.ENDED, SessionStatus.EXPIRED];
+        if (FINAL_STATUSES.includes(activeSession.status)) return;
 
+        const isOwner = activeSession.createdBy === user.uid;
+        if (!isOwner) return;
+
+        const participantCount = participants.length;
         if (prevParticipantCount.current === participantCount) return;
         prevParticipantCount.current = participantCount;
 
-        if (!isOwner) return;
-
         const hasStarted = SESSION_STARTED_STATUSES.includes(activeSession.status);
 
-        if (hasStarted && participantCount < 2 && activeSession.status !== SessionStatus.ENDED) {
-            updateSession(activeSession.id, { status: SessionStatus.ENDED })
+        if (hasStarted && participantCount < 2) {
+            database.updateSession(activeSession.id, { status: SessionStatus.ENDED })
                 .catch(
                     err =>  setError(new Error(`Failed to update session: ${err.message}`))
                 );
@@ -44,7 +55,7 @@ export function useSessionFlowController(
         }
 
         if (participantCount < 2 && !hasStarted && activeSession.status !== SessionStatus.WAITING_FOR_USERS) {
-            updateSession(activeSession.id, { status: SessionStatus.WAITING_FOR_USERS })
+            database.updateSession(activeSession.id, { status: SessionStatus.WAITING_FOR_USERS })
                 .catch(
                     err => setError(new Error(`Failed to update session: ${err.message}`))
                 );
@@ -52,10 +63,23 @@ export function useSessionFlowController(
         }
 
         if (participantCount >= 2 && !hasStarted && activeSession.status !== SessionStatus.READY_FOR_START) {
-            updateSession(activeSession.id, { status: SessionStatus.READY_FOR_START })
+            database.updateSession(activeSession.id, { status: SessionStatus.READY_FOR_START })
                 .catch(
                     err => setError(new Error(`Failed to update session: ${err.message}`))
                 );
         }
-    }, [activeSession?.status, participants.length]);
+    }, [activeSession?.id, activeSession?.status, activeSession?.createdBy, participants.length, sessionResolved, participantsLoaded, user?.uid]);
+
+    useEffect(() => {
+        if (!activeSession || !user || !sessionResolved) return;
+        const isOwner = activeSession.createdBy === user.uid;
+        if (!isOwner) return;
+
+        if (activeSession.status === SessionStatus.LOADING_INITIAL_PLACES && places.length === 0) {
+            console.log("should be loading initial places now..");
+        }
+        if (activeSession.status === SessionStatus.LOADING_NEW_PLACES && places.length > 0) {
+            console.log("should be loading new places now..");
+        }
+    }, [activeSession?.status, places.length]);
 }

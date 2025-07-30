@@ -7,14 +7,16 @@ export enum SessionStatus {
     CREATED = "created",
     WAITING_FOR_USERS = "waiting_for_users",
     READY_FOR_START = "ready_for_start",
-    LOADING_PLACES = "loading_places",
+    LOADING_INITIAL_PLACES = "loading_initial_places",
+    LOADING_NEW_PLACES = "loading_new_places",
     SWIPING = "swiping",
     ENDED = "ended",
     EXPIRED = "expired",
 }
 
 export const SESSION_STARTED_STATUSES = [
-    SessionStatus.LOADING_PLACES,
+    SessionStatus.LOADING_INITIAL_PLACES,
+    SessionStatus.LOADING_NEW_PLACES,
     SessionStatus.SWIPING,
     SessionStatus.ENDED,
     SessionStatus.EXPIRED,
