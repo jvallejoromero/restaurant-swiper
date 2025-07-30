@@ -1,27 +1,34 @@
 import { useServices } from "@/context/ServicesContext";
 import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
 import { PopupMessageRef } from "../popups/PopupMessage";
-import React, { useRef } from "react";
+import React, {useRef} from "react";
 import {SafeAreaView, View} from "react-native";
 import AppLogoHeader from "@/components/headers/AppLogoHeader";
 import SessionStatusButton from "@/components/buttons/SessionStatusButton";
 import CurrentSessionInfoPopup from "@/components/popups/CurrentSessionInfoPopup";
 import { PlaceType } from "@/types/Places.types";
+import { ForkAnimation } from "../animations/LoadingAnimations";
+import PlaceView from "@/components/screens/PlaceView";
+import SessionSwipingView from "@/components/screens/session/SessionSwipingView";
 
 type SwipingScreenLayoutProps = {
     placeType: PlaceType;
-    children?: React.ReactNode;
 };
 
-const SwipingScreenLayout = ({ placeType, children }: SwipingScreenLayoutProps) => {
+const SwipingScreenLayout = ({ placeType }: SwipingScreenLayoutProps) => {
     const { user } = useServices();
-    const { activeSession } = useActiveSwipingSession();
+    const { activeSession, sessionResolved, loading } = useActiveSwipingSession();
+
     const activeSessionPopupRef = useRef<PopupMessageRef>(null);
 
     const handleSessionButtonPress = () => {
         if (activeSession) {
             activeSessionPopupRef.current?.open();
         }
+    }
+
+    if (sessionResolved === null || loading) {
+        return <ForkAnimation />;
     }
 
     return (
@@ -35,7 +42,12 @@ const SwipingScreenLayout = ({ placeType, children }: SwipingScreenLayoutProps) 
                     />
                 )}
             </View>
-            {children}
+
+            {activeSession ? (
+                <SessionSwipingView />
+            ) : (
+                <PlaceView type={placeType} />
+            )}
             <CurrentSessionInfoPopup
                 session={activeSession}
                 popupRef={activeSessionPopupRef}
