@@ -7,7 +7,7 @@ import { Place } from "@/types/Places.types";
 import DebugActiveSessionScreen from "@/components/screens/debug/DebugActiveSessionScreen";
 import {useServices} from "@/context/ServicesContext";
 import { SessionStatus } from "@/services/DatabaseService";
-import {ForkAnimation, UsersConnectingAnimation} from "@/components/animations/LoadingAnimations";
+import {ForkAnimation} from "@/components/animations/LoadingAnimations";
 import {LoadingCard} from "@/components/cards/LoadingCard";
 import {SESSION_DEFAULTS} from "@/constants/sessionConstants";
 import GenericButton from "@/components/buttons/GenericButton";

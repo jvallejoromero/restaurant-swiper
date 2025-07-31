@@ -1,5 +1,5 @@
 import React, {useMemo} from "react";
-import {BottomSheetModal, BottomSheetView} from "@gorhom/bottom-sheet";
+import {BottomSheetBackdrop, BottomSheetModal, BottomSheetView} from "@gorhom/bottom-sheet";
 import {Text, TouchableOpacity, View} from "react-native";
 import {Ionicons} from "@expo/vector-icons";
 
@@ -34,6 +34,14 @@ const ModifyProfilePictureSheet = ({ sheetRef, entries, onOptionPress }: ModifyP
             enablePanDownToClose
             handleComponent={Header}
             backgroundStyle={{ backgroundColor: "white", borderTopLeftRadius: 20, borderTopRightRadius: 20, shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 10 }}
+            backdropComponent={(props) => (
+                <BottomSheetBackdrop
+                    {...props}
+                    appearsOnIndex={0}
+                    disappearsOnIndex={-1}
+                    pressBehavior="close"
+                />
+            )}
         >
             <BottomSheetView className="py-4 px-6 mb-safe">
                 {entries.map(({ label, iconName }, index) => {
