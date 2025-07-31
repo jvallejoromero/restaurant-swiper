@@ -30,3 +30,18 @@ export const CardsSwipeAnimation = ({ width = 200, height = 200 }: { width?: num
         </View>
     );
 }
+
+export const UsersConnectingAnimation = ({ width = 200, height = 200 }: { width?: number, height?: number }) => {
+    const animationPath = require('../../assets/animations/users-connecting-animation.json');
+
+    return (
+        <View className="flex-1 justify-center items-center">
+            <LottieView
+                source={animationPath}
+                autoPlay
+                loop
+                style={{ width: width, height: height }}
+            />
+        </View>
+    );
+}
