@@ -1,5 +1,4 @@
 import {useLocalSearchParams} from "expo-router";
-import GenericErrorScreen from "@/components/screens/GenericErrorScreen";
 import PlaceDetailsView from "@/components/screens/PlaceDetailsView";
 import React from "react";
 

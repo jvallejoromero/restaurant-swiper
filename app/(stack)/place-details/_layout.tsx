@@ -1,8 +1,6 @@
 import { Stack } from "expo-router";
 
-console.log("Loaded place layout");
-
-export default function PlaceLayout() {
+export default function PlaceDetailsLayout() {
     return (
         <Stack
             screenOptions={{

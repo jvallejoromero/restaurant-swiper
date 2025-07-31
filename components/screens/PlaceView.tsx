@@ -20,10 +20,6 @@ const PlaceView = ({ type }: PlaceViewProps) => {
 
     const handleTopSwipe = (index: number) => {
         if (!places.length || !places[index].id) {
-            router.push({
-                pathname: '/place-details/[id]',
-                params: { id: `ChIJJxVjI7vMj4ARPYYHcC-20vo` },
-            });
             return;
         }
 
