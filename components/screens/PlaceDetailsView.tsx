@@ -1,4 +1,4 @@
-import {Text, View, StyleSheet, TouchableOpacity, ScrollView, Linking} from "react-native";
+import {Text, View, StyleSheet, TouchableOpacity, ScrollView, Linking, SafeAreaView} from "react-native";
 import React, { useState, useEffect} from "react"
 import {LinkIcon} from "lucide-react-native";
 import {PlaceDetails} from "@/types/GoogleResponse.types";
@@ -18,6 +18,8 @@ import ReviewCard from "@/components/cards/ReviewCard";
 import PlaceDetailsMap from "@/components/maps/PlaceDetailsMap";
 import MapLink from "../buttons/MapLink";
 import {FONTS} from "@/constants/fonts";
+import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
+import Separator from "@/components/ui/Separator";
 
 type PlaceDetailsProps = {
     id: string;
@@ -174,7 +176,7 @@ const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
             setFetchingData(false);
         }
 
-        loadDetails().then(() => {});
+        void loadDetails();
     }, []);
 
     if (isFetchingData) {
@@ -189,15 +191,12 @@ const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
     const longitude = placeDetails.geometry.location?.lng;
 
     return (
-        <View
-            className="flex-1 flex-col items-start justify-start bg-background"
-            style={{paddingBottom: 125}}
-        >
+        <SafeAreaView className="flex-1 flex-col items-start justify-start bg-background">
+            <BackNavigationHeader label={"Place Details"} />
+            <Separator className={"my-4 mx-6"} />
             <ScrollView>
                 <ScrollableImageGallery photoRefs={placeDetails.photos} />
-                <View
-                    style={{padding: 16, gap: 12}}
-                >
+                <View style={{padding: 16, gap: 12}}>
                     <View>
                         <TitleText text={placeDetails.name} />
                         <TitleSubheader text={placeDetails.editorial_summary.overview} />
@@ -218,8 +217,7 @@ const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
                     </View>
                 </View>
             </ScrollView>
-            <GoBackButton />
-        </View>
+        </SafeAreaView>
     );
 };
 

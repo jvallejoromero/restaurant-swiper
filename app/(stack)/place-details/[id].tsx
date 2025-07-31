@@ -1,13 +1,17 @@
-import React from "react";
 import {useLocalSearchParams} from "expo-router";
+import GenericErrorScreen from "@/components/screens/GenericErrorScreen";
 import PlaceDetailsView from "@/components/screens/PlaceDetailsView";
+import React from "react";
 
-const AttractionDetails = () => {
+const PlaceDetails = () => {
     const params = useLocalSearchParams<{ id: string }>();
+    if (!params?.id) {
+        return null;
+    }
 
     return (
         <PlaceDetailsView id={params.id} />
     );
 }
 
-export default AttractionDetails;
+export default PlaceDetails;

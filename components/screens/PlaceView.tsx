@@ -19,20 +19,21 @@ const PlaceView = ({ type }: PlaceViewProps) => {
     const swiperRef = useRef<Swiper<Place> | null>(null);
 
     const handleTopSwipe = (index: number) => {
+        if (!places.length || !places[index].id) {
+            router.push({
+                pathname: '/place-details/[id]',
+                params: { id: `ChIJJxVjI7vMj4ARPYYHcC-20vo` },
+            });
+            return;
+        }
+
         swiperRef.current?.swipeBack();
         setCardIndex(cardIndex - 1);
 
-        if (type === 'restaurant') {
-            router.push({
-                pathname: '/restaurant/[id]',
-                params: { id: places[index].id },
-            });
-        } else if (type === 'tourist_attraction') {
-            router.push({
-                pathname: '/attraction/[id]',
-                params: {id: places[index].id}
-            });
-        }
+        router.push({
+            pathname: '/place-details/[id]',
+            params: { id: places[index].id },
+        });
     }
 
     if (loadingPlaces) {
