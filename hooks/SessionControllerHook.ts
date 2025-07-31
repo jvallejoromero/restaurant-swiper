@@ -1,6 +1,6 @@
 import { User } from "@/services/AuthService";
 import {
-    DatabaseService,
+    DatabaseService, SESSION_FINALIZED_STATUSES,
     SESSION_STARTED_STATUSES,
     SessionParticipant,
     SessionStatus,
@@ -34,8 +34,7 @@ export function useSessionFlowController(
     useEffect(() => {
         if (!activeSession || !sessionResolved || !participantsLoaded || !user) return;
 
-        const FINAL_STATUSES = [SessionStatus.ENDED, SessionStatus.EXPIRED];
-        if (FINAL_STATUSES.includes(activeSession.status)) return;
+        if (SESSION_FINALIZED_STATUSES.includes(activeSession.status)) return;
 
         const isOwner = activeSession.createdBy === user.uid;
         if (!isOwner) return;

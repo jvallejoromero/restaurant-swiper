@@ -90,7 +90,7 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
                     return;
                 }
                 setActiveSession(prev => {
-                    if (!isDeepEqual(prev, session)) {
+                    if (!prev || prev.status !== session.status || !isDeepEqual(prev, session)) {
                         return session;
                     }
                     return prev;

@@ -22,6 +22,11 @@ export const SESSION_STARTED_STATUSES = [
     SessionStatus.EXPIRED,
 ];
 
+export const SESSION_FINALIZED_STATUSES = [
+    SessionStatus.ENDED,
+    SessionStatus.EXPIRED
+];
+
 export interface SwipeAction {
     userId:  string;
     placeId: string;
