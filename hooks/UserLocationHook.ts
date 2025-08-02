@@ -1,13 +1,14 @@
 import {LocationObject} from "expo-location";
-import {createContext, useEffect, useState} from "react";
+import {createContext, useEffect, useRef, useState} from "react";
 import * as Location from "expo-location";
 
 export function useUserLocation() {
     const [loading, setLoading] = useState(true);
     const [location, setLocation] = useState<LocationObject | null>(null);
+    const mounted = useRef<boolean>(true);
 
     useEffect(() => {
-        let mounted = true;
+        mounted.current = true;
 
         const getUserLocation = async () => {
             try {
@@ -20,7 +21,8 @@ export function useUserLocation() {
                     return;
                 }
 
-                const location = await Location.getCurrentPositionAsync();
+                const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+
                 if (!location) {
                     setLocation(null);
 
@@ -28,7 +30,7 @@ export function useUserLocation() {
                     return;
                 }
 
-                if (!mounted) {
+                if (!mounted.current) {
                     return;
                 }
 
@@ -39,14 +41,14 @@ export function useUserLocation() {
             } catch (error) {
                 console.log("Could not get location info", error);
             } finally {
-                setLoading(false);
+                if (mounted.current) setLoading(false);
             }
         };
 
         void getUserLocation();
 
         return () => {
-            mounted = false;
+            mounted.current = false;
         }
     }, [])
 

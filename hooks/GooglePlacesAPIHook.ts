@@ -16,11 +16,13 @@ const shuffleArray = (array: Place[]) => {
 
 
 export function useGooglePlacesAPI(type: PlaceType, pagination: boolean = true) {
-    // const { userLocation } = useContext(UserLocationContext);
-    const userLocation = createMockLocation(0,0);
+    const { fetchingLocation } = useContext(UserLocationContext);
+
+    //TODO: undo location override when testing real google places api
+    const userLocation = createMockLocation(0, 0);
 
     const [places, setPlaces] = useState<Place[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     const [radius, setRadius] = useState<number>(10_000);
@@ -44,7 +46,7 @@ export function useGooglePlacesAPI(type: PlaceType, pagination: boolean = true) 
         }
 
         let newCoords;
-        if (!userLocation?.coords.latitude || !userLocation?.coords.latitude) {
+        if (!userLocation?.coords.latitude || !userLocation?.coords.longitude) {
             newCoords = { newLatitude: 0, newLongitude: 0 };
         } else {
             newCoords = randomizeLocation(userLocation.coords.latitude, userLocation.coords.longitude, 5, 10);
@@ -84,15 +86,13 @@ export function useGooglePlacesAPI(type: PlaceType, pagination: boolean = true) 
 
     // initial load
     useEffect(() => {
+        if (fetchingLocation) return;
         if (!userLocation) {
             setError("User location is required.");
             setLoading(false);
             return;
         }
-
-        if (didFetchInitial.current) {
-            return;
-        }
+        if (didFetchInitial.current) return;
 
         didFetchInitial.current = true;
         setLastLocationUsed(userLocation);
@@ -119,7 +119,7 @@ export function useGooglePlacesAPI(type: PlaceType, pagination: boolean = true) 
 
         void fetchInitialData();
         return () => {}
-    }, [userLocation]);
+    }, [userLocation, fetchingLocation]);
 
     // pagination
     useEffect(() => {
