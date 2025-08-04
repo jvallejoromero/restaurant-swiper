@@ -12,7 +12,7 @@ const SessionStatusButton = ({ active, onPress }: SessionStatusButtonProps) => {
     return (
         <Pressable
             onPress={onPress}
-            className={`flex-row items-center gap-2 px-2 py-1.5 rounded-full
+            className={`flex-row items-center gap-2 px-2 py-1.5 rounded-full z-10
                         border border-transparent shadow-sm shadow-black/20 
                         ${active ? 'bg-green-100/80' : 'bg-neutral-100/80'}`}
         >
