@@ -1,9 +1,9 @@
-import {Text, View} from "react-native";
+import {View} from "react-native";
 import React, {useEffect, useRef, useState} from "react";
 import Swiper from "react-native-deck-swiper";
 import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
 import SwipeableCard from "@/components/SwipeableCard";
-import {Place} from "@/types/Places.types";
+import {Place, PlaceType} from "@/types/Places.types";
 import {useServices} from "@/context/ServicesContext";
 import {SessionStatus, SwipeAction, SwipeDirection} from "@/services/DatabaseService";
 import {ForkAnimation} from "@/components/animations/LoadingAnimations";
@@ -15,7 +15,11 @@ import {useToast} from "@/context/ToastContext";
 import {ToastType} from "@/hooks/ToastHook";
 import { StatusTextScreen } from "./StatusTextScreen";
 
-const SessionSwipingView = () => {
+type SessionSwipingViewProps = {
+    type: PlaceType;
+};
+
+const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
     const { user, database } = useServices();
     const { activeSession, participants, places, loading } = useActiveSwipingSession();
     const { showToast } = useToast();
@@ -23,6 +27,8 @@ const SessionSwipingView = () => {
     const [cardIndex, setCardIndex] = useState<number>(0);
     const swiperRef = useRef<Swiper<Place> | null>(null);
     const lastCardIndexRef = useRef<number | null>(null);
+
+    const filteredPlaces = places.filter((place: Place) => place.type === type);
 
     useEffect(() => {
         if (loading || !places.length || !swiperRef.current || !user) return;
@@ -127,7 +133,7 @@ const SessionSwipingView = () => {
     return (
         <SwipeableCard
             swiperRef={swiperRef}
-            places={places}
+            places={filteredPlaces}
             fetchingData={false}
             cardIndex={cardIndex}
             onSwipeLeft={handleLeftSwipe}

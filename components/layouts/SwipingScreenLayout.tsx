@@ -57,7 +57,7 @@ const SwipingScreenLayout = ({ placeType }: SwipingScreenLayoutProps) => {
                     subtitle={`The host has disabled ${PLACE_TYPE_LABELS[placeType]}s for this session. Please swipe in one of the allowed categories.`}
                 />
             ) : activeSession ? (
-                <SessionSwipingView />
+                <SessionSwipingView type={placeType} />
             ) : (
                 <PlaceView type={placeType} />
             )}
