@@ -14,6 +14,7 @@ import {Timestamp} from "firebase/firestore";
 import {useToast} from "@/context/ToastContext";
 import {ToastType} from "@/hooks/ToastHook";
 import { StatusTextScreen } from "./StatusTextScreen";
+import {useDebouncedAsyncCallback} from "@/hooks/DebouncedCallbackHook";
 
 type SessionSwipingViewProps = {
     type: PlaceType;
@@ -27,6 +28,7 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
     const [cardIndex, setCardIndex] = useState<number>(0);
     const swiperRef = useRef<Swiper<Place> | null>(null);
     const lastCardIndexRef = useRef<number | null>(null);
+    const isSwipingRef = useRef<boolean>(false);
 
     const filteredPlaces = places.filter((place: Place) => place.type === type);
 
@@ -37,25 +39,39 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
 
         const currentIndex = participant.currentIndexes[type];
         if (!currentIndex) return;
-        if (lastCardIndexRef.current === currentIndex) return;
+        if (lastCardIndexRef.current === currentIndex || isSwipingRef.current) return;
 
         setCardIndex(currentIndex);
         lastCardIndexRef.current = currentIndex;
         swiperRef.current?.jumpToCardIndex(currentIndex);
     }, [loading, places, participants, user]);
 
+    const debouncedUpdateIndex = useDebouncedAsyncCallback(
+        async (newIndex: number) => {
+            if (!activeSession || !user) return;
+            await database.updateParticipant(
+                activeSession.id, user.uid,
+                { [`currentIndexes.${type}`]: newIndex }
+            );
+        },
+        1000
+    );
+
     if (!activeSession || !user) return null;
 
     const handleTopSwipe = () => {
         swiperRef.current?.swipeBack();
-        setCardIndex(cardIndex - 1);
     };
 
     const handleLeftSwipe = async() => {
+        isSwipingRef.current = true;
+        setCardIndex(cardIndex + 1);
         await recordSwipe(cardIndex, false);
     }
 
     const handleRightSwipe = async() => {
+        isSwipingRef.current = true;
+        setCardIndex(cardIndex + 1);
         await recordSwipe(cardIndex, true);
     }
 
@@ -70,7 +86,7 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
 
         try {
             await database.recordSwipe(activeSession.id, swipe);
-            await database.updateParticipant(activeSession.id, user.uid, { [`currentIndexes.${type}`]: cardIndex + 1 });
+            await debouncedUpdateIndex(index + 1);
         } catch (e) {
             if (e instanceof Error) showToast(e.message, ToastType.ERROR);
             else showToast("An unknown error occurred.", ToastType.ERROR);
@@ -142,7 +158,7 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
             onSwipeLeft={handleLeftSwipe}
             onSwipeRight={handleRightSwipe}
             onSwipeUp={handleTopSwipe}
-            onCardIndexChange={setCardIndex}
+            onCardIndexChange={() => {}}
             onExhaustOptions={() => console.log("No more places in session.")}
         />
     );
