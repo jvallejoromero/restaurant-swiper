@@ -10,9 +10,15 @@ import { PlaceType } from "@/types/Places.types";
 import { ForkAnimation } from "../animations/LoadingAnimations";
 import PlaceView from "@/components/screens/PlaceView";
 import SessionSwipingView from "@/components/screens/session/SessionSwipingView";
+import {StatusTextScreen} from "@/components/screens/session/StatusTextScreen";
 
 type SwipingScreenLayoutProps = {
     placeType: PlaceType;
+};
+
+const PLACE_TYPE_LABELS: Record<PlaceType, string> = {
+    restaurant: "restaurant",
+    tourist_attraction: "attraction",
 };
 
 const SwipingScreenLayout = ({ placeType }: SwipingScreenLayoutProps) => {
@@ -31,6 +37,25 @@ const SwipingScreenLayout = ({ placeType }: SwipingScreenLayoutProps) => {
         return <ForkAnimation />;
     }
 
+    const invalidPlaceType = activeSession && !activeSession.placeTypes.includes(placeType);
+    const PlaceTypeNotSupported = () => {
+        let readablePlaceType;
+        switch (placeType) {
+            case "restaurant":
+                readablePlaceType = "restaurant";
+                break;
+            case "tourist_attraction":
+                readablePlaceType = "attraction";
+                break;
+        }
+        return (
+            <StatusTextScreen
+                title={"This category isn't part of the session"}
+                subtitle={`The host has disabled ${readablePlaceType}s for this session. Please swipe in one of the allowed categories.`}
+            />
+        );
+    }
+
     return (
         <SafeAreaView className="flex-1">
             <View className="px-5 mt-4 flex-row justify-between items-center">
@@ -43,7 +68,12 @@ const SwipingScreenLayout = ({ placeType }: SwipingScreenLayoutProps) => {
                 )}
             </View>
 
-            {activeSession ? (
+            {invalidPlaceType ? (
+                <StatusTextScreen
+                    title={"This category isn't part of the session"}
+                    subtitle={`The host has disabled ${PLACE_TYPE_LABELS[placeType]}s for this session. Please swipe in one of the allowed categories.`}
+                />
+            ) : activeSession ? (
                 <SessionSwipingView />
             ) : (
                 <PlaceView type={placeType} />
