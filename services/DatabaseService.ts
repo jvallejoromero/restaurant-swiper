@@ -57,7 +57,9 @@ export interface SwipingSession {
 
 export interface SessionParticipant {
     id?: string;
-    currentIndex: number;
+    currentIndexes: {
+        [key in PlaceType]?: number;
+    };
     joinedAt: Timestamp;
 }
 

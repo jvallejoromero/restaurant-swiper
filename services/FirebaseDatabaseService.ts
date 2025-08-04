@@ -197,7 +197,10 @@ export class FirebaseDatabaseService implements DatabaseService {
         const participantRef = doc(firestore, 'sessions', sessionId, 'participants', userId);
         const sessionRef = doc(firestore, "sessions", sessionId);
         const participant: NewParticipant = {
-            currentIndex: 0,
+            currentIndexes: {
+                restaurant: 0,
+                tourist_attraction: 0,
+            },
             joinedAt: serverTimestamp(),
         }
         await setDoc(participantRef, participant);
@@ -216,7 +219,10 @@ export class FirebaseDatabaseService implements DatabaseService {
         userIds.forEach((uid) => {
             const participantRef = doc(firestore, 'sessions', sessionId, 'participants', uid);
             const participant: NewParticipant = {
-                currentIndex: 0,
+                currentIndexes: {
+                    restaurant: 0,
+                    tourist_attraction: 0,
+                },
                 joinedAt: serverTimestamp(),
             }
             batch.set(participantRef, participant);
@@ -445,7 +451,7 @@ export class FirebaseDatabaseService implements DatabaseService {
                     const data = doc.data();
                     return {
                         id: doc.id,
-                        currentIndex: data.currentIndex as number,
+                        currentIndexes: data.currentIndexes,
                         joinedAt: data.joinedAt as Timestamp,
                     };
                 });
