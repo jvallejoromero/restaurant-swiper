@@ -136,7 +136,6 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
                         newPlaces => {
                             setPlaces(prev => {
                                 if (!isDeepEqual(prev, newPlaces)) {
-                                    console.log("[database] places updated");
                                     return newPlaces;
                                 }
                                 return prev;
