@@ -186,3 +186,9 @@ export const fetchPlaces = async(location: LocationObject, radius: number, type:
 
     return { places, nextPageToken: newPageToken };
 }
+
+export function sanitizePlace(p: any): Record<string, any> {
+    return Object.fromEntries(
+        Object.entries(p).filter(([_, v]) => v !== undefined)
+    );
+}
