@@ -38,23 +38,6 @@ const SwipingScreenLayout = ({ placeType }: SwipingScreenLayoutProps) => {
     }
 
     const invalidPlaceType = activeSession && !activeSession.placeTypes.includes(placeType);
-    const PlaceTypeNotSupported = () => {
-        let readablePlaceType;
-        switch (placeType) {
-            case "restaurant":
-                readablePlaceType = "restaurant";
-                break;
-            case "tourist_attraction":
-                readablePlaceType = "attraction";
-                break;
-        }
-        return (
-            <StatusTextScreen
-                title={"This category isn't part of the session"}
-                subtitle={`The host has disabled ${readablePlaceType}s for this session. Please swipe in one of the allowed categories.`}
-            />
-        );
-    }
 
     return (
         <SafeAreaView className="flex-1">
