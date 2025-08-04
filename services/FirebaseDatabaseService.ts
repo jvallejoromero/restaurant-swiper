@@ -98,7 +98,6 @@ export class FirebaseDatabaseService implements DatabaseService {
             radius: radius,
             filters: filters,
             location: location,
-            places: places,
         };
 
         try {
@@ -113,6 +112,11 @@ export class FirebaseDatabaseService implements DatabaseService {
             console.warn("Could not add users to session:", error);
             throw new Error("An error occurred while adding users to the session.");
         }
+
+        if (places.length) {
+            await this.addPlacesToSession(sessionId, places);
+        }
+
         const createdSession = await this.getSession(sessionId);
         if (!createdSession) {
             throw new Error("An error occurred while fetching session data.");

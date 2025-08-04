@@ -48,7 +48,6 @@ export interface SwipingSession {
     status: SessionStatus;
     participantCount: number;
     location: LocationObject;
-    places: Place[];
     title: string;
     description: string;
     radius: number;
