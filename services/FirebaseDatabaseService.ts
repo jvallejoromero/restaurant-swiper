@@ -98,6 +98,7 @@ export class FirebaseDatabaseService implements DatabaseService {
             radius: radius,
             filters: filters,
             location: location,
+            placeTypes: ["restaurant", "tourist_attraction"],
         };
 
         try {

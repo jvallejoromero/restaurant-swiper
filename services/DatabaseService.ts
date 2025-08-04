@@ -1,4 +1,4 @@
-import {Place} from "@/types/Places.types";
+import {Place, PlaceType} from "@/types/Places.types";
 import {LocationObject} from "expo-location";
 import {Timestamp} from "firebase/firestore";
 import {PlaceDetails} from "@/types/GoogleResponse.types";
@@ -52,6 +52,7 @@ export interface SwipingSession {
     description: string;
     radius: number;
     filters: string[];
+    placeTypes: PlaceType[];
 }
 
 export interface SessionParticipant {
