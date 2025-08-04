@@ -34,11 +34,14 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
         if (loading || !places.length || !swiperRef.current || !user) return;
         const participant = participants.find((p) => p.id === user?.uid);
         if (!participant) return;
-        if (lastCardIndexRef.current === participant.currentIndex) return;
 
-        setCardIndex(participant.currentIndex);
-        lastCardIndexRef.current = participant.currentIndex;
-        swiperRef.current?.jumpToCardIndex(participant.currentIndex);
+        const currentIndex = participant.currentIndexes[type];
+        if (!currentIndex) return;
+        if (lastCardIndexRef.current === currentIndex) return;
+
+        setCardIndex(currentIndex);
+        lastCardIndexRef.current = currentIndex;
+        swiperRef.current?.jumpToCardIndex(currentIndex);
     }, [loading, places, participants, user]);
 
     if (!activeSession || !user) return null;
@@ -67,7 +70,7 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
 
         try {
             await database.recordSwipe(activeSession.id, swipe);
-            await database.updateParticipant(activeSession.id, user.uid, { currentIndex: cardIndex + 1 });
+            await database.updateParticipant(activeSession.id, user.uid, { [`currentIndexes.${type}`]: cardIndex + 1 });
         } catch (e) {
             if (e instanceof Error) showToast(e.message, ToastType.ERROR);
             else showToast("An unknown error occurred.", ToastType.ERROR);
