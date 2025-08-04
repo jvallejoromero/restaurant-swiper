@@ -24,18 +24,18 @@ const SessionSwipingView = () => {
     const swiperRef = useRef<Swiper<Place> | null>(null);
     const lastCardIndexRef = useRef<number | null>(null);
 
-    if (!activeSession || !user) return null;
-
     useEffect(() => {
-        if (loading || !places.length || !swiperRef.current) return;
-        const participant = participants.find((p) => p.id === user.uid);
+        if (loading || !places.length || !swiperRef.current || !user) return;
+        const participant = participants.find((p) => p.id === user?.uid);
         if (!participant) return;
         if (lastCardIndexRef.current === participant.currentIndex) return;
 
         setCardIndex(participant.currentIndex);
         lastCardIndexRef.current = participant.currentIndex;
         swiperRef.current?.jumpToCardIndex(participant.currentIndex);
-    }, [loading, places, participants]);
+    }, [loading, places, participants, user]);
+
+    if (!activeSession || !user) return null;
 
     const handleTopSwipe = () => {
         swiperRef.current?.swipeBack();
