@@ -1,7 +1,7 @@
 import {PlaceDetails, PlaceReview} from "@/types/GoogleResponse.types";
 import {haversine} from "@/utils/LocationUtils";
 import {LocationObject} from "expo-location";
-import {Place} from "@/types/Places.types";
+import {Place, PlaceType} from "@/types/Places.types";
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
 
@@ -119,7 +119,7 @@ export const fetchPlaceDetails = async(placeId: string | string[]): Promise<(Pla
     return null;
 }
 
-export const fetchPlaces = async(location: LocationObject, radius: number, type: string, nextPageToken:string | null)
+export const fetchPlaces = async(location: LocationObject, radius: number, type: PlaceType, nextPageToken:string | null)
     : Promise<{ places: Place[], nextPageToken: (string | null)}> => {
     const latitude = location.coords.latitude;
     const longitude = location.coords.longitude;
@@ -178,6 +178,7 @@ export const fetchPlaces = async(location: LocationObject, radius: number, type:
         latitude: item.geometry?.location.latitude,
         longitude: item.geometry?.location.longitude,
         distanceFromUser: haversine(latitude, longitude, item.geometry?.location.lat, item.geometry?.location.lng),
+        type: type,
     }))
 
     if (data.next_page_token) {
