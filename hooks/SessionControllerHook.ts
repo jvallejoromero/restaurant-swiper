@@ -8,6 +8,7 @@ import {
 } from "@/services/DatabaseService";
 import {useEffect, useRef} from "react";
 import {Place} from "@/types/Places.types";
+import {fetchPlaces} from "@/utils/GoogleAPIUtils";
 
 export function useSessionFlowController(
     {
@@ -75,10 +76,30 @@ export function useSessionFlowController(
         if (!isOwner) return;
 
         if (activeSession.status === SessionStatus.LOADING_INITIAL_PLACES && places.length === 0) {
-            console.log("should be loading initial places now..");
+            (async () => {
+                try {
+                    const { places: fetchedPlaces } = await fetchPlaces(
+                        activeSession.location,
+                        activeSession.radius,
+                        "restaurant",
+                        null
+                    );
+                    await database.addPlacesToSession(activeSession.id, fetchedPlaces);
+                } catch (err) {
+                    if (err instanceof Error) {
+                        setError(new Error(`Failed to fetch or add places: ${err.message}`));
+                    } else {
+                        setError(new Error("An unknown error occurred."));
+                    }
+                }
+                database.updateSession(activeSession.id, { status: SessionStatus.SWIPING })
+                    .catch(
+                        err => setError(new Error(`Failed to update session: ${err.message}`))
+                    );
+            })();
         }
         if (activeSession.status === SessionStatus.LOADING_NEW_PLACES && places.length > 0) {
             console.log("should be loading new places now..");
         }
-    }, [activeSession?.status, places.length]);
+    }, [activeSession?.status]);
 }

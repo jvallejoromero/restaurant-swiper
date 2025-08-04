@@ -27,10 +27,15 @@ export const SESSION_FINALIZED_STATUSES = [
     SessionStatus.EXPIRED
 ];
 
+export enum SwipeDirection {
+    RIGHT = "right",
+    LEFT = "left",
+}
+
 export interface SwipeAction {
     userId:  string;
     placeId: string;
-    direction: string;
+    direction: SwipeDirection;
     liked: boolean;
     swipedAt: Timestamp;
 }
@@ -44,10 +49,10 @@ export interface SwipingSession {
     participantCount: number;
     location: LocationObject;
     places: Place[];
-    title?: string;
-    description?: string;
-    radius?: number;
-    filters?: string[];
+    title: string;
+    description: string;
+    radius: number;
+    filters: string[];
 }
 
 export interface SessionParticipant {
@@ -68,6 +73,7 @@ export interface DatabaseService {
     endSession(sessionId: string): Promise<void>;
     getSession(sessionId: string): Promise<SwipingSession | null>;
     updateSession(sessionId: string, data: Partial<SwipingSession>): Promise<void>;
+    updateParticipant(sessionId: string, userId: string, data: Partial<SessionParticipant>): Promise<void>;
     getSessionParticipants(sessionId: string): Promise<SessionParticipant[]>;
     getSessionSwipes(sessionId: string): Promise<SwipeAction[]>;
     getSessionPlaces(sessionId: string): Promise<Place[]>;

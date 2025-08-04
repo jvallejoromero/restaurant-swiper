@@ -27,7 +27,7 @@ import {LocationObject} from "expo-location";
 import {uuid} from "expo-modules-core";
 import {Place} from "@/types/Places.types";
 import {PlaceDetails} from "@/types/GoogleResponse.types";
-import {fetchPlaceDetails} from '@/utils/GoogleAPIUtils';
+import {fetchPlaceDetails, sanitizePlace} from '@/utils/GoogleAPIUtils';
 import {increment, Timestamp} from "@firebase/firestore";
 
 type NewSwipingSession = Omit<SwipingSession, 'createdAt'> & {
@@ -287,22 +287,54 @@ export class FirebaseDatabaseService implements DatabaseService {
         console.log(`Removed ${userIds.length} participants from session with id ${sessionId}`);
     }
 
+    async updateParticipant(sessionId: string, userId: string, data: Partial<SessionParticipant>): Promise<void> {
+        const participantRef = doc(firestore, 'sessions', sessionId, 'participants', userId);
+        const snap = await getDoc(participantRef);
+        if (!snap.exists()) return;
+
+        const current = snap.data() as SessionParticipant;
+        const hasChanged = Object.entries(data).some(([key, value]) => {
+            return JSON.stringify(current[key as keyof SessionParticipant]) !== JSON.stringify(value);
+        });
+
+        if (!hasChanged) return;
+
+        try {
+            await updateDoc(participantRef, data);
+            const updatedFields = Object.entries(data)
+                .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+                .join(", ");
+
+            console.log(`Participant ${userId} updated with ${updatedFields}`);
+        } catch (err) {
+            console.warn(`Failed to update participant in session ${sessionId}:`, err);
+            throw new Error("Could not update participant information.");
+        }
+    }
+
     async recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void> {
-        const swipeRef = doc(firestore, 'sessions', sessionId, 'swipes', `${swipe.userId}_${swipe.placeId}`);
-        await setDoc(swipeRef, swipe);
+        try {
+            const swipeRef = doc(firestore, 'sessions', sessionId, 'swipes', `${swipe.userId}_${swipe.placeId}`);
+            await setDoc(swipeRef, swipe);
+        } catch (err) {
+            console.warn("Could not record swipe: ", err);
+            throw new Error("Could not record swipe");
+        }
     }
 
     async addPlacesToSession(sessionId: string, places: Place[]): Promise<void> {
         const batch = writeBatch(firestore);
         for (const place of places) {
             const placeRef = doc(firestore, 'sessions', sessionId, 'places', place.id);
-            batch.set(placeRef, place);
+            const cleanPlace = sanitizePlace(place);
+            batch.set(placeRef, cleanPlace);
         }
         try {
             await batch.commit();
             console.log(`Successfully wrote ${places.length} place(s)`);
         } catch (err) {
-            console.error("Could not add places to session:", err);
+            console.warn("Could not add places to session:", err);
+            throw new Error(`Could not add places to session`);
         }
     }
 
