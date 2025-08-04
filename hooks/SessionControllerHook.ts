@@ -8,7 +8,7 @@ import {
 } from "@/services/DatabaseService";
 import {useEffect, useRef} from "react";
 import {Place} from "@/types/Places.types";
-import {fetchPlaces} from "@/utils/GoogleAPIUtils";
+import {fetchAllPlaces} from "@/utils/GoogleAPIUtils";
 
 export function useSessionFlowController(
     {
@@ -78,19 +78,19 @@ export function useSessionFlowController(
         if (activeSession.status === SessionStatus.LOADING_INITIAL_PLACES && places.length === 0) {
             (async () => {
                 try {
-                    const { places: fetchedPlaces } = await fetchPlaces(
-                        activeSession.location,
-                        activeSession.radius,
-                        "restaurant",
-                        null
-                    );
-                    await database.addPlacesToSession(activeSession.id, fetchedPlaces);
-                } catch (err) {
-                    if (err instanceof Error) {
-                        setError(new Error(`Failed to fetch or add places: ${err.message}`));
-                    } else {
-                        setError(new Error("An unknown error occurred."));
+                    const allFetchedPlaces: Place[] = [];
+                    for (const type of activeSession.placeTypes) {
+                        const fetched = await fetchAllPlaces(
+                            activeSession.location,
+                            activeSession.radius,
+                            type
+                        );
+                        allFetchedPlaces.push(...fetched);
                     }
+                    await database.addPlacesToSession(activeSession.id, allFetchedPlaces);
+                } catch (err) {
+                    if (err instanceof Error) setError(err);
+                    else setError(new Error("An unknown error occurred."));
                 }
                 database.updateSession(activeSession.id, { status: SessionStatus.SWIPING })
                     .catch(
