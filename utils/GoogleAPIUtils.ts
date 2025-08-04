@@ -188,7 +188,41 @@ export const fetchPlaces = async(location: LocationObject, radius: number, type:
     return { places, nextPageToken: newPageToken };
 }
 
-export function sanitizePlace(p: any): Record<string, any> {
+export const fetchAllPlaces = async(
+    location: LocationObject,
+    radius: number,
+    type: PlaceType,
+): Promise<Place[]> => {
+    const allPlaces: Place[] = [];
+    let nextPageToken: string | null = null;
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    try {
+        do {
+            const { places, nextPageToken: newToken } = await fetchPlaces(
+                location,
+                radius,
+                type,
+                nextPageToken
+            );
+            const newUnique = places.filter(
+                p => !allPlaces.some(existing => existing.id === p.id)
+            );
+            allPlaces.push(...newUnique);
+            nextPageToken = newToken;
+
+            if (nextPageToken) {
+                await delay(2000); // Google API delay requirement
+            }
+        } while (nextPageToken);
+    } catch (e) {
+        console.warn(`Failed to fetch ${type} places: ${e}`);
+        throw new Error(`Could not fetch places of type: ${type}`);
+    }
+    return allPlaces;
+}
+
+export const sanitizePlace = (p: any): Record<string, any> => {
     return Object.fromEntries(
         Object.entries(p).filter(([_, v]) => v !== undefined)
     );
