@@ -18,7 +18,6 @@ const { height: windowHeight } = Dimensions.get("window");
 
 const PopupMessage = forwardRef<PopupMessageRef, PopupMessageProps>(({ animated = true, className, bgClassname, onClose, children }, ref) => {
     const [visible, setVisible] = useState<boolean>(false);
-    const [blocking, setBlocking] = useState(false);
     const translateY = useRef<Animated.Value>(new Animated.Value(windowHeight)).current;
 
     useEffect(() => {

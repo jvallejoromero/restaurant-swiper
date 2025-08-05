@@ -29,6 +29,7 @@ import {Place} from "@/types/Places.types";
 import {PlaceDetails} from "@/types/GoogleResponse.types";
 import {fetchPlaceDetails, sanitizePlace} from '@/utils/GoogleAPIUtils';
 import {increment, Timestamp} from "@firebase/firestore";
+import {FirebaseError} from "@firebase/app";
 
 type NewSwipingSession = Omit<SwipingSession, 'createdAt'> & {
     createdAt: FieldValue;
@@ -344,8 +345,11 @@ export class FirebaseDatabaseService implements DatabaseService {
             const matchRef = doc(firestore, 'sessions', sessionId, 'matches', `${match.placeId}`);
             const snap = await getDoc(matchRef);
             if (snap.exists()) return;
-            await setDoc(matchRef, match);
+            await setDoc(matchRef, match, { merge: false });
         } catch (err) {
+            if (err instanceof FirebaseError && err.code === 'permission-denied') {
+                return;
+            }
             console.warn("Could not record match: ", err);
             throw new Error("Could not record match.");
         }

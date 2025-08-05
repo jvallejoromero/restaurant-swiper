@@ -5,7 +5,7 @@ import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
 import SwipeableCard from "@/components/SwipeableCard";
 import {Place, PlaceType} from "@/types/Places.types";
 import {useServices} from "@/context/ServicesContext";
-import {SessionStatus, SwipeAction, SwipeDirection} from "@/services/DatabaseService";
+import {SessionMatch, SessionStatus, SwipeAction, SwipeDirection} from "@/services/DatabaseService";
 import {ForkAnimation} from "@/components/animations/LoadingAnimations";
 import {LoadingCard} from "@/components/cards/LoadingCard";
 import {SESSION_DEFAULTS} from "@/constants/sessionConstants";
@@ -15,6 +15,7 @@ import {useToast} from "@/context/ToastContext";
 import {ToastType} from "@/hooks/ToastHook";
 import { StatusTextScreen } from "./StatusTextScreen";
 import {useDebouncedAsyncCallback} from "@/hooks/DebouncedCallbackHook";
+import MatchPopup from "@/components/popups/MatchPopup";
 
 type SessionSwipingViewProps = {
     type: PlaceType;
@@ -22,10 +23,12 @@ type SessionSwipingViewProps = {
 
 const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
     const { user, database } = useServices();
-    const { activeSession, participants, places, loading } = useActiveSwipingSession();
+    const { activeSession, participants, places, matches, loading } = useActiveSwipingSession();
     const { showToast } = useToast();
 
     const [cardIndex, setCardIndex] = useState<number>(0);
+    const [matchQueue, setMatchQueue] = useState<SessionMatch[]>([]);
+
     const swiperRef = useRef<Swiper<Place> | null>(null);
     const isSwipingRef = useRef<boolean>(false);
 
@@ -33,6 +36,8 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
     const participant = participants.find((p) => p.id === user?.uid);
     const currentIndex = participant?.currentIndexes?.[type];
     const isCardSynced = cardIndex === currentIndex || isSwipingRef.current;
+    const outOfCards = typeof currentIndex === "number" && currentIndex >= filteredPlaces.length;
+    const currentMatch = matchQueue[0];
 
     const isReady =
         activeSession?.status !== SessionStatus.LOADING_INITIAL_PLACES &&
@@ -44,6 +49,24 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
         setCardIndex(currentIndex);
         swiperRef.current?.jumpToCardIndex(currentIndex);
     }, [isReady, currentIndex]);
+
+    useEffect(() => {
+        if (!matches.length || !isReady) return;
+
+        const now = Date.now();
+        const unseenMatches = matches.filter(match => {
+            const matchedAtMs = match.matchedAt.toMillis() ?? match.matchedAt.seconds * 1000;
+            return now - matchedAtMs <= 3000;
+        });
+
+        const newMatches = unseenMatches.filter(
+            m => !matchQueue.some(queued => queued.placeId === m.placeId)
+        );
+
+        if (!newMatches.length) return;
+
+        setMatchQueue(prev => [...prev, ...newMatches]);
+    }, [isReady, matches.length]);
 
     const debouncedUpdateIndex = useDebouncedAsyncCallback(
         async (newIndex: number) => {
@@ -77,7 +100,7 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
     const recordSwipe = async (index: number, liked: boolean) => {
         const swipe: SwipeAction = {
             userId: user.uid,
-            placeId: places[index].id,
+            placeId: filteredPlaces[index].id,
             direction: liked ? SwipeDirection.RIGHT : SwipeDirection.LEFT,
             liked: liked,
             swipedAt: Timestamp.now(),
@@ -147,15 +170,25 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
         );
     }
 
+    if (outOfCards) {
+        return (
+            <StatusTextScreen
+                title="You're all caught up!"
+                subtitle="Please wait for the host to load more places for the session."
+            />
+        );
+    }
+
     return (
         <>
-            {currentIndex >= filteredPlaces.length && (
-                <View className="absolute inset-0 justify-center items-center">
-                    <StatusTextScreen
-                        title="You're all caught up!"
-                        subtitle="Please wait for the host to load more places for the session."
-                    />
-                </View>
+            {currentMatch && (
+                <MatchPopup
+                    place={places.find(p => p.id === currentMatch.placeId)!}
+                    additionalCount={matchQueue.length - 1}
+                    onHide={() =>
+                        setMatchQueue(prev => prev.slice(1))
+                    }
+                />
             )}
             <SwipeableCard
                 swiperRef={swiperRef}

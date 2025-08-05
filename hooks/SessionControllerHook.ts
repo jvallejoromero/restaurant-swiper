@@ -40,7 +40,7 @@ export function useSessionFlowController(
         placesLoaded: boolean;
         database: DatabaseService;
         setError: (err: Error) => void;
-}) {
+    }) {
     const allLoaded = participantsLoaded && placesLoaded && swipesLoaded && matchesLoaded;
     const prevParticipantCount = useRef<number | null>(null);
 
@@ -119,25 +119,34 @@ export function useSessionFlowController(
     }, [swipes]);
 
     useEffect(() => {
-        if (!activeSession || !user || !sessionResolved
-            || !allLoaded || activeSession.status !== SessionStatus.SWIPING) return;
-
-        const isOwner = activeSession.createdBy === user.uid;
-        if (!isOwner) return;
+        if (
+            !activeSession?.createdBy ||
+            !user?.uid ||
+            activeSession.createdBy !== user.uid ||
+            !sessionResolved ||
+            !allLoaded ||
+            activeSession.status !== SessionStatus.SWIPING
+        ) return;
 
         for (const [placeId, userIdSet] of Object.entries(swipeMap)) {
-            if (userIdSet.size >= participants.length) {
-                const place = places.find(p => p.id === placeId);
-                if (!place) continue;
-                const alreadyMatched = matches.find(m => m.placeId === placeId);
-                if (alreadyMatched) continue;
+            const place = places.find(p => p.id === placeId);
+            if (!place) continue;
 
+            const alreadyMatched = matches.find(m => m.placeId === placeId);
+            if (alreadyMatched) continue;
+
+            const everyoneLiked = participants.every(p =>
+                p.id && swipeMap[placeId]?.has(p.id)
+            );
+
+            if (everyoneLiked) {
                 database.recordMatch(activeSession.id, {
                     placeId,
                     matchedBy: Array.from(userIdSet),
                     matchedAt: Timestamp.now(),
                     placeType: place.type,
                 }).catch(err => setError(err));
+                console.log("match created by", user.uid, "for", place.name);
             }
         }
     }, [activeSession?.id, sessionResolved, allLoaded, swipeMap]);
