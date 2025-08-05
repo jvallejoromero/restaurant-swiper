@@ -1,5 +1,5 @@
 import {Animated, Image} from "react-native";
-import React, {RefObject, useEffect, useState} from "react";
+import React, {RefObject, useEffect, useRef, useState} from "react";
 import Swiper from "react-native-deck-swiper";
 import PlaceViewCard from "@/components/cards/PlaceViewCard";
 import {IMAGES} from "@/constants/images";
@@ -23,7 +23,9 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
     const [swipeProgressX] = useState(new Animated.Value(0));
     const [swiperKey, setSwiperKey] = useState<number>(0);
     const [isCardSwiping, setIsCardSwiping] = useState<boolean>(false);
-    const reachedMaxSwipes = cardIndex >= places.length;
+
+    const hasSwipedRef = useRef<boolean>(false);
+    const outOfCards = cardIndex >= places.length && hasSwipedRef.current;
 
     const handleSwiping = (posX: number, _posY: number) => {
         swipeProgressX.setValue(posX);
@@ -72,9 +74,9 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
                 cardHorizontalMargin={15}
                 stackSeparation={0}
                 infinite={false}
-                disableLeftSwipe={reachedMaxSwipes}
-                disableRightSwipe={reachedMaxSwipes}
-                disableTopSwipe={reachedMaxSwipes}
+                disableLeftSwipe={outOfCards}
+                disableRightSwipe={outOfCards}
+                disableTopSwipe={outOfCards}
                 disableBottomSwipe={true}
                 stackAnimationFriction={20}
                 stackAnimationTension={25}
@@ -82,9 +84,6 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
                 overlayOpacityHorizontalThreshold={50}
                 animateOverlayLabelsOpacity={false}
                 renderCard={(place: Place) => {
-                    if (reachedMaxSwipes) {
-                        return null;
-                    }
                     return <PlaceViewCard place={place} />;
                 }}
                 onSwiping={(x,y) => {
@@ -92,6 +91,7 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
                 }}
                 onSwiped={(index) => {
                     console.log('Swiped: ', (index + 1), "/", places.length);
+                    hasSwipedRef.current = true;
                     onCardIndexChange(index + 1);
                     swipeProgressX.setValue(0);
                 }}
@@ -148,7 +148,7 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
                     },
                 }}
             />
-            {!reachedMaxSwipes && (
+            {!outOfCards && (
                 <CardActionButtons
                     onLike={() => doCardSwipe(SwipeDirection.RIGHT)}
                     onDislike={() => doCardSwipe(SwipeDirection.LEFT)}

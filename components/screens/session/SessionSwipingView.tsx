@@ -15,7 +15,6 @@ import {useToast} from "@/context/ToastContext";
 import {ToastType} from "@/hooks/ToastHook";
 import { StatusTextScreen } from "./StatusTextScreen";
 import {useDebouncedAsyncCallback} from "@/hooks/DebouncedCallbackHook";
-import NoMoreSessionPlacesScreen from "@/components/screens/NoMoreSessionPlacesScreen";
 
 type SessionSwipingViewProps = {
     type: PlaceType;
@@ -152,7 +151,10 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
         <>
             {currentIndex >= filteredPlaces.length && (
                 <View className="absolute inset-0 justify-center items-center">
-                    <NoMoreSessionPlacesScreen />
+                    <StatusTextScreen
+                        title="You're all caught up!"
+                        subtitle="Please wait for the host to load more places for the session."
+                    />
                 </View>
             )}
             <SwipeableCard
