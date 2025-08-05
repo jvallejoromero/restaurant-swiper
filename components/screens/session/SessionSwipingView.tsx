@@ -64,13 +64,13 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
     };
 
     const handleLeftSwipe = async() => {
-        isSwipingRef.current = true;
+        if (!isSwipingRef.current) isSwipingRef.current = true;
         setCardIndex(cardIndex + 1);
         await recordSwipe(cardIndex, false);
     }
 
     const handleRightSwipe = async() => {
-        isSwipingRef.current = true;
+        if (!isSwipingRef.current) isSwipingRef.current = true;
         setCardIndex(cardIndex + 1);
         await recordSwipe(cardIndex, true);
     }

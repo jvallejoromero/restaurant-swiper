@@ -23,6 +23,7 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
     const [swipeProgressX] = useState(new Animated.Value(0));
     const [swiperKey, setSwiperKey] = useState<number>(0);
     const [isCardSwiping, setIsCardSwiping] = useState<boolean>(false);
+    const reachedMaxSwipes = cardIndex >= places.length;
 
     const handleSwiping = (posX: number, _posY: number) => {
         swipeProgressX.setValue(posX);
@@ -71,13 +72,16 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
                 cardHorizontalMargin={15}
                 stackSeparation={0}
                 infinite={false}
+                disableLeftSwipe={reachedMaxSwipes}
+                disableRightSwipe={reachedMaxSwipes}
+                disableTopSwipe={reachedMaxSwipes}
                 disableBottomSwipe={true}
                 stackAnimationFriction={20}
                 stackAnimationTension={25}
                 childrenOnTop={false}
                 overlayOpacityHorizontalThreshold={50}
                 animateOverlayLabelsOpacity={false}
-                renderCard={(place: Place) => <PlaceViewCard place={place} />}
+                renderCard={(place: Place) => reachedMaxSwipes ? null : <PlaceViewCard place={place} />}
                 onSwiping={(x,y) => {
                     handleSwiping(x,y);
                 }}
@@ -139,12 +143,14 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
                     },
                 }}
             />
-            <CardActionButtons
-                onLike={() => doCardSwipe(SwipeDirection.RIGHT)}
-                onDislike={() => doCardSwipe(SwipeDirection.LEFT)}
-                onInfo={() => doCardSwipe(SwipeDirection.TOP)}
-                swipeProgressX={swipeProgressX}
-            />
+            {!reachedMaxSwipes && (
+                <CardActionButtons
+                    onLike={() => doCardSwipe(SwipeDirection.RIGHT)}
+                    onDislike={() => doCardSwipe(SwipeDirection.LEFT)}
+                    onInfo={() => doCardSwipe(SwipeDirection.TOP)}
+                    swipeProgressX={swipeProgressX}
+                />
+            )}
         </>
     );
 }
