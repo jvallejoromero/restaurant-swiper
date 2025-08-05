@@ -59,7 +59,7 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
 
     if (!activeSession || !user) return null;
 
-    const handleTopSwipe = () => {
+    const handleTopSwipe = async () => {
         swiperRef.current?.swipeBack();
     };
 

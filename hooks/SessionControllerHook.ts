@@ -1,35 +1,47 @@
 import { User } from "@/services/AuthService";
 import {
     DatabaseService, SESSION_FINALIZED_STATUSES,
-    SESSION_STARTED_STATUSES,
+    SESSION_STARTED_STATUSES, SessionMatch,
     SessionParticipant,
-    SessionStatus,
+    SessionStatus, SwipeAction,
     SwipingSession
 } from "@/services/DatabaseService";
-import {useEffect, useRef} from "react";
+import {useEffect, useMemo, useRef} from "react";
 import {Place} from "@/types/Places.types";
 import {fetchAllPlaces} from "@/utils/GoogleAPIUtils";
+import {Timestamp} from "@firebase/firestore";
 
 export function useSessionFlowController(
     {
         activeSession,
         participants,
         places,
+        swipes,
+        matches,
         user,
         sessionResolved,
+        placesLoaded,
         participantsLoaded,
+        swipesLoaded,
+        matchesLoaded,
         database,
         setError,
     }: {
         activeSession: SwipingSession | null;
         participants: SessionParticipant[];
         places: Place[];
+        swipes: SwipeAction[],
+        matches: SessionMatch[];
         user: User | null;
         sessionResolved: boolean;
         participantsLoaded: boolean;
+        swipesLoaded: boolean;
+        matchesLoaded: boolean;
+        placesLoaded: boolean;
         database: DatabaseService;
         setError: (err: Error) => void;
 }) {
+    const allLoaded = participantsLoaded && placesLoaded && swipesLoaded && matchesLoaded;
     const prevParticipantCount = useRef<number | null>(null);
 
     useEffect(() => {
@@ -48,25 +60,19 @@ export function useSessionFlowController(
 
         if (hasStarted && participantCount < 2) {
             database.updateSession(activeSession.id, { status: SessionStatus.ENDED })
-                .catch(
-                    err =>  setError(new Error(`Failed to update session: ${err.message}`))
-                );
+                .catch(err =>  setError(err));
             return;
         }
 
         if (participantCount < 2 && !hasStarted && activeSession.status !== SessionStatus.WAITING_FOR_USERS) {
             database.updateSession(activeSession.id, { status: SessionStatus.WAITING_FOR_USERS })
-                .catch(
-                    err => setError(new Error(`Failed to update session: ${err.message}`))
-                );
+                .catch(err =>  setError(err));
             return;
         }
 
         if (participantCount >= 2 && !hasStarted && activeSession.status !== SessionStatus.READY_FOR_START) {
             database.updateSession(activeSession.id, { status: SessionStatus.READY_FOR_START })
-                .catch(
-                    err => setError(new Error(`Failed to update session: ${err.message}`))
-                );
+                .catch(err =>  setError(err));
         }
     }, [activeSession?.id, activeSession?.status, activeSession?.createdBy, participants.length, sessionResolved, participantsLoaded, user?.uid]);
 
@@ -93,13 +99,46 @@ export function useSessionFlowController(
                     else setError(new Error("An unknown error occurred."));
                 }
                 database.updateSession(activeSession.id, { status: SessionStatus.SWIPING })
-                    .catch(
-                        err => setError(new Error(`Failed to update session: ${err.message}`))
-                    );
+                    .catch(err =>  setError(err));
             })();
         }
         if (activeSession.status === SessionStatus.LOADING_NEW_PLACES && places.length > 0) {
             console.log("should be loading new places now..");
         }
     }, [activeSession?.status]);
+
+
+    const swipeMap = useMemo(() => {
+        const map: Record<string, Set<string>> = {};
+        for (const swipe of swipes) {
+            if (!swipe.liked) continue;
+            if (!map[swipe.placeId]) map[swipe.placeId] = new Set();
+            map[swipe.placeId].add(swipe.userId);
+        }
+        return map;
+    }, [swipes]);
+
+    useEffect(() => {
+        if (!activeSession || !user || !sessionResolved
+            || !allLoaded || activeSession.status !== SessionStatus.SWIPING) return;
+
+        const isOwner = activeSession.createdBy === user.uid;
+        if (!isOwner) return;
+
+        for (const [placeId, userIdSet] of Object.entries(swipeMap)) {
+            if (userIdSet.size >= participants.length) {
+                const place = places.find(p => p.id === placeId);
+                if (!place) continue;
+                const alreadyMatched = matches.find(m => m.placeId === placeId);
+                if (alreadyMatched) continue;
+
+                database.recordMatch(activeSession.id, {
+                    placeId,
+                    matchedBy: Array.from(userIdSet),
+                    matchedAt: Timestamp.now(),
+                    placeType: place.type,
+                }).catch(err => setError(err));
+            }
+        }
+    }, [activeSession?.id, sessionResolved, allLoaded, swipeMap]);
 }

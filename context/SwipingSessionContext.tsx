@@ -1,4 +1,4 @@
-import {SessionParticipant, SwipeAction, SwipingSession} from "@/services/DatabaseService";
+import {SessionMatch, SessionParticipant, SwipeAction, SwipingSession} from "@/services/DatabaseService";
 import React, {createContext, ReactNode, useContext, useEffect, useRef, useState} from "react";
 import {useServices} from "@/context/ServicesContext";
 import {Place} from "@/types/Places.types";
@@ -10,6 +10,7 @@ type SwipingSessionContextProps = {
     participants: SessionParticipant[];
     places: Place[];
     swipes: SwipeAction[];
+    matches: SessionMatch[];
     loading: boolean;
     sessionResolved: boolean | null;
     error: Error | null;
@@ -19,6 +20,7 @@ export const SwipingSessionContext = createContext<SwipingSessionContextProps>({
     participants: [],
     swipes: [],
     places: [],
+    matches: [],
     loading: true,
     sessionResolved: null,
     error: null,
@@ -31,6 +33,7 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
     const [participants, setParticipants] = useState<SessionParticipant[]>([]);
     const [swipes, setSwipes] = useState<SwipeAction[]>([]);
     const [places, setPlaces] = useState<Place[]>([]);
+    const [matches, setMatches] = useState<SessionMatch[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [sessionResolved, setSessionResolved] = useState<boolean>(false);
     const [error, setError] = useState<Error | null>(null);
@@ -38,6 +41,7 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
     const [participantsLoaded, setParticipantsLoaded] = useState<boolean>(false);
     const [placesLoaded, setPlacesLoaded] = useState<boolean>(false);
     const [swipesLoaded, setSwipesLoaded] = useState<boolean>(false);
+    const [matchesLoaded, setMatchesLoaded] = useState<boolean>(false);
 
     const prevSessionIdRef = useRef<string | null>(null);
 
@@ -45,9 +49,14 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
         activeSession,
         participants,
         places,
+        swipes,
+        matches,
         user,
         sessionResolved,
         participantsLoaded,
+        placesLoaded,
+        matchesLoaded,
+        swipesLoaded,
         database,
         setError,
     });
@@ -66,6 +75,7 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
             setParticipants([]);
             setSwipes([]);
             setPlaces([]);
+            setMatches([]);
             setSessionResolved(true);
             setLoading(false);
             setError(null);
@@ -79,6 +89,7 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
         let unsubParticipants: () => void;
         let unsubSwipes: () => void;
         let unsubPlaces: () => void;
+        let unsubMatches: () => void;
 
         const unsubSession = database.onSessionUpdates(
             sessionId,
@@ -148,6 +159,23 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
                             setPlacesLoaded(true);
                         }
                     );
+                    unsubMatches = database.onMatchUpdates(
+                        sessionId,
+                        newMatches => {
+                            setMatches(prev => {
+                                if (!isDeepEqual(prev, newMatches)) {
+                                    return newMatches;
+                                }
+                                return prev;
+                            });
+                            setMatchesLoaded(true);
+                        },
+                        err => {
+                            console.warn("Session matches error:", err);
+                            setError(prev => prev ?? new Error(`Failed to load matches: ${err.message}`));
+                            setMatchesLoaded(true);
+                        }
+                    );
                     setLoading(false);
                 });
             },
@@ -164,6 +192,7 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
             unsubParticipants?.();
             unsubSwipes?.();
             unsubPlaces?.();
+            unsubMatches?.();
         };
     }, [database, servicesLoading, userProfile?.activeSessionId]);
 
@@ -174,6 +203,7 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
                 participants,
                 swipes,
                 places,
+                matches,
                 loading,
                 sessionResolved,
                 error,

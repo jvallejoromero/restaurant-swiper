@@ -17,7 +17,7 @@ import {
 import {firestore} from '@/firebase';
 import {
     AppUserProfile,
-    DatabaseService,
+    DatabaseService, SessionMatch,
     SessionParticipant,
     SessionStatus,
     SwipeAction,
@@ -329,7 +329,19 @@ export class FirebaseDatabaseService implements DatabaseService {
             await setDoc(swipeRef, swipe);
         } catch (err) {
             console.warn("Could not record swipe: ", err);
-            throw new Error("Could not record swipe");
+            throw new Error("Could not record swipe.");
+        }
+    }
+
+    async recordMatch(sessionId: string, match: SessionMatch): Promise<void> {
+        try {
+            const matchRef = doc(firestore, 'sessions', sessionId, 'matches', `${match.placeId}`);
+            const snap = await getDoc(matchRef);
+            if (snap.exists()) return;
+            await setDoc(matchRef, match);
+        } catch (err) {
+            console.warn("Could not record match: ", err);
+            throw new Error("Could not record match.");
         }
     }
 
@@ -409,6 +421,17 @@ export class FirebaseDatabaseService implements DatabaseService {
         }
     }
 
+    async getSessionMatches(sessionId: string): Promise<SessionMatch[]> {
+        const matchesCol = collection(firestore, 'sessions', sessionId, 'matches');
+        try {
+            const snap = await getDocs(matchesCol);
+            return snap.docs.map(doc => doc.data() as SessionMatch);
+        } catch (err) {
+            console.warn(`Could not fetch matches for session ${sessionId}:`, err);
+            throw new Error(`Could not get matches data: ${err}`);
+        }
+    }
+
     async deleteCachedPlaceData(sessionId:string): Promise<void> {
         const placesCol = collection(firestore, 'sessions', sessionId, 'places');
         const placesSnap = await getDocs(placesCol);
@@ -481,6 +504,18 @@ export class FirebaseDatabaseService implements DatabaseService {
             snap => {
                 const places = snap.docs.map(doc => doc.data() as Place);
                 callback(places);
+            },
+            error => onError?.(error)
+        );
+    }
+
+    onMatchUpdates(sessionId: string, callback: (matches: SessionMatch[]) => void, onError?: (error: Error) => void): () => void {
+        const matchesCol = collection(firestore, 'sessions', sessionId, 'matches');
+        return onSnapshot(
+            matchesCol,
+            snap => {
+                const matches = snap.docs.map(doc => doc.data() as SessionMatch);
+                callback(matches);
             },
             error => onError?.(error)
         );
