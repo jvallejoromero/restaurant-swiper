@@ -150,9 +150,11 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
 
     return (
         <>
-            <View className="absolute inset-0 justify-center items-center">
-                <NoMoreSessionPlacesScreen />
-            </View>
+            {currentIndex >= filteredPlaces.length && (
+                <View className="absolute inset-0 justify-center items-center">
+                    <NoMoreSessionPlacesScreen />
+                </View>
+            )}
             <SwipeableCard
                 swiperRef={swiperRef}
                 places={filteredPlaces}
