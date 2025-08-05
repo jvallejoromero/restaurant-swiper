@@ -54,7 +54,7 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
                 { [`currentIndexes.${type}`]: newIndex }
             );
         },
-        1000
+        1200
     );
 
     if (!activeSession || !user) return null;

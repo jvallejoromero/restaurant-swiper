@@ -30,6 +30,7 @@ export const SESSION_FINALIZED_STATUSES = [
 export enum SwipeDirection {
     RIGHT = "right",
     LEFT = "left",
+    TOP = "top",
 }
 
 export interface SwipeAction {

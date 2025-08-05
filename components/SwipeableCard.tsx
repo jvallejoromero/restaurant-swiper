@@ -4,7 +4,8 @@ import Swiper from "react-native-deck-swiper";
 import PlaceViewCard from "@/components/cards/PlaceViewCard";
 import {IMAGES} from "@/constants/images";
 import {CardActionButtons} from "@/components/buttons/CardActionButtons";
-import { Place } from "@/types/Places.types";
+import {Place} from "@/types/Places.types";
+import {SwipeDirection} from "@/services/DatabaseService";
 
 type SwipeableCardProps = {
     places: Place[];
@@ -21,6 +22,7 @@ type SwipeableCardProps = {
 const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft, onSwipeRight, onSwipeUp, onExhaustOptions, onCardIndexChange }: SwipeableCardProps) => {
     const [swipeProgressX] = useState(new Animated.Value(0));
     const [swiperKey, setSwiperKey] = useState<number>(0);
+    const [isCardSwiping, setIsCardSwiping] = useState<boolean>(false);
 
     const handleSwiping = (posX: number, _posY: number) => {
         swipeProgressX.setValue(posX);
@@ -30,13 +32,30 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
 
     useEffect(() => {
         const allCardsSwiped = (cardIndex >= places.length && places.length > 0) && !fetchingData;
-
         if (allCardsSwiped) {
-            console.log("All cards swiped, fetching new location...");
             resetDeck();
             onExhaustOptions();
         }
     }, [cardIndex]);
+
+    const doCardSwipe = (direction: SwipeDirection) => {
+        if (isCardSwiping || !swiperRef?.current) return;
+        setIsCardSwiping(true);
+        switch (direction) {
+            case "top":
+                swiperRef.current.swipeTop();
+                break;
+            case "left":
+                swiperRef.current.swipeLeft();
+                break;
+            case "right":
+                swiperRef.current.swipeRight();
+                break;
+        }
+        setTimeout(() => {
+            setIsCardSwiping(false);
+        }, 500);
+    };
 
     return (
         <>
@@ -121,15 +140,9 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
                 }}
             />
             <CardActionButtons
-                onLike={() => {
-                    swiperRef?.current?.swipeRight();
-                }}
-                onDislike={() => {
-                    swiperRef?.current?.swipeLeft();
-                }}
-                onInfo={() => {
-                    swiperRef?.current?.swipeTop();
-                }}
+                onLike={() => doCardSwipe(SwipeDirection.RIGHT)}
+                onDislike={() => doCardSwipe(SwipeDirection.LEFT)}
+                onInfo={() => doCardSwipe(SwipeDirection.TOP)}
                 swipeProgressX={swipeProgressX}
             />
         </>
