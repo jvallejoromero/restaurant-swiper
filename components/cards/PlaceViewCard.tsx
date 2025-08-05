@@ -1,10 +1,11 @@
-import {Image, ImageSourcePropType, StyleSheet, Text, View} from "react-native";
+import {ImageSourcePropType, StyleSheet, Text, View} from "react-native";
 import React from "react";
 import {IMAGES} from "@/constants/images";
 import {LinearGradient} from "expo-linear-gradient";
 import {COLORS} from "@/constants/colors";
 import ShineText from "@/components/text/ShineText";
 import {Place} from "@/types/Places.types";
+import {Image} from "expo-image";
 
 type CardSkeletonProps = {
     imageSrc: ImageSourcePropType | string;
@@ -17,8 +18,10 @@ const CardSkeleton = ({ imageSrc, children }: CardSkeletonProps) => {
     return (
         <View style={styles.card}>
             <Image
+                cachePolicy={"memory"}
                 source={hasImage ? { uri: imageSrc } : IMAGES.no_image_found}
-                style={[styles.cardImage, { resizeMode: hasImage ? "cover" : "contain" }]}
+                contentFit={hasImage ? "cover" : "contain"}
+                style={styles.cardImage}
             />
             <LinearGradient
                 colors={['transparent', 'rgba(0,0,0,0.8)']}
