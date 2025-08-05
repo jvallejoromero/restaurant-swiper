@@ -81,7 +81,12 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
                 childrenOnTop={false}
                 overlayOpacityHorizontalThreshold={50}
                 animateOverlayLabelsOpacity={false}
-                renderCard={(place: Place) => reachedMaxSwipes ? null : <PlaceViewCard place={place} />}
+                renderCard={(place: Place) => {
+                    if (reachedMaxSwipes) {
+                        return null;
+                    }
+                    return <PlaceViewCard place={place} />;
+                }}
                 onSwiping={(x,y) => {
                     handleSwiping(x,y);
                 }}

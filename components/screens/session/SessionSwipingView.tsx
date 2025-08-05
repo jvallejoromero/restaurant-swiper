@@ -15,6 +15,7 @@ import {useToast} from "@/context/ToastContext";
 import {ToastType} from "@/hooks/ToastHook";
 import { StatusTextScreen } from "./StatusTextScreen";
 import {useDebouncedAsyncCallback} from "@/hooks/DebouncedCallbackHook";
+import NoMoreSessionPlacesScreen from "@/components/screens/NoMoreSessionPlacesScreen";
 
 type SessionSwipingViewProps = {
     type: PlaceType;
@@ -26,7 +27,6 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
     const { showToast } = useToast();
 
     const [cardIndex, setCardIndex] = useState<number>(0);
-
     const swiperRef = useRef<Swiper<Place> | null>(null);
     const isSwipingRef = useRef<boolean>(false);
 
@@ -149,17 +149,22 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
     }
 
     return (
-        <SwipeableCard
-            swiperRef={swiperRef}
-            places={filteredPlaces}
-            fetchingData={loading}
-            cardIndex={cardIndex}
-            onSwipeLeft={handleLeftSwipe}
-            onSwipeRight={handleRightSwipe}
-            onSwipeUp={handleTopSwipe}
-            onCardIndexChange={() => {}}
-            onExhaustOptions={() => console.log("No more places in session.")}
-        />
+        <>
+            <View className="absolute inset-0 justify-center items-center">
+                <NoMoreSessionPlacesScreen />
+            </View>
+            <SwipeableCard
+                swiperRef={swiperRef}
+                places={filteredPlaces}
+                fetchingData={loading}
+                cardIndex={cardIndex}
+                onSwipeLeft={handleLeftSwipe}
+                onSwipeRight={handleRightSwipe}
+                onSwipeUp={handleTopSwipe}
+                onCardIndexChange={() => {}}
+                onExhaustOptions={() => console.log(`No more places in session for type: ${type}`)}
+            />
+        </>
     );
 };
 
