@@ -6,6 +6,7 @@ import {useGooglePlacesAPI} from "@/hooks/GooglePlacesAPIHook";
 import GenericErrorScreen from "@/components/screens/GenericErrorScreen";
 import SwipeableCard from "@/components/SwipeableCard";
 import {Place, PlaceType} from "@/types/Places.types";
+import {StatusTextScreen} from "@/components/screens/session/StatusTextScreen";
 
 interface PlaceViewProps {
     type: PlaceType;
@@ -15,8 +16,10 @@ const PlaceView = ({ type }: PlaceViewProps) => {
     const router = useRouter();
     const [cardIndex, setCardIndex] = useState<number>(0);
 
-    const { places, loadingPlaces, errorLoading, lastLocationUsed, loadMorePlaces } = useGooglePlacesAPI(type, false);
+    const { places, loadingPlaces, errorLoading, loadMorePlaces } = useGooglePlacesAPI(type, false);
+
     const swiperRef = useRef<Swiper<Place> | null>(null);
+    const hasSwipedRef = useRef<boolean>(false);
 
     const handleTopSwipe = (index: number) => {
         if (!places.length || !places[index].id) {
@@ -41,25 +44,29 @@ const PlaceView = ({ type }: PlaceViewProps) => {
         return <GenericErrorScreen message={errorLoading} />;
     }
 
-    // if (lastLocationUsed && (lastLocationUsed.coords.latitude === 0 && lastLocationUsed.coords.longitude === 0)) {
-    //     if (!lastLocationUsed.mocked) {
-    //         return;
-    //     }
-    //     return <GenericErrorScreen message={"No places found on null island."} />
-    // }
+    if (!places.length && !hasSwipedRef.current) {
+        return (
+            <StatusTextScreen
+                title="We couldn't find any place information"
+                subtitle="Please try going to a different location."
+            />
+        );
+    }
 
     return (
-        <SwipeableCard
-            swiperRef={swiperRef}
-            places={places}
-            fetchingData={loadingPlaces}
-            cardIndex={cardIndex}
-            onSwipeLeft={() => console.log("<==== Swiped left")}
-            onSwipeRight={() => console.log("Swiped right ====>")}
-            onSwipeUp={(index) => {handleTopSwipe(index)}}
-            onCardIndexChange={(index) => {setCardIndex(index)}}
-            onExhaustOptions={loadMorePlaces}
-        />
+        <>
+            <SwipeableCard
+                swiperRef={swiperRef}
+                places={places}
+                fetchingData={loadingPlaces}
+                cardIndex={cardIndex}
+                onSwipeLeft={() => hasSwipedRef.current = true}
+                onSwipeRight={() => hasSwipedRef.current = true}
+                onSwipeUp={(index) => {handleTopSwipe(index)}}
+                onCardIndexChange={(index) => {setCardIndex(index)}}
+                onExhaustOptions={loadMorePlaces}
+            />
+        </>
     );
 }
 
