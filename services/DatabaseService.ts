@@ -97,6 +97,9 @@ export interface DatabaseService {
     removeUserFromSession(sessionId: string, userId: string): Promise<void>;
     removeUsersFromSession(sessionId: string, userIds: string[]): Promise<void>;
 
+    deleteCachedPlaceData(sessionId:string): Promise<void>;
+    deleteMatchData(sessionId: string): Promise<void>;
+
     recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void>;
     recordMatch(sessionId: string, match: SessionMatch): Promise<void>;
 

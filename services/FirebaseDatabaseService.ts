@@ -135,6 +135,12 @@ export class FirebaseDatabaseService implements DatabaseService {
             throw new Error("An error occurred while deleting place data from session.");
         }
         try {
+            await this.deleteMatchData(sessionId);
+        } catch (err) {
+            console.warn(`Could not delete match data from session with id: ${sessionId}`, err);
+            throw new Error("An error occurred while deleting match data from session.");
+        }
+        try {
             const participants = await this.getSessionParticipants(sessionId);
             const participantIds = participants
                 .map(user => user.id)
@@ -437,20 +443,36 @@ export class FirebaseDatabaseService implements DatabaseService {
         const placesSnap = await getDocs(placesCol);
         const batch = writeBatch(firestore);
 
-        for (const placeDoc of placesSnap.docs) {
-            const detailsCol = collection(
-                firestore,
-                'sessions',
-                sessionId,
-                'places',
-                placeDoc.id,
-                'details'
-            );
-            const detailsSnap = await getDocs(detailsCol);
+        const detailSnaps = await Promise.all(
+            placesSnap.docs.map(async placeDoc => {
+                const detailsCol = collection(
+                    firestore,
+                    'sessions',
+                    sessionId,
+                    'places',
+                    placeDoc.id,
+                    'details'
+                );
+                const snap = await getDocs(detailsCol);
+                return { placeDoc, detailsSnap: snap }
+            })
+        );
+
+        for (const { placeDoc, detailsSnap } of detailSnaps) {
             detailsSnap.docs.forEach(d => batch.delete(d.ref));
             batch.delete(placeDoc.ref);
         }
 
+        await batch.commit();
+    }
+
+    async deleteMatchData(sessionId:string): Promise<void> {
+        const matchesCol = collection(firestore, 'sessions', sessionId, 'matches');
+        const matchesSnap = await getDocs(matchesCol);
+        const batch = writeBatch(firestore);
+        matchesSnap.forEach((docSnap) => {
+            batch.delete(docSnap.ref);
+        });
         await batch.commit();
     }
 
