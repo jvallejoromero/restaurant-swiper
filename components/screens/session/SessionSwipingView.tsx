@@ -26,25 +26,25 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
     const { showToast } = useToast();
 
     const [cardIndex, setCardIndex] = useState<number>(0);
+
     const swiperRef = useRef<Swiper<Place> | null>(null);
-    const lastCardIndexRef = useRef<number | null>(null);
     const isSwipingRef = useRef<boolean>(false);
 
     const filteredPlaces = places.filter((place: Place) => place.type === type);
+    const participant = participants.find((p) => p.id === user?.uid);
+    const currentIndex = participant?.currentIndexes?.[type];
+    const isCardSynced = cardIndex === currentIndex || isSwipingRef.current;
+
+    const isReady =
+        activeSession?.status !== SessionStatus.LOADING_INITIAL_PLACES &&
+        activeSession?.status !== SessionStatus.LOADING_NEW_PLACES &&
+        !loading && typeof currentIndex === "number";
 
     useEffect(() => {
-        if (loading || !places.length || !swiperRef.current || !user) return;
-        const participant = participants.find((p) => p.id === user?.uid);
-        if (!participant) return;
-
-        const currentIndex = participant.currentIndexes[type];
-        if (!currentIndex) return;
-        if (lastCardIndexRef.current === currentIndex || isSwipingRef.current) return;
-
+        if (!isReady || isSwipingRef.current) return;
         setCardIndex(currentIndex);
-        lastCardIndexRef.current = currentIndex;
         swiperRef.current?.jumpToCardIndex(currentIndex);
-    }, [loading, places, participants, user]);
+    }, [isReady, currentIndex]);
 
     const debouncedUpdateIndex = useDebouncedAsyncCallback(
         async (newIndex: number) => {
@@ -101,8 +101,7 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
 
     const isOwner = user?.uid === activeSession.createdBy;
 
-    if (activeSession.status === SessionStatus.LOADING_INITIAL_PLACES ||
-        activeSession.status === SessionStatus.LOADING_NEW_PLACES) {
+    if (!isReady || !isCardSynced) {
         return <ForkAnimation />;
     } else if (activeSession.status === SessionStatus.WAITING_FOR_USERS) {
         return (
@@ -153,7 +152,7 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
         <SwipeableCard
             swiperRef={swiperRef}
             places={filteredPlaces}
-            fetchingData={false}
+            fetchingData={loading}
             cardIndex={cardIndex}
             onSwipeLeft={handleLeftSwipe}
             onSwipeRight={handleRightSwipe}

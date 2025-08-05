@@ -31,7 +31,7 @@ const CardSkeleton = ({ imageSrc, children }: CardSkeletonProps) => {
 }
 
 const PlaceViewCard = ({ place }: { place: Place }) => {
-    if (!place) {
+    if (!place?.id || !place.name) {
         return (
             <CardSkeleton imageSrc={IMAGES.no_image_found}>
                 <Text style={styles.cardName}>Unknown</Text>
