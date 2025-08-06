@@ -1,10 +1,10 @@
-import { FlatList, Pressable, Text, View } from "react-native";
-import React, { useState } from "react";
-import { COLORS } from "@/constants/colors";
-import { Image } from "expo-image";
-import { getTimeSince } from "@/utils/DateUtils";
-import { SessionMatch } from "@/services/DatabaseService";
-import { Place, PlaceType } from "@/types/Places.types";
+import React, {useMemo, useState} from "react";
+import {ActivityIndicator, FlatList, Pressable, Text, View} from "react-native";
+import {COLORS} from "@/constants/colors";
+import {Image} from "expo-image";
+import {getTimeSince} from "@/utils/DateUtils";
+import {SessionMatch} from "@/services/DatabaseService";
+import {Place, PlaceType} from "@/types/Places.types";
 
 type SessionMatchesProps = {
     matches: SessionMatch[];
@@ -13,20 +13,29 @@ type SessionMatchesProps = {
 
 type MatchTab = PlaceType | "latest";
 
+const PAGE_SIZE = 10;
+
 const SessionMatches = ({ matches, places }: SessionMatchesProps) => {
     const [activeTab, setActiveTab] = useState<MatchTab>("latest");
+    const [page, setPage] = useState(1);
+    const [loadingMore, setLoadingMore] = useState(false);
 
-    const enrichedMatches = matches.flatMap(match => {
-        const place = places.find(p => p.id === match.placeId);
-        return place ? [{ ...match, place }] : [];
-    });
+    const enrichedMatches = useMemo(() => {
+        return matches.flatMap(match => {
+            const place = places.find(p => p.id === match.placeId);
+            return place ? [{ ...match, place }] : [];
+        });
+    }, [matches, places]);
 
-    const filteredMatches =
-        activeTab === "latest"
+    const filteredMatches = useMemo(() => {
+        return activeTab === "latest"
             ? enrichedMatches.sort((a, b) => b.matchedAt.toMillis() - a.matchedAt.toMillis())
             : enrichedMatches
                 .filter(m => m.place.type === activeTab)
                 .sort((a, b) => b.matchedAt.toMillis() - a.matchedAt.toMillis());
+    }, [activeTab, enrichedMatches]);
+
+    const visibleMatches = filteredMatches.slice(0, page * PAGE_SIZE);
 
     const getLabel = (tab: MatchTab) => {
         if (tab === "latest") return "Recent";
@@ -36,13 +45,15 @@ const SessionMatches = ({ matches, places }: SessionMatchesProps) => {
 
     const TabButtons = () => {
         const tabs: MatchTab[] = ["latest", "restaurant", "tourist_attraction"];
-
         return (
             <View className="flex-row justify-center gap-2 pb-4">
                 {tabs.map(tab => (
                     <Pressable
                         key={tab}
-                        onPress={() => setActiveTab(tab)}
+                        onPress={() => {
+                            setActiveTab(tab);
+                            setPage(1);
+                        }}
                         className="px-6 py-2 rounded-full"
                         style={{
                             backgroundColor: activeTab === tab ? COLORS.primary : "#e5e7eb",
@@ -63,9 +74,18 @@ const SessionMatches = ({ matches, places }: SessionMatchesProps) => {
 
     const Header = () => (
         <Text className="text-2xl font-bold text-accent-gray text-center pt-4 pb-2">
-            Session Matches ({ filteredMatches.length })
+            Session Matches ({filteredMatches.length})
         </Text>
     );
+
+    const handleLoadMore = () => {
+        if (loadingMore || visibleMatches.length >= filteredMatches.length) return;
+        setLoadingMore(true);
+        setTimeout(() => {
+            setPage(prev => prev + 1);
+            setLoadingMore(false);
+        }, 500);
+    };
 
     if (filteredMatches.length === 0) {
         return (
@@ -88,10 +108,19 @@ const SessionMatches = ({ matches, places }: SessionMatchesProps) => {
             <Header />
             <TabButtons />
             <FlatList
-                data={filteredMatches}
+                data={visibleMatches}
                 keyExtractor={(item) => item.placeId}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ gap: 16, flexGrow: 1, paddingBottom: 200 }}
+                contentContainerStyle={{ gap: 16, paddingBottom: 200 }}
+                onEndReached={handleLoadMore}
+                onEndReachedThreshold={0.6}
+                ListFooterComponent={
+                    loadingMore ? (
+                        <View className="py-4">
+                            <ActivityIndicator size="small" color={COLORS.accent_grey} />
+                        </View>
+                    ) : null
+                }
                 renderItem={({ item }) => (
                     <View className="bg-white rounded-xl shadow-sm border border-gray-100">
                         <Image
