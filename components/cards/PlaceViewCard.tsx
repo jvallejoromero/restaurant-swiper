@@ -77,7 +77,6 @@ const styles = StyleSheet.create({
     card: {
         flex: 0.85,
         marginTop: 40,
-        backgroundColor: COLORS.background_color,
         borderRadius: 10,
         justifyContent: "center",
         alignItems: "center",
@@ -85,6 +84,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.50,
         shadowRadius: 3.84,
+        pointerEvents: "box-none",
         elevation: 5,
     },
     cardName: {

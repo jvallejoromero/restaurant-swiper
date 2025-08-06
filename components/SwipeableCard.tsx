@@ -63,6 +63,8 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
     return (
         <>
             <Swiper
+                pointerEvents={"box-none"}
+                containerStyle={{ pointerEvents: "box-none" }}
                 key={swiperKey}
                 ref={swiperRef}
                 cards={places}

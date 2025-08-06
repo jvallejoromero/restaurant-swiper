@@ -50,9 +50,9 @@ export default function MatchPopup({ place, onHide, additionalCount }: MatchPopu
                     }
                 ]}
             >
-                <View className="flex flex-row gap-3">
+                <View className="flex flex-row gap-3 items-center">
                     {place.photoUrl && (
-                        <View className="w-10 h-10 rounded-full overflow-hidden">
+                        <View className="w-12 h-12 rounded-full overflow-hidden">
                             <Image
                                 source={{ uri: place.photoUrl }}
                                 style={{
@@ -65,7 +65,7 @@ export default function MatchPopup({ place, onHide, additionalCount }: MatchPopu
                         </View>
                     )}
                     <View className="flex-1">
-                        <Text className="text-base font-bold">🎉 It’s a Match!</Text>
+                        <Text className="text-base font-bold">It’s a Match! 🎉</Text>
                         <Text className="text-sm text-gray-600">{place.name}</Text>
                         {additionalCount > 0 && (
                             <Text className="text-xs text-gray-400 mt-1">+{additionalCount} more match{additionalCount > 1 ? 'es' : ''}</Text>
