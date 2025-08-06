@@ -58,10 +58,11 @@ export interface SwipingSession {
 
 export interface SessionParticipant {
     id?: string;
+    joinedAt: Timestamp;
     currentIndexes: {
         [key in PlaceType]?: number;
     };
-    joinedAt: Timestamp;
+    seenMatches: string[];
 }
 
 export interface SessionMatch {
