@@ -22,6 +22,7 @@ export const mapReviews = (reviews: any[]): PlaceReview[] => {
     }));
 };
 
+// $0.007 per image load
 export const mapPhotos = (photos: any[]): string[] => {
     if (!photos || !Array.isArray(photos)) {
         return [];
@@ -31,6 +32,7 @@ export const mapPhotos = (photos: any[]): string[] => {
     });
 };
 
+// $0.034 per request
 export const fetchPlaceDetails = async(placeId: string | string[]): Promise<(PlaceDetails | null)> => {
     const endpoint = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}`;
     const fields = 'adr_address,business_status,formatted_address,' +
@@ -119,6 +121,7 @@ export const fetchPlaceDetails = async(placeId: string | string[]): Promise<(Pla
     return null;
 }
 
+// $0.032 per request
 export const fetchPlaces = async(location: LocationObject, radius: number, type: PlaceType, nextPageToken:string | null)
     : Promise<{ places: Place[], nextPageToken: (string | null)}> => {
     const latitude = location.coords.latitude;
@@ -188,10 +191,13 @@ export const fetchPlaces = async(location: LocationObject, radius: number, type:
     return { places, nextPageToken: newPageToken };
 }
 
+// $0.032 per request
+// usually paginates 3 times
 export const fetchAllPlaces = async(
     location: LocationObject,
     radius: number,
     type: PlaceType,
+    pagination = false,
 ): Promise<Place[]> => {
     const allPlaces: Place[] = [];
     let nextPageToken: string | null = null;
@@ -209,7 +215,7 @@ export const fetchAllPlaces = async(
                 p => !allPlaces.some(existing => existing.id === p.id)
             );
             allPlaces.push(...newUnique);
-            nextPageToken = newToken;
+            nextPageToken = pagination ? newToken : null;
 
             if (nextPageToken) {
                 await delay(2000); // Google API delay requirement
