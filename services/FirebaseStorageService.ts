@@ -12,15 +12,10 @@ export class FirebaseStorageService implements StorageService {
             {compress: 0.7, format: ImageManipulator.SaveFormat.JPEG}
         );
 
-        const imageFile = await fetch(result.uri);
-        const blob = await imageFile.blob();
+        const remotePath = `profilePictures/${uid}`;
+        await this.addFile(result.uri, remotePath);
 
-        const storageRef = ref(this.storage, `profilePictures/${uid}`);
-        await uploadBytes(storageRef, blob, {
-            contentType: blob.type,
-            cacheControl: 'public, max-age=86400'
-        });
-
+        const storageRef = ref(this.storage, remotePath);
         return getDownloadURL(storageRef);
     }
 
@@ -34,7 +29,24 @@ export class FirebaseStorageService implements StorageService {
         try {
             await deleteObject(storageRef);
         } catch (err) {
-            console.error("Failed to delete file", err);
+            console.warn("Failed to delete file", err);
+            throw new Error("Could not delete file.");
+        }
+    }
+
+    async addFile(fileUri: string, remotePath: string): Promise<void> {
+        const response = await fetch(fileUri);
+        const blob = await response.blob();
+
+        const storageRef = ref(this.storage, remotePath);
+        try {
+            await uploadBytes(storageRef, blob, {
+                contentType: blob.type,
+                cacheControl: 'public, max-age=86400',
+            });
+        } catch (err) {
+            console.warn("Failed to add file", err);
+            throw new Error("Could not add file.");
         }
     }
 }
