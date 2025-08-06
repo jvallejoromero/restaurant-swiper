@@ -31,6 +31,7 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
 
     const swiperRef = useRef<Swiper<Place> | null>(null);
     const isSwipingRef = useRef<boolean>(false);
+    const seenMatchIds = useRef<Set<string>>(new Set());
 
     const filteredPlaces = places.filter((place: Place) => place.type === type);
     const participant = participants.find((p) => p.id === user?.uid);
@@ -55,18 +56,22 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
 
         const now = Date.now();
         const unseenMatches = matches.filter(match => {
+            if (!match.matchedAt) return false;
+
             const matchedAtMs = match.matchedAt.toMillis() ?? match.matchedAt.seconds * 1000;
             return now - matchedAtMs <= 3000;
         });
 
-        const newMatches = unseenMatches.filter(
-            m => !matchQueue.some(queued => queued.placeId === m.placeId)
-        );
-
+        const newMatches = unseenMatches.filter((m) => {
+            const isAlreadyQueued = matchQueue.some(q => q.placeId === m.placeId);
+            const isAlreadySeen = seenMatchIds.current.has(m.placeId);
+            return !isAlreadyQueued && !isAlreadySeen;
+        });
         if (!newMatches.length) return;
 
+        newMatches.forEach(m => seenMatchIds.current.add(m.placeId));
         setMatchQueue(prev => [...prev, ...newMatches]);
-    }, [isReady, matches.length]);
+    }, [isReady, matches]);
 
     const debouncedUpdateIndex = useDebouncedAsyncCallback(
         async (newIndex: number) => {

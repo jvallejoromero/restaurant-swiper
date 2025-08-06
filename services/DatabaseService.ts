@@ -1,7 +1,11 @@
 import {Place, PlaceType} from "@/types/Places.types";
 import {LocationObject} from "expo-location";
-import {Timestamp} from "firebase/firestore";
+import {FieldValue, Timestamp} from "firebase/firestore";
 import {PlaceDetails} from "@/types/GoogleResponse.types";
+
+type SessionMatchInput = Omit<SessionMatch, 'matchedAt'> & {
+    matchedAt: Timestamp | FieldValue;
+};
 
 export enum SessionStatus {
     CREATED = "created",
@@ -62,7 +66,6 @@ export interface SessionParticipant {
     currentIndexes: {
         [key in PlaceType]?: number;
     };
-    seenMatches: string[];
 }
 
 export interface SessionMatch {
@@ -102,7 +105,7 @@ export interface DatabaseService {
     deleteMatchData(sessionId: string): Promise<void>;
 
     recordSwipe(sessionId: string, swipe: SwipeAction): Promise<void>;
-    recordMatch(sessionId: string, match: SessionMatch): Promise<void>;
+    recordMatch(sessionId: string, match: SessionMatchInput): Promise<void>;
 
     updateUserProfile(uid: string, data: Partial<AppUserProfile>): Promise<void>;
     updateUsernameDoc(userId: string, oldUsername: string, newUsername: string, email: string): Promise<void>;

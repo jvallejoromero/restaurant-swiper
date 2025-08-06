@@ -209,7 +209,6 @@ export class FirebaseDatabaseService implements DatabaseService {
                 restaurant: 0,
                 tourist_attraction: 0,
             },
-            seenMatches: [],
         }
         await setDoc(participantRef, participant);
         await this.updateUserProfile(userId, {
@@ -232,7 +231,6 @@ export class FirebaseDatabaseService implements DatabaseService {
                     restaurant: 0,
                     tourist_attraction: 0,
                 },
-                seenMatches: [],
             }
             batch.set(participantRef, participant);
             const userRef = doc(firestore, 'users', uid);
@@ -504,7 +502,6 @@ export class FirebaseDatabaseService implements DatabaseService {
                         id: doc.id,
                         joinedAt: data.joinedAt as Timestamp,
                         currentIndexes: data.currentIndexes,
-                        seenMatches: data.seenMatches,
                     };
                 });
                 callback(list);

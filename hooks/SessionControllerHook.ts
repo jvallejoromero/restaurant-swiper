@@ -9,7 +9,7 @@ import {
 import {useEffect, useMemo, useRef} from "react";
 import {Place} from "@/types/Places.types";
 import {fetchAllPlaces} from "@/utils/GoogleAPIUtils";
-import {Timestamp} from "@firebase/firestore";
+import {serverTimestamp} from "firebase/firestore";
 
 export function useSessionFlowController(
     {
@@ -143,7 +143,7 @@ export function useSessionFlowController(
                 database.recordMatch(activeSession.id, {
                     placeId,
                     matchedBy: Array.from(userIdSet),
-                    matchedAt: Timestamp.now(),
+                    matchedAt: serverTimestamp(),
                     placeType: place.type,
                 }).catch(err => setError(err));
                 console.log("match created by", user.uid, "for", place.name);
