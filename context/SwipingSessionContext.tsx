@@ -3,7 +3,7 @@ import React, {createContext, ReactNode, useContext, useEffect, useRef, useState
 import {useServices} from "@/context/ServicesContext";
 import {Place} from "@/types/Places.types";
 import {isDeepEqual} from "@/utils/ComparisonUtils";
-import {useSessionFlowController} from "@/hooks/SessionControllerHook";
+import {useSessionFlowController} from "@/hooks/useSessionFlowController";
 
 type SwipingSessionContextProps = {
     activeSession: SwipingSession | null;

@@ -1,5 +1,5 @@
 import React, {createContext, useContext} from "react";
-import {Toast, ToastType, useToastHook} from "@/hooks/ToastHook";
+import {ToastType, useToastHook} from "@/hooks/useToastHook";
 import { View } from "react-native";
 import ToastMessage from "@/components/ToastMessage";
 

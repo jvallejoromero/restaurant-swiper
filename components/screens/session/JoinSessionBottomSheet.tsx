@@ -6,10 +6,10 @@ import {Ionicons} from "@expo/vector-icons";
 import {useServices} from "@/context/ServicesContext";
 import MapView, {Marker} from "react-native-maps";
 import CachedAvatar from "@/components/avatar/CachedAvatar";
-import {useLocationName} from "@/hooks/LocationNameHook";
+import {useLocationName} from "@/hooks/useLocationName";
 import {getTimeSince} from "@/utils/DateUtils";
 import {useToast} from "@/context/ToastContext";
-import {ToastType} from "@/hooks/ToastHook";
+import {ToastType} from "@/hooks/useToastHook";
 import {router} from "expo-router";
 
 type JoinSessionBottomSheetProps = {

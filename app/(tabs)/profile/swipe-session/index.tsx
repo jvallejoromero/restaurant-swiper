@@ -25,7 +25,7 @@ import CurrentSessionInfoPopup from "@/components/popups/CurrentSessionInfoPopup
 import {router} from "expo-router";
 import BigActionButton from "@/components/buttons/BigActionButton";
 import {useToast} from "@/context/ToastContext";
-import {ToastType} from "@/hooks/ToastHook";
+import {ToastType} from "@/hooks/useToastHook";
 
 type MockData = {
     id: string;

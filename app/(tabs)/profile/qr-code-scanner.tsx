@@ -15,11 +15,11 @@ import QRCodeScanner from "@/components/session/QRCodeScanner";
 import MiniButton from "@/components/buttons/MiniButton";
 import JoinSessionBottomSheet from "@/components/screens/session/JoinSessionBottomSheet";
 import {BottomSheetModal} from "@gorhom/bottom-sheet";
-import {useQRCodeAnalyzer} from "@/hooks/QRCodeAnalyzerHook";
+import {useQRCodeAnalyzer} from "@/hooks/useQRCodeAnalyzer";
 import {useServices} from "@/context/ServicesContext";
 import {useActiveSwipingSession} from "@/context/SwipingSessionContext";
 import { useToast } from "@/context/ToastContext";
-import {ToastType} from "@/hooks/ToastHook";
+import {ToastType} from "@/hooks/useToastHook";
 import {router} from "expo-router";
 
 let lastScanTime = 0;

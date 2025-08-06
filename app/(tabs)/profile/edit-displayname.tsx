@@ -9,7 +9,7 @@ import {ConfirmChangesModal} from "@/components/modals/ConfirmChangesModal";
 import GenericLoadingScreen from "@/components/screens/GenericLoadingScreen";
 import BackDoneNavigationHeader from "@/components/headers/BackDoneNavigationHeader";
 import Separator from "@/components/ui/Separator";
-import {ToastType} from "@/hooks/ToastHook";
+import {ToastType} from "@/hooks/useToastHook";
 import {useToast} from "@/context/ToastContext";
 
 

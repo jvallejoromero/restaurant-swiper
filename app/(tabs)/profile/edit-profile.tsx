@@ -14,7 +14,7 @@ import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import * as ImagePicker from "expo-image-picker";
 import CachedAvatar from "@/components/avatar/CachedAvatar";
 import {useToast} from "@/context/ToastContext";
-import {ToastType} from "@/hooks/ToastHook";
+import {ToastType} from "@/hooks/useToastHook";
 import PopupMessage, {PopupMessageRef} from "@/components/popups/PopupMessage";
 import GenericButton from "@/components/buttons/GenericButton";
 import {BottomSheetModal} from "@gorhom/bottom-sheet";

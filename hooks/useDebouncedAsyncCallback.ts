@@ -2,24 +2,6 @@ import {useCallback, useRef} from "react";
 
 type AsyncFunction<TArgs extends any[], TResult> = (...args: TArgs) => Promise<TResult>;
 
-export function useDebouncedCallback<T extends (...args: any[]) => void>(
-    callback: T,
-    delay: number,
-): T {
-    const timeoutRef = useRef<number | null>(null);
-
-    const debounced = useCallback((...args: Parameters<T>) => {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
-            timeoutRef.current = setTimeout(() => {
-                callback(...args);
-            }, delay);
-        }, [callback, delay]);
-
-    return debounced as T;
-}
-
 export function useDebouncedAsyncCallback<TArgs extends any[], TResult>(
     callback: AsyncFunction<TArgs, TResult>,
     delay: number,

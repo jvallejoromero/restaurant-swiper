@@ -1,6 +1,6 @@
 import {Animated, Dimensions, SafeAreaView, Text, View} from "react-native";
 import React, {FC, useEffect, useRef} from "react";
-import { ToastType } from "@/hooks/ToastHook";
+import { ToastType } from "@/hooks/useToastHook";
 import {AlertCircle, Check, XCircle} from "lucide-react-native";
 import {Ionicons} from "@expo/vector-icons";
 

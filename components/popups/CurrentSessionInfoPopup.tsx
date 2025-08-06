@@ -9,7 +9,7 @@ import SessionQRCode from "@/components/session/SessionQRCode";
 import {SwipingSession} from "@/services/DatabaseService";
 import {useServices} from "@/context/ServicesContext";
 import {useToast} from "@/context/ToastContext";
-import {ToastType} from "@/hooks/ToastHook";
+import {ToastType} from "@/hooks/useToastHook";
 
 type CurrentSessionInfoProps = {
     session: SwipingSession | null;

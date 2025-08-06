@@ -12,9 +12,9 @@ import {SESSION_DEFAULTS} from "@/constants/sessionConstants";
 import GenericButton from "@/components/buttons/GenericButton";
 import {Timestamp} from "firebase/firestore";
 import {useToast} from "@/context/ToastContext";
-import {ToastType} from "@/hooks/ToastHook";
+import {ToastType} from "@/hooks/useToastHook";
 import { StatusTextScreen } from "./StatusTextScreen";
-import {useDebouncedAsyncCallback} from "@/hooks/DebouncedCallbackHook";
+import {useDebouncedAsyncCallback} from "@/hooks/useDebouncedAsyncCallback";
 import MatchPopup from "@/components/popups/MatchPopup";
 
 type SessionSwipingViewProps = {

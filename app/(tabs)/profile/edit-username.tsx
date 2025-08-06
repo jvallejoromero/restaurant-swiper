@@ -9,7 +9,7 @@ import GenericLoadingScreen from "@/components/screens/GenericLoadingScreen";
 import BackDoneNavigationHeader from "@/components/headers/BackDoneNavigationHeader";
 import Separator from "@/components/ui/Separator";
 import { useToast } from "@/context/ToastContext";
-import {ToastType} from "@/hooks/ToastHook";
+import {ToastType} from "@/hooks/useToastHook";
 
 
 export default function EditDisplayNameScreen() {

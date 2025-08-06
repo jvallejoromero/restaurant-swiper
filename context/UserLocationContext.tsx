@@ -1,6 +1,6 @@
 import {createContext, ReactNode} from "react";
 import {LocationObject} from "expo-location";
-import {useUserLocation} from "@/hooks/UserLocationHook";
+import {useUserLocation} from "@/hooks/useUserLocation";
 
 type UserLocationContextProps = {
     userLocation: LocationObject | null;
