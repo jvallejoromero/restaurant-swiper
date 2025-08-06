@@ -36,13 +36,13 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
     const participant = participants.find((p) => p.id === user?.uid);
     const currentIndex = participant?.currentIndexes?.[type];
     const isCardSynced = cardIndex === currentIndex || isSwipingRef.current;
-    const outOfCards = typeof currentIndex === "number" && currentIndex >= filteredPlaces.length;
     const currentMatch = matchQueue[0];
 
     const isReady =
         activeSession?.status !== SessionStatus.LOADING_INITIAL_PLACES &&
         activeSession?.status !== SessionStatus.LOADING_NEW_PLACES &&
         !loading && typeof currentIndex === "number";
+    const outOfCards = isReady && filteredPlaces.length > 0 && currentIndex >= filteredPlaces.length;
 
     useEffect(() => {
         if (!isReady || isSwipingRef.current) return;
@@ -125,7 +125,9 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
 
     if (!isReady || !isCardSynced) {
         return <ForkAnimation />;
-    } else if (activeSession.status === SessionStatus.WAITING_FOR_USERS) {
+    }
+
+    if (activeSession.status === SessionStatus.WAITING_FOR_USERS) {
         return (
             <View className="flex-1 justify-center items-center px-8">
                 <LoadingCard
@@ -168,9 +170,7 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
                 subtitle={"This session expired due to inactivity or exceeded its time limit."}
             />
         );
-    }
-
-    if (outOfCards) {
+    } else if (outOfCards) {
         return (
             <StatusTextScreen
                 title="You're all caught up!"

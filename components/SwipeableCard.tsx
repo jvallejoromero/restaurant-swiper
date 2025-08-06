@@ -25,7 +25,7 @@ const SwipeableCard = ({ places, fetchingData, cardIndex, swiperRef, onSwipeLeft
     const [isCardSwiping, setIsCardSwiping] = useState<boolean>(false);
 
     const hasSwipedRef = useRef<boolean>(false);
-    const outOfCards = cardIndex >= places.length && hasSwipedRef.current;
+    const outOfCards = cardIndex >= places.length;
 
     const handleSwiping = (posX: number, _posY: number) => {
         swipeProgressX.setValue(posX);
