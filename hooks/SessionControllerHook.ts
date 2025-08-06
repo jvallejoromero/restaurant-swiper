@@ -8,8 +8,8 @@ import {
 } from "@/services/DatabaseService";
 import {useEffect, useMemo, useRef} from "react";
 import {Place} from "@/types/Places.types";
-import {fetchAllPlaces} from "@/utils/GoogleAPIUtils";
 import {serverTimestamp} from "firebase/firestore";
+import {ApiService} from "@/services/ApiService";
 
 export function useSessionFlowController(
     {
@@ -25,6 +25,7 @@ export function useSessionFlowController(
         swipesLoaded,
         matchesLoaded,
         database,
+        api,
         setError,
     }: {
         activeSession: SwipingSession | null;
@@ -39,6 +40,7 @@ export function useSessionFlowController(
         matchesLoaded: boolean;
         placesLoaded: boolean;
         database: DatabaseService;
+        api: ApiService;
         setError: (err: Error) => void;
     }) {
     const allLoaded = participantsLoaded && placesLoaded && swipesLoaded && matchesLoaded;
@@ -86,7 +88,7 @@ export function useSessionFlowController(
                 try {
                     const allFetchedPlaces: Place[] = [];
                     for (const type of activeSession.placeTypes) {
-                        const fetched = await fetchAllPlaces(
+                        const fetched = await api.fetchAllPlaces(
                             activeSession.location,
                             activeSession.radius,
                             type

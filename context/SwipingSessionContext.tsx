@@ -27,7 +27,7 @@ export const SwipingSessionContext = createContext<SwipingSessionContextProps>({
 });
 
 export function SwipingSessionProvider({ children }: { children: ReactNode }) {
-    const { database, user, userProfile, loading: servicesLoading } = useServices();
+    const { database, googleApi, user, userProfile, loading: servicesLoading } = useServices();
 
     const [activeSession, setActiveSession] = useState<SwipingSession | null>(null);
     const [participants, setParticipants] = useState<SessionParticipant[]>([]);
@@ -58,6 +58,7 @@ export function SwipingSessionProvider({ children }: { children: ReactNode }) {
         matchesLoaded,
         swipesLoaded,
         database,
+        api: googleApi,
         setError,
     });
 

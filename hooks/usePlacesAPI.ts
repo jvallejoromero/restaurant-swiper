@@ -1,9 +1,9 @@
 import {useContext, useEffect, useRef, useState} from "react";
 import {UserLocationContext} from "@/context/UserLocationContext";
-import { fetchPlaces } from "@/utils/GoogleAPIUtils";
 import {LocationObject} from "expo-location";
 import {createMockLocation, randomizeLocation} from "@/utils/LocationUtils";
 import {Place, PlaceType} from "@/types/Places.types";
+import {ApiService} from "@/services/ApiService";
 
 
 const shuffleArray = (array: Place[]) => {
@@ -15,7 +15,7 @@ const shuffleArray = (array: Place[]) => {
 };
 
 
-export function useGooglePlacesAPI(type: PlaceType, pagination: boolean = true) {
+export function usePlacesAPI(api: ApiService, type: PlaceType, pagination: boolean = true) {
     const { fetchingLocation } = useContext(UserLocationContext);
 
     //TODO: undo location override when testing real google places api
@@ -68,7 +68,7 @@ export function useGooglePlacesAPI(type: PlaceType, pagination: boolean = true) 
         setLastLocationUsed(newLocation);
 
         try {
-            const { places: fetched, nextPageToken: newPageToken } = await fetchPlaces(newLocation, radius, type, nextPageToken);
+            const { places: fetched, nextPageToken: newPageToken } = await api.fetchPlaces(newLocation, radius, type, nextPageToken);
             mergeUnique(fetched);
 
             if (newPageToken && pagination) {
@@ -101,7 +101,7 @@ export function useGooglePlacesAPI(type: PlaceType, pagination: boolean = true) 
 
         const fetchInitialData = async () => {
             try {
-                const { places: fetched, nextPageToken: newPageToken } = await fetchPlaces(userLocation, radius, type, null);
+                const { places: fetched, nextPageToken: newPageToken } = await api.fetchPlaces(userLocation, radius, type, null);
                 mergeUnique(fetched);
 
                 if (newPageToken && pagination) {
@@ -129,7 +129,7 @@ export function useGooglePlacesAPI(type: PlaceType, pagination: boolean = true) 
 
         const delayFetch = setTimeout(async () => {
             try {
-                const { places: fetched, nextPageToken: newPageToken } = await fetchPlaces(userLocation, radius, type, nextPageToken);
+                const { places: fetched, nextPageToken: newPageToken } = await api.fetchPlaces(userLocation, radius, type, nextPageToken);
                 mergeUnique(fetched);
 
                 if (newPageToken) {

@@ -2,11 +2,12 @@ import React, {useState, useRef} from "react";
 import Swiper from "react-native-deck-swiper";
 import {useRouter} from "expo-router";
 import { ForkAnimation } from "../animations/LoadingAnimations";
-import {useGooglePlacesAPI} from "@/hooks/GooglePlacesAPIHook";
+import {usePlacesAPI} from "@/hooks/usePlacesAPI";
 import GenericErrorScreen from "@/components/screens/GenericErrorScreen";
 import SwipeableCard from "@/components/SwipeableCard";
 import {Place, PlaceType} from "@/types/Places.types";
 import {StatusTextScreen} from "@/components/screens/session/StatusTextScreen";
+import {useServices} from "@/context/ServicesContext";
 
 interface PlaceViewProps {
     type: PlaceType;
@@ -16,7 +17,8 @@ const PlaceView = ({ type }: PlaceViewProps) => {
     const router = useRouter();
     const [cardIndex, setCardIndex] = useState<number>(0);
 
-    const { places, loadingPlaces, errorLoading, loadMorePlaces } = useGooglePlacesAPI(type, false);
+    const { googleApi } = useServices();
+    const { places, loadingPlaces, errorLoading, loadMorePlaces } = usePlacesAPI(googleApi, type, false);
 
     const swiperRef = useRef<Swiper<Place> | null>(null);
     const hasSwipedRef = useRef<boolean>(false);
