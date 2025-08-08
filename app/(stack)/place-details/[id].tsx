@@ -1,5 +1,5 @@
 import {useLocalSearchParams} from "expo-router";
-import PlaceDetailsView from "@/components/screens/PlaceDetailsView";
+import LegacyPlaceDetailsView from "@/components/screens/LegacyPlaceDetailsView";
 import React from "react";
 
 const PlaceDetails = () => {
@@ -9,7 +9,7 @@ const PlaceDetails = () => {
     }
 
     return (
-        <PlaceDetailsView id={params.id} />
+        <LegacyPlaceDetailsView id={params.id} />
     );
 }
 

@@ -1,6 +1,6 @@
 import { LocationObject } from "expo-location";
 import { Place, PlaceType } from "@/types/Places.types";
-import { PlaceDetails } from "@/types/GoogleResponse.types";
+import {PlaceDetails} from "@/types/GoogleResponse.types";
 
 export interface ApiService {
     fetchPlaceDetails(placeId: string): Promise<PlaceDetails | null>;

@@ -1,13 +1,18 @@
-
-// types for Google API response
-export type PlaceDetails = {
+export interface PlaceDetails {
     name: string;
-    address: string;
     formatted_address: string;
     business_status: BusinessStatus;
+    url: string;
+    geometry: Geometry;
+    photos: string[];
+    plus_code: PlusCode;
+}
+
+// types for Google API response
+export interface LegacyPlaceDetails extends PlaceDetails {
+    address: string;
     formatted_phone_number: string;
     international_phone_number: string;
-    url: string;
     vicinity: string;
     website: string;
 
@@ -32,10 +37,8 @@ export type PlaceDetails = {
     opening_hours: PlaceOpeningHours;
     current_opening_hours: PlaceOpeningHours;
     editorial_summary: PlaceEditorialSummary;
-    geometry: Geometry;
 
     reviews: Array<PlaceReview>;
-    photos: Array<string>;
 }
 
 // Contains a summary of the place. A summary is comprised of a textual overview, and also includes the language code for these if applicable.
@@ -88,5 +91,10 @@ export type PlaceReview = {
     rating: number;
     translated: boolean;
 }
+
+export type PlusCode = {
+    compound_code?: string;
+    global_code: string;
+};
 
 export type BusinessStatus = "OPERATIONAL" | "CLOSED_TEMPORARILY" | "CLOSED_PERMANENTLY";

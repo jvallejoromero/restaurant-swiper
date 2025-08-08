@@ -18,10 +18,11 @@ const CardSkeleton = ({ imageSrc, children }: CardSkeletonProps) => {
     return (
         <View style={styles.card}>
             <Image
-                cachePolicy={"memory"}
+                cachePolicy={"disk"}
                 source={hasImage ? { uri: imageSrc } : IMAGES.no_image_found}
                 contentFit={hasImage ? "cover" : "contain"}
                 style={styles.cardImage}
+                onLoad={(e) => console.log(`loaded place photo from ${e.cacheType}`)}
             />
             <LinearGradient
                 colors={['transparent', 'rgba(0,0,0,0.8)']}
@@ -53,7 +54,7 @@ const PlaceViewCard = ({ place }: { place: Place }) => {
             {place.rating ? (
                 <Text style={styles.cardText}>{place.rating}/5 stars, {place.distanceFromUser} km away</Text>
             ) : (
-                <Text style={styles.cardText}>No rating available, {place.distanceFromUser} km away</Text>
+                <Text style={styles.cardText}>{place.distanceFromUser} km away</Text>
             )}
         </CardSkeleton>
     );

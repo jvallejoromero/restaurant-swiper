@@ -1,7 +1,7 @@
 import {Place, PlaceType} from "@/types/Places.types";
 import {LocationObject} from "expo-location";
 import {FieldValue, Timestamp} from "firebase/firestore";
-import {PlaceDetails} from "@/types/GoogleResponse.types";
+import {LegacyPlaceDetails} from "@/types/GoogleResponse.types";
 
 type SessionMatchInput = Omit<SessionMatch, 'matchedAt'> & {
     matchedAt: Timestamp | FieldValue;
@@ -91,7 +91,7 @@ export interface DatabaseService {
     getSessionSwipes(sessionId: string): Promise<SwipeAction[]>;
     getSessionPlaces(sessionId: string): Promise<Place[]>;
     getSessionMatches(sessionId: string): Promise<SessionMatch[]>;
-    getPlaceDetailsForSession(sessionId: string, placeId: string): Promise<PlaceDetails | null>;
+    getPlaceDetailsForSession(sessionId: string, placeId: string): Promise<LegacyPlaceDetails | null>;
     getUserProfile(uid: string): Promise<AppUserProfile | null>;
 
     addUserToSession(sessionId: string, userId: string): Promise<void>;

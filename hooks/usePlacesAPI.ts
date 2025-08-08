@@ -16,10 +16,10 @@ const shuffleArray = (array: Place[]) => {
 
 
 export function usePlacesAPI(api: ApiService, type: PlaceType, pagination: boolean = true) {
-    const { fetchingLocation } = useContext(UserLocationContext);
+    const { fetchingLocation, userLocation } = useContext(UserLocationContext);
 
     //TODO: undo location override when testing real google places api
-    const userLocation = createMockLocation(0, 0);
+    // const userLocation = createMockLocation(0, 0);
 
     const [places, setPlaces] = useState<Place[]>([]);
     const [loading, setLoading] = useState<boolean>(true);

@@ -1,7 +1,7 @@
 import {ApiService} from "@/services/ApiService";
 import {LocationObject} from "expo-location";
 import {Place, PlaceType} from "@/types/Places.types";
-import {PlaceDetails, PlaceReview} from "@/types/GoogleResponse.types";
+import {LegacyPlaceDetails, PlaceReview} from "@/types/GoogleResponse.types";
 import {haversine} from "@/utils/LocationUtils";
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
@@ -69,7 +69,7 @@ export class GoogleLegacyApiService implements ApiService {
     }
 
     // $0.034 per request
-    async fetchPlaceDetails(placeId: string): Promise<PlaceDetails | null> {
+    async fetchPlaceDetails(placeId: string): Promise<LegacyPlaceDetails | null> {
         const endpoint = `${GOOGLE_PLACES_BASE_URL}/details/json`;
         const fields = [
             "adr_address", "business_status", "formatted_address", "geometry", "name", "photo", "type", "url",
@@ -89,7 +89,7 @@ export class GoogleLegacyApiService implements ApiService {
             const data = await res.json();
 
             if (data.result) {
-                const placeDetails: PlaceDetails = {
+                const placeDetails: LegacyPlaceDetails = {
                     name: data.result.name,
                     address: data.result.adr_address,
                     formatted_address: data.result.formatted_address,
@@ -149,6 +149,7 @@ export class GoogleLegacyApiService implements ApiService {
 
                     reviews: this.mapReviews(data.result.reviews),
                     photos: this.mapPhotos(data.result.photos),
+                    plus_code: {global_code: ''},
                 }
                 console.log("Fetched data for ", placeDetails.name);
                 return placeDetails;
@@ -174,13 +175,13 @@ export class GoogleLegacyApiService implements ApiService {
         let newPageToken = null;
         let apiUrl = `${GOOGLE_PLACES_BASE_URL}/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=${type}&key=${GOOGLE_API_KEY}`;
 
-        console.log("---- New API request ---- ");
+        console.log("---- New Legacy API request ---- ");
         if (nextPageToken) {
             console.log("Has next page token: YES");
             apiUrl = `${GOOGLE_PLACES_BASE_URL}/nearbysearch/json?key=${GOOGLE_API_KEY}&pagetoken=${nextPageToken}`;
         }
         console.log(apiUrl);
-        console.log("---- END New API request ---- ");
+        console.log("---- END Legacy API request ---- ");
 
         const res = await fetch(apiUrl);
         const data = await res.json();

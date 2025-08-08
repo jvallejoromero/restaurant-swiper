@@ -1,11 +1,9 @@
 import {Text, View, StyleSheet, TouchableOpacity, ScrollView, Linking, SafeAreaView} from "react-native";
 import React, { useState, useEffect} from "react"
 import {LinkIcon} from "lucide-react-native";
-import {PlaceDetails} from "@/types/GoogleResponse.types";
-import {fetchPlaceDetails} from "@/utils/GoogleAPIUtils";
+import {LegacyPlaceDetails} from "@/types/GoogleResponse.types";
 import {ForkAnimation} from "@/components/animations/LoadingAnimations";
 import GenericErrorScreen from "@/components/screens/GenericErrorScreen";
-import {GoBackButton} from "@/components/buttons/GoBackButton";
 import ScrollableImageGallery from "@/components/image/ScrollableImageGallery";
 import TitleText from "../headers/TitleText";
 import TitleSubheader from "@/components/headers/TitleSubheader";
@@ -20,6 +18,8 @@ import MapLink from "../buttons/MapLink";
 import {FONTS} from "@/constants/fonts";
 import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import Separator from "@/components/ui/Separator";
+import {useServices} from "@/context/ServicesContext";
+import {GoogleLegacyApiService} from "@/services/GoogleLegacyApiService";
 
 type PlaceDetailsProps = {
     id: string;
@@ -38,7 +38,7 @@ const PlaceRating = ({ rating }: { rating: number}) => {
     );
 }
 
-const PlacePricing = ({ details }: { details: PlaceDetails }) => {
+const PlacePricing = ({ details }: { details: LegacyPlaceDetails }) => {
     return (
         <View>
             <Subheader text={`Pricing: ${getStringPriceLevel(details.price_level)}`} />
@@ -72,7 +72,7 @@ const PlacePhoneNumber = ({ phoneNumber }: { phoneNumber: string }) => {
     );
 }
 
-const PlaceServices = ({ details }: { details: PlaceDetails }) => {
+const PlaceServices = ({ details }: { details: LegacyPlaceDetails }) => {
     return (
         <>
             <View
@@ -137,7 +137,7 @@ const PlaceServices = ({ details }: { details: PlaceDetails }) => {
     );
 }
 
-const PlaceReviews = ({ details }: { details: PlaceDetails }) => {
+const PlaceReviews = ({ details }: { details: LegacyPlaceDetails }) => {
     return (
         <View>
             <Subheader text={`Reviews (${details.user_ratings_total ? details.user_ratings_total : 0})`} />
@@ -150,7 +150,7 @@ const PlaceReviews = ({ details }: { details: PlaceDetails }) => {
     );
 }
 
-const PlaceMapSection = ({ lat, lng, details }: {lat: number, lng: number, details: PlaceDetails}) => {
+const PlaceMapSection = ({ lat, lng, details }: {lat: number, lng: number, details: LegacyPlaceDetails}) => {
     return (
         <>
             <Subheader text={"Location"} />
@@ -165,13 +165,23 @@ const PlaceMapSection = ({ lat, lng, details }: {lat: number, lng: number, detai
 }
 
 
-const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
-    const [placeDetails, setPlaceDetails] = useState<PlaceDetails | null>(null);
+const LegacyPlaceDetailsView = ({ id }: PlaceDetailsProps) => {
+    const { googleApi } = useServices();
+
+    if (!(googleApi instanceof GoogleLegacyApiService)) {
+        return (
+            <GenericErrorScreen
+                message="LegacyPlaceDetailsView requires the legacy API service"
+            />
+        );
+    }
+
+    const [placeDetails, setPlaceDetails] = useState<LegacyPlaceDetails | null>(null);
     const [isFetchingData, setFetchingData] = useState<boolean>(true);
 
     useEffect(() => {
         const loadDetails = async() => {
-            const placeDetails = await fetchPlaceDetails(id);
+            const placeDetails = await googleApi.fetchPlaceDetails(id);
             setPlaceDetails(placeDetails);
             setFetchingData(false);
         }
@@ -221,7 +231,7 @@ const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
     );
 };
 
-export default PlaceDetailsView;
+export default LegacyPlaceDetailsView;
 
 const styles = StyleSheet.create({
     text: {

@@ -26,7 +26,7 @@ import {
 import {LocationObject} from "expo-location";
 import {uuid} from "expo-modules-core";
 import {Place} from "@/types/Places.types";
-import {PlaceDetails} from "@/types/GoogleResponse.types";
+import {LegacyPlaceDetails} from "@/types/GoogleResponse.types";
 import {fetchPlaceDetails, sanitizePlace} from '@/utils/GoogleAPIUtils';
 import {increment, Timestamp} from "@firebase/firestore";
 import {FirebaseError} from "@firebase/app";
@@ -371,13 +371,13 @@ export class FirebaseDatabaseService implements DatabaseService {
         }
     }
 
-    async getPlaceDetailsForSession(sessionId: string, placeId: string): Promise<PlaceDetails | null> {
+    async getPlaceDetailsForSession(sessionId: string, placeId: string): Promise<LegacyPlaceDetails | null> {
         const detailsRef = doc(firestore, 'sessions', sessionId, 'places', placeId, 'details', 'info');
         try {
             const detailsSnap = await getDoc(detailsRef);
             if (detailsSnap.exists()) {
                 console.log("Retrieved place details from firestore cache");
-                return detailsSnap.data() as PlaceDetails;
+                return detailsSnap.data() as LegacyPlaceDetails;
             }
         } catch (err) {
             console.log(`Could not find place details for place with id ${placeId} in session with id ${sessionId}`);
