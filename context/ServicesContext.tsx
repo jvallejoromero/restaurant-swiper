@@ -6,7 +6,7 @@ import {FirebaseDatabaseService} from "@/services/FirebaseDatabaseService";
 import {onAuthStateChanged} from "firebase/auth";
 import {auth} from "@/firebase";
 import { StorageService } from "@/services/StorageService";
-import {GoogleApiService} from "@/services/GoogleApiService";
+import {GoogleLegacyApiService} from "@/services/GoogleLegacyApiService";
 import { ApiService } from "@/services/ApiService";
 import {FirebaseStorageService} from "@/services/FirebaseStorageService";
 
@@ -30,7 +30,7 @@ export const ServicesProvider: React.FC<ServicesProviderProps> = ({ children }) 
     const authService = new FirebaseAuthService();
     const dbService   = new FirebaseDatabaseService();
     const storageService = new FirebaseStorageService();
-    const googleApi = new GoogleApiService();
+    const googleApi = new GoogleLegacyApiService();
 
     // track the signed-in user & loading state once
     const [user, setUser] = useState<User | null>(null);

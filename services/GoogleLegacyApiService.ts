@@ -7,7 +7,7 @@ import {haversine} from "@/utils/LocationUtils";
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
 const GOOGLE_PLACES_BASE_URL = "https://maps.googleapis.com/maps/api/place";
 
-export class GoogleApiService implements ApiService {
+export class GoogleLegacyApiService implements ApiService {
 
     // $0.007 per image load
     private mapPhotos(photos: any[]): string[] {
