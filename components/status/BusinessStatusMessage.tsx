@@ -1,16 +1,15 @@
-import {StyleSheet, Text, View} from "react-native";
 import React from "react";
 import {BusinessStatus, PlaceOpeningHours} from "@/types/GoogleResponse.types";
 import StatusMessage from "./StatusMessage";
 
 
-const BusinessStatusMessage = ({ openingHours, status }: { openingHours: PlaceOpeningHours, status: BusinessStatus}) => {
+const BusinessStatusMessage = ({ openingHours, status }: { openingHours?: PlaceOpeningHours, status: BusinessStatus}) => {
     return (
         <>
-            {openingHours.open_now && (
+            {openingHours?.open_now && (
                 <StatusMessage text={"This place is currently open"} status={"success"} />
             )}
-            {!openingHours.open_now && status === "OPERATIONAL" && (
+            {!openingHours?.open_now && status === "OPERATIONAL" && (
                 <StatusMessage text={"This place is currently closed"} status={"error"} />
             )}
             {status === "CLOSED_TEMPORARILY" && (
