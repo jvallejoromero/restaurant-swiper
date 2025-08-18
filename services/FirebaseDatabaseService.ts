@@ -27,9 +27,10 @@ import {LocationObject} from "expo-location";
 import {uuid} from "expo-modules-core";
 import {Place} from "@/types/Places.types";
 import {LegacyPlaceDetails} from "@/types/GoogleResponse.types";
-import {fetchPlaceDetails, sanitizePlace} from '@/utils/GoogleAPIUtils';
+import {sanitizePlace} from '@/utils/GoogleAPIUtils';
 import {increment, Timestamp} from "@firebase/firestore";
 import {FirebaseError} from "@firebase/app";
+import {ApiService} from "@/services/ApiService";
 
 type NewSwipingSession = Omit<SwipingSession, 'createdAt'> & {
     createdAt: FieldValue;
@@ -371,7 +372,7 @@ export class FirebaseDatabaseService implements DatabaseService {
         }
     }
 
-    async getPlaceDetailsForSession(sessionId: string, placeId: string): Promise<LegacyPlaceDetails | null> {
+    async getPlaceDetailsForSession(api: ApiService, sessionId: string, placeId: string): Promise<LegacyPlaceDetails | null> {
         const detailsRef = doc(firestore, 'sessions', sessionId, 'places', placeId, 'details', 'info');
         try {
             const detailsSnap = await getDoc(detailsRef);
@@ -383,12 +384,12 @@ export class FirebaseDatabaseService implements DatabaseService {
             console.log(`Could not find place details for place with id ${placeId} in session with id ${sessionId}`);
             console.log('Attempting to fetch from Google API..');
         }
-        const placeData = await fetchPlaceDetails(placeId);
+        const placeData = await api.fetchPlaceDetails(placeId);
         if (!placeData) {
             return null;
         }
         await setDoc(detailsRef, placeData);
-        return placeData;
+        return placeData as LegacyPlaceDetails;
     }
 
     async getSessionParticipants(sessionId:string): Promise<SessionParticipant[]> {
