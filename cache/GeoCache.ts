@@ -13,7 +13,7 @@ export class GeoCache<T> {
 
     private readonly filePath: string;
 
-    private readonly sevenDaysMs = 1000 * 60 * 24 * 7;
+    private readonly sevenDaysMs = 1000 * 60 * 60 * 24 * 7;
     private readonly ttlMs: number;
     private readonly thresholdMeters: number;
     private readonly maxEntries: number;

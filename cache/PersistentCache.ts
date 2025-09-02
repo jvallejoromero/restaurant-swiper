@@ -7,7 +7,7 @@ export class PersistentCache<T> {
     private loaded = false;
     private readonly filePath: string;
 
-    private readonly sevenDaysMs = 1000 * 60 * 24 * 7;
+    private readonly sevenDaysMs = 1000 * 60 * 60 * 24 * 7;
     private readonly ttlMs: number;
     private readonly maxEntries: number;
 
