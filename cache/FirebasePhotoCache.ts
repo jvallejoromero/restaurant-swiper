@@ -22,7 +22,7 @@ export class FirebasePhotoCache {
 
     constructor(opts: Options = {}) {
         this.folder = opts.folder ?? "placePhotos";
-        this.ttlMs = opts.ttlMs ?? this.oneMonthMs;
+        this.ttlMs = opts.ttlMs ?? (this.oneMonthMs * 2);
         this.normalize = opts.normalize ?? false;
         this.width = opts.width ?? 1200;
         this.quality = opts.quality ?? 0.8;
