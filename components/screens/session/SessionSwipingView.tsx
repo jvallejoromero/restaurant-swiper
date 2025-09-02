@@ -176,6 +176,14 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
             />
         );
     } else if (outOfCards) {
+        if (isOwner) {
+            return (
+                <StatusTextScreen
+                    title={"You're all caught up!"}
+                    subtitle={"Once all your team members catch up you can load more places"}
+                />
+            );
+        }
         return (
             <StatusTextScreen
                 title="You're all caught up!"
