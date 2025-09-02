@@ -2,6 +2,7 @@ import {View, Text, Animated, SafeAreaView} from "react-native";
 import { useEffect, useRef } from "react";
 import { Place } from "@/types/Places.types";
 import { Image } from "expo-image";
+import {useFirebasePhotoUri} from "@/hooks/useFirebasePhotoUri";
 
 type MatchPopupProps = {
     place: Place;
@@ -12,6 +13,8 @@ type MatchPopupProps = {
 export default function MatchPopup({ place, onHide, additionalCount }: MatchPopupProps) {
     const slideAnim = useRef(new Animated.Value(-100)).current;
     const timeoutRef = useRef<number | null>(null);
+
+    const resolvedPhotoUrl = useFirebasePhotoUri(place.photoUrl);
 
     useEffect(() => {
         Animated.timing(slideAnim, {
@@ -51,14 +54,15 @@ export default function MatchPopup({ place, onHide, additionalCount }: MatchPopu
                 ]}
             >
                 <View className="flex flex-row gap-3 items-center">
-                    {place.photoUrl && (
+                    {resolvedPhotoUrl && (
                         <View className="w-12 h-12 rounded-full overflow-hidden">
                             <Image
-                                source={{ uri: place.photoUrl }}
+                                source={{ uri: resolvedPhotoUrl }}
                                 style={{
                                     width: "100%",
                                     height: "100%",
                                 }}
+                                cachePolicy={"disk"}
                                 contentFit="cover"
                                 transition={300}
                             />
