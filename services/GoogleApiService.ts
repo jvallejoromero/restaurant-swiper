@@ -3,13 +3,24 @@ import {LocationObject} from "expo-location";
 import {Place, PlaceType} from "@/types/Places.types";
 import {PlaceDetails} from "@/types/GoogleResponse.types";
 import {haversine} from "@/utils/LocationUtils";
+import {attractionsCache, placeDetailsCache, restaurantsCache} from "@/services/CacheService";
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY ?? '';
 const GOOGLE_PLACES_BASE_URL = "https://places.googleapis.com/v1";
 
 export class GoogleApiService implements ApiService {
 
+    private cacheFor(type: PlaceType) {
+        return type === "restaurant" ? restaurantsCache : attractionsCache;
+    }
+
     async fetchPlaceDetails(placeId: string): Promise<PlaceDetails | null> {
+        const hit = await placeDetailsCache.get(placeId);
+        if (hit) {
+            console.log('hit place details cache');
+            return hit as PlaceDetails;
+        }
+
         const url = `${GOOGLE_PLACES_BASE_URL}/places/${placeId}`;
         const fieldMask = [
             'id',
@@ -40,7 +51,7 @@ export class GoogleApiService implements ApiService {
         }
 
         const data = await res.json();
-        return {
+        const details = {
             name:              data.displayName,
             formatted_address: data.formattedAddress,
             business_status:   data.businessStatus,
@@ -56,6 +67,8 @@ export class GoogleApiService implements ApiService {
             ),
             plus_code: data.plusCode
         };
+        await placeDetailsCache.add(placeId, details);
+        return details;
     }
 
     async fetchAllPlaces(location: LocationObject, radius: number, type: PlaceType, pagination?: boolean): Promise<Place[]> {
@@ -95,6 +108,13 @@ export class GoogleApiService implements ApiService {
         const { latitude, longitude } = location.coords;
         if (!latitude || !longitude) {
             return { places: [], nextPageToken: null };
+        }
+
+        const cache = this.cacheFor(type);
+        const hit = await cache.get(latitude, longitude);
+        if (hit) {
+            console.log(`hit ${type} cache`);
+            return { places: hit as Place[], nextPageToken: null };
         }
 
         const url = `${GOOGLE_PLACES_BASE_URL}/places:searchNearby`;
@@ -166,6 +186,7 @@ export class GoogleApiService implements ApiService {
             }
         });
 
+        await cache.add(latitude, longitude, places);
         return { places, nextPageToken: null };
     }
 }
