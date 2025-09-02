@@ -93,7 +93,7 @@ const SessionMatches = ({ matches, places }: SessionMatchesProps) => {
                         borderTopRightRadius: 12,
                     }}
                     contentFit="cover"
-                    cachePolicy="memory"
+                    cachePolicy="disk"
                     transition={300}
                 />
                 <View className="p-3 gap-0.5">
