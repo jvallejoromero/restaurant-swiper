@@ -2,10 +2,10 @@ import {ImageSourcePropType, StyleSheet, Text, View} from "react-native";
 import React from "react";
 import {IMAGES} from "@/constants/images";
 import {LinearGradient} from "expo-linear-gradient";
-import {COLORS} from "@/constants/colors";
 import ShineText from "@/components/text/ShineText";
 import {Place} from "@/types/Places.types";
 import {Image} from "expo-image";
+import {useFirebasePhotoUri} from "@/hooks/useFirebasePhotoUri";
 
 type CardSkeletonProps = {
     imageSrc: ImageSourcePropType | string;
@@ -22,7 +22,6 @@ const CardSkeleton = ({ imageSrc, children }: CardSkeletonProps) => {
                 source={hasImage ? { uri: imageSrc } : IMAGES.no_image_found}
                 contentFit={hasImage ? "cover" : "contain"}
                 style={styles.cardImage}
-                onLoad={(e) => console.log(`loaded place photo from ${e.cacheType}`)}
             />
             <LinearGradient
                 colors={['transparent', 'rgba(0,0,0,0.8)']}
@@ -44,8 +43,10 @@ const PlaceViewCard = ({ place }: { place: Place }) => {
         );
     }
 
+    const resolvedPhoto = useFirebasePhotoUri(place.photoUrl);
+
     return (
-        <CardSkeleton imageSrc={place.photoUrl}>
+        <CardSkeleton imageSrc={resolvedPhoto ?? IMAGES.no_image_found}>
             <Text style={styles.cardName} numberOfLines={1} ellipsizeMode="tail">{place.name}</Text>
             {place?.openNow && (
                 <ShineText text="Open Now" style={styles.cardTextGreen} />
