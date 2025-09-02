@@ -5,6 +5,7 @@ import {Image} from "expo-image";
 import {getTimeSince} from "@/utils/DateUtils";
 import {SessionMatch} from "@/services/DatabaseService";
 import {Place, PlaceType} from "@/types/Places.types";
+import {useFirebasePhotoUri} from "@/hooks/useFirebasePhotoUri";
 
 type SessionMatchesProps = {
     matches: SessionMatch[];
@@ -12,6 +13,7 @@ type SessionMatchesProps = {
 };
 
 type MatchTab = PlaceType | "latest";
+type MatchItem = SessionMatch & { place: Place };
 
 const PAGE_SIZE = 10;
 
@@ -78,6 +80,41 @@ const SessionMatches = ({ matches, places }: SessionMatchesProps) => {
         </Text>
     );
 
+    const MatchCard = ({ item }: { item: MatchItem }) => {
+        const resolvedUrl = useFirebasePhotoUri(item.place.photoUrl);
+        return (
+            <View className="bg-white rounded-xl shadow-sm border border-gray-100">
+                <Image
+                    source={{ uri: resolvedUrl }}
+                    style={{
+                        width: "100%",
+                        height: 120,
+                        borderTopLeftRadius: 12,
+                        borderTopRightRadius: 12,
+                    }}
+                    contentFit="cover"
+                    cachePolicy="memory"
+                    transition={300}
+                />
+                <View className="p-3 gap-0.5">
+                    <Text className="text-base font-semibold" numberOfLines={1}>
+                        {item.place.name}
+                    </Text>
+                    <Text className="text-xs text-accent-gray" numberOfLines={1}>
+                        {item.place.vicinity}
+                    </Text>
+                    <Text className="text-[11px] text-accent-gray mt-1">
+                        Liked by {item.matchedBy.length}{" "}
+                        {item.matchedBy.length === 1 ? "user" : "users"}
+                    </Text>
+                    <Text className="text-[11px] text-accent-gray">
+                        {getTimeSince(item.matchedAt.toDate())}
+                    </Text>
+                </View>
+            </View>
+        );
+    }
+
     const handleLoadMore = () => {
         if (loadingMore || visibleMatches.length >= filteredMatches.length) return;
         setLoadingMore(true);
@@ -121,37 +158,7 @@ const SessionMatches = ({ matches, places }: SessionMatchesProps) => {
                         </View>
                     ) : null
                 }
-                renderItem={({ item }) => (
-                    <View className="bg-white rounded-xl shadow-sm border border-gray-100">
-                        <Image
-                            source={{ uri: item.place.photoUrl }}
-                            style={{
-                                width: "100%",
-                                height: 120,
-                                borderTopLeftRadius: 12,
-                                borderTopRightRadius: 12,
-                            }}
-                            contentFit="cover"
-                            cachePolicy="memory"
-                            transition={300}
-                        />
-                        <View className="p-3 gap-0.5">
-                            <Text className="text-base font-semibold" numberOfLines={1}>
-                                {item.place.name}
-                            </Text>
-                            <Text className="text-xs text-accent-gray" numberOfLines={1}>
-                                {item.place.vicinity}
-                            </Text>
-                            <Text className="text-[11px] text-accent-gray mt-1">
-                                Liked by {item.matchedBy.length}{" "}
-                                {item.matchedBy.length === 1 ? "user" : "users"}
-                            </Text>
-                            <Text className="text-[11px] text-accent-gray">
-                                {getTimeSince(item.matchedAt.toDate())}
-                            </Text>
-                        </View>
-                    </View>
-                )}
+                renderItem={({ item }) => <MatchCard key={item.place.id} item={item} />}
             />
         </View>
     );
