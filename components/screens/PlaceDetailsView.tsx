@@ -37,7 +37,7 @@ const PlaceWebsite = ({ url }: { url: string }) => {
 
 const PlaceMapSection = ({ lat, lng, name, address }: { lat: number; lng: number; name: string; address: string }) => {
     return (
-        <>
+        <View className="gap-2">
             <Subheader text={"Location"} />
             <PlaceDetailsMap latitude={lat} longitude={lng} title={name} />
 
@@ -45,7 +45,7 @@ const PlaceMapSection = ({ lat, lng, name, address }: { lat: number; lng: number
                 <Subheader text={"Address"} />
                 <Text style={styles.text}>{address}</Text>
             </View>
-        </>
+        </View>
     );
 };
 
@@ -83,7 +83,7 @@ const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
     return (
         <SafeAreaView className="flex-1 flex-col items-start justify-start bg-background">
             <BackNavigationHeader label={"Place Details"} />
-            <Separator className={"my-4 mx-6"} />
+            <Separator className={"my-3 mx-6"} />
             <ScrollView>
                 <ScrollableImageGallery photoRefs={placeDetails.photos} />
                 <View style={{ padding: 16, gap: 12 }}>
@@ -94,15 +94,13 @@ const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
                     <BusinessStatusMessage status={placeDetails.business_status} />
                     <PlaceWebsite url={placeDetails.url} />
 
-                    <View>
-                        <PlaceMapSection
-                            lat={latitude}
-                            lng={longitude}
-                            name={placeDetails.name.text}
-                            address={placeDetails.formatted_address}
-                        />
-                        <MapLink latitude={latitude} longitude={longitude} />
-                    </View>
+                    <PlaceMapSection
+                        lat={latitude}
+                        lng={longitude}
+                        name={placeDetails.name.text}
+                        address={placeDetails.formatted_address}
+                    />
+                    <MapLink latitude={latitude} longitude={longitude} />
                 </View>
             </ScrollView>
         </SafeAreaView>

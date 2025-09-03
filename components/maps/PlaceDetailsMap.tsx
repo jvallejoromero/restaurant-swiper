@@ -38,7 +38,6 @@ const styles = StyleSheet.create({
         width: '100%',
         borderRadius: 16,
         overflow: 'hidden',
-        marginTop: 10,
         marginBottom: 8,
         shadowColor: '#000',
         shadowOpacity: 0.1,
