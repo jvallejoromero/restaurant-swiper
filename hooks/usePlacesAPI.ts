@@ -1,7 +1,7 @@
 import {useContext, useEffect, useRef, useState} from "react";
 import {UserLocationContext} from "@/context/UserLocationContext";
 import {LocationObject} from "expo-location";
-import {createMockLocation, randomizeLocation} from "@/utils/LocationUtils";
+import {createMockLocation, randomizeLocationMeters} from "@/utils/LocationUtils";
 import {Place, PlaceType} from "@/types/Places.types";
 import {ApiService} from "@/services/ApiService";
 
@@ -25,7 +25,7 @@ export function usePlacesAPI(api: ApiService, type: PlaceType, pagination: boole
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [radius, setRadius] = useState<number>(10_000);
+    const [radius, setRadius] = useState<number>(5_000);
     const [nextPageToken, setNextPageToken] = useState<string | null>(null);
     const [lastLocationUsed, setLastLocationUsed] = useState<LocationObject | null>(null);
 
@@ -49,7 +49,7 @@ export function usePlacesAPI(api: ApiService, type: PlaceType, pagination: boole
         if (!userLocation?.coords.latitude || !userLocation?.coords.longitude) {
             newCoords = { newLatitude: 0, newLongitude: 0 };
         } else {
-            newCoords = randomizeLocation(userLocation.coords.latitude, userLocation.coords.longitude, 5, 10);
+            newCoords = randomizeLocationMeters(userLocation.coords.latitude, userLocation.coords.longitude, 5500, 6500);
         }
 
         const newLocation = createMockLocation(newCoords.newLatitude, newCoords.newLongitude);
