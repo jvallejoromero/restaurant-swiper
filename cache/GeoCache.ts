@@ -1,4 +1,4 @@
-import {haversine} from "@/utils/LocationUtils";
+import {haversine, haversineMeters} from "@/utils/LocationUtils";
 import * as FileSystem from "expo-file-system";
 
 type GeoCacheEntry<T> = {
@@ -70,7 +70,7 @@ export class GeoCache<T> {
         let best: GeoCacheEntry<T> | undefined;
         let bestDist = Infinity;
         for (const e of this.entries) {
-            const d = haversine(lat, lng, e.center.lat, e.center.lng);
+            const d = haversineMeters(lat, lng, e.center.lat, e.center.lng);
             if (d < bestDist) { bestDist = d; best = e; }
         }
         return bestDist <= this.thresholdMeters ? best!.data : undefined;
@@ -83,7 +83,7 @@ export class GeoCache<T> {
         let merged = false;
         for (let i = 0; i < this.entries.length; i++) {
             const e = this.entries[i];
-            const d = haversine(lat, lng, e.center.lat, e.center.lng);
+            const d = haversineMeters(lat, lng, e.center.lat, e.center.lng);
             if (d <= this.mergeMeters) {
                 this.entries[i] = { center: e.center, data, savedAtMs: now };
                 merged = true;
