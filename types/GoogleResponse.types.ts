@@ -1,5 +1,8 @@
 export interface PlaceDetails {
-    name: string;
+    name: {
+        languageCode: string;
+        text: string;
+    };
     formatted_address: string;
     business_status: BusinessStatus;
     url: string;
@@ -56,8 +59,8 @@ export type Geometry = {
 
 // An object describing a specific location with Latitude and Longitude in decimal degrees
 export type LatLngLiteral = {
-    lat: number;
-    lng: number;
+    latitude: number;
+    longitude: number;
 }
 
 // A rectangle in geographical coordinates from points at the southwest and northeast corners
@@ -93,8 +96,8 @@ export type PlaceReview = {
 }
 
 export type PlusCode = {
-    compound_code?: string;
-    global_code: string;
+    compoundCode?: string;
+    globalCode: string;
 };
 
 export type BusinessStatus = "OPERATIONAL" | "CLOSED_TEMPORARILY" | "CLOSED_PERMANENTLY";
