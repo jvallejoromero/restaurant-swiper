@@ -3,11 +3,15 @@ import {LocationObject} from "expo-location";
 import {Place, PlaceType} from "@/types/Places.types";
 import {LegacyPlaceDetails, PlaceReview} from "@/types/GoogleResponse.types";
 import {haversine} from "@/utils/LocationUtils";
+import {attractionsCache, placeDetailsCache, restaurantsCache} from "@/services/CacheService";
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
 const GOOGLE_PLACES_BASE_URL = "https://maps.googleapis.com/maps/api/place";
 
 export class GoogleLegacyApiService implements ApiService {
+    private cacheFor(type: PlaceType) {
+        return type === "restaurant" ? restaurantsCache : attractionsCache;
+    }
 
     // $0.007 per image load
     private mapPhotos(photos: any[]): string[] {
@@ -65,6 +69,10 @@ export class GoogleLegacyApiService implements ApiService {
             console.warn(`Failed to fetch ${type} places: ${e}`);
             throw new Error(`Could not fetch places of type: ${type}`);
         }
+
+        const cache = this.cacheFor(type);
+        await cache.add(location.coords.latitude, location.coords.longitude, allPlaces);
+
         return allPlaces;
     }
 
@@ -152,6 +160,7 @@ export class GoogleLegacyApiService implements ApiService {
                     plus_code: {global_code: ''},
                 }
                 console.log("Fetched data for ", placeDetails.name);
+                await placeDetailsCache.add(placeId, placeDetails);
                 return placeDetails;
             }
         } catch (err) {
@@ -161,6 +170,11 @@ export class GoogleLegacyApiService implements ApiService {
     }
 
     // $0.032 per request
+    /**
+     * @deprecated Use {@link fetchAllPlaces} instead.
+     * This method only fetches a single page of results and does not handle caching correctly.
+     * It is kept backward-compatible, but should not be used directly.
+     */
     async fetchPlaces(location: LocationObject, radius: number, type: PlaceType, nextPageToken: string | null): Promise<{
         places: Place[];
         nextPageToken: string | null
@@ -170,6 +184,12 @@ export class GoogleLegacyApiService implements ApiService {
 
         if (!latitude || !longitude) {
             return { places:[], nextPageToken: null };
+        }
+
+        const cache = this.cacheFor(type);
+        const hit = await cache.get(latitude, longitude);
+        if (hit) {
+            return { places: hit as Place[], nextPageToken: null };
         }
 
         let newPageToken = null;
