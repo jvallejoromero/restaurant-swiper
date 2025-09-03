@@ -11,7 +11,16 @@ export interface PlaceDetails {
     plus_code: PlusCode;
 }
 
-// types for Google API response
+/**
+ * @deprecated Use `PlaceDetails` instead.
+ *
+ * This interface reflects the **old Google Places Details API response** shape
+ * The new Places API (Places API v1 / Places Details v1) returns
+ * nested objects such as `name: { text, languageCode }` instead of plain strings,
+ * and these fields may no longer match the current responses.
+ *
+ * Do not rely on this type for new code — it may not align with Google’s latest API.
+ */
 export interface LegacyPlaceDetails extends PlaceDetails {
     address: string;
     formatted_phone_number: string;
