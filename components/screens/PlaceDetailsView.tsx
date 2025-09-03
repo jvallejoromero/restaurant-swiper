@@ -77,8 +77,8 @@ const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
         return <GenericErrorScreen message={"Could Not Load Place Information"} />;
     }
 
-    const latitude = placeDetails.geometry.location?.lat;
-    const longitude = placeDetails.geometry.location?.lng;
+    const latitude = placeDetails.geometry.location?.latitude;
+    const longitude = placeDetails.geometry.location?.longitude;
 
     return (
         <SafeAreaView className="flex-1 flex-col items-start justify-start bg-background">
@@ -88,7 +88,7 @@ const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
                 <ScrollableImageGallery photoRefs={placeDetails.photos} />
                 <View style={{ padding: 16, gap: 12 }}>
                     <View>
-                        <TitleText text={placeDetails.name} />
+                        <TitleText text={placeDetails.name.text} />
                     </View>
 
                     <BusinessStatusMessage status={placeDetails.business_status} />
@@ -98,7 +98,7 @@ const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
                         <PlaceMapSection
                             lat={latitude}
                             lng={longitude}
-                            name={placeDetails.name}
+                            name={placeDetails.name.text}
                             address={placeDetails.formatted_address}
                         />
                         <MapLink latitude={latitude} longitude={longitude} />

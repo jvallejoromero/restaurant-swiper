@@ -1,35 +1,12 @@
-import {Dimensions, Image, ScrollView, Text, TouchableOpacity, View} from "react-native";
+import {Dimensions, ScrollView, Text, TouchableOpacity, View} from "react-native";
 import React, {useRef, useState} from "react";
 import {ChevronLeft, ChevronRight} from "lucide-react-native";
 import {IMAGES} from "@/constants/images";
 import {StyleSheet} from "react-native";
+import {useFirebasePhotoUri} from "@/hooks/useFirebasePhotoUri";
+import { Image } from "expo-image";
 
 const width = Dimensions.get("window").width;
-
-const GalleryPhotos = ({ photoRefs }: { photoRefs: string[] }) => {
-    return (
-        <>
-            {photoRefs.length > 0 ? (
-                photoRefs.map((uri, index) => (
-                    <Image
-                        key={index}
-                        source={{ uri }}
-                        width={width}
-                        height={250}
-                        resizeMode={"cover"}
-                    />
-                ))
-            ) : (
-                <Image
-                    source={IMAGES.no_image_found}
-                    width={width}
-                    height={250}
-                    resizeMode={"cover"}
-                />
-            )}
-        </>
-    );
-}
 
 const ScrollableImageGallery = ({ photoRefs }: { photoRefs: string[] }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
@@ -41,6 +18,40 @@ const ScrollableImageGallery = ({ photoRefs }: { photoRefs: string[] }) => {
             scrollGalleryRef.current?.scrollTo({ x: index * width, animated: true });
         }
     };
+
+    const GalleryPhoto = ({ uri }: { uri: string }) => {
+        const resolvedUri = useFirebasePhotoUri(uri);
+        return (
+            <Image
+                cachePolicy={"disk"}
+                source={resolvedUri ? { uri: resolvedUri } : IMAGES.no_image_found}
+                contentFit={resolvedUri ? "cover" : "contain"}
+                style={{
+                    width: width,
+                    height: 250,
+                }}
+            />
+        );
+    }
+
+    const GalleryPhotos = ({ photoRefs }: { photoRefs: string[] }) => {
+        return (
+            <>
+                {photoRefs.length > 0 ? (
+                    photoRefs.map((uri) => <GalleryPhoto key={uri} uri={uri} />)
+                ) : (
+                    <Image
+                        source={IMAGES.no_image_found}
+                        contentFit={"cover"}
+                        style={{
+                            width: width,
+                            height: 250,
+                        }}
+                    />
+                )}
+            </>
+        );
+    }
 
     return (
         <View className="relative w-full h-[250]">
