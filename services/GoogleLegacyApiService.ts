@@ -3,14 +3,14 @@ import {LocationObject} from "expo-location";
 import {Place, PlaceType} from "@/types/Places.types";
 import {LegacyPlaceDetails, PlaceReview} from "@/types/GoogleResponse.types";
 import {haversine} from "@/utils/LocationUtils";
-import {attractionsCache, placeDetailsCache, restaurantsCache} from "@/services/CacheService";
+import {getAttractionsCache, getPlaceDetailsCache, getRestaurantsCache} from "@/services/CacheService";
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
 const GOOGLE_PLACES_BASE_URL = "https://maps.googleapis.com/maps/api/place";
 
 export class GoogleLegacyApiService implements ApiService {
     private cacheFor(type: PlaceType) {
-        return type === "restaurant" ? restaurantsCache : attractionsCache;
+        return type === "restaurant" ? getRestaurantsCache() : getAttractionsCache();
     }
 
     // $0.007 per image load
@@ -157,10 +157,10 @@ export class GoogleLegacyApiService implements ApiService {
 
                     reviews: this.mapReviews(data.result.reviews),
                     photos: this.mapPhotos(data.result.photos),
-                    plus_code: {global_code: ''},
+                    plus_code: {globalCode: ''},
                 }
                 console.log("Fetched data for ", placeDetails.name);
-                await placeDetailsCache.add(placeId, placeDetails);
+                await getPlaceDetailsCache().add(placeId, placeDetails);
                 return placeDetails;
             }
         } catch (err) {
