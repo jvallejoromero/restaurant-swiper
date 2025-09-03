@@ -19,6 +19,43 @@ export const randomizeLocation = (latitude: number, longitude: number, minMiles:
     return { newLatitude: randomLat, newLongitude: randomLng };
 };
 
+export const randomizeLocationMeters = (
+    latitude: number,
+    longitude: number,
+    minMeters: number,
+    maxMeters: number
+): { newLatitude: number; newLongitude: number } => {
+    // Random distance in meters between min and max
+    const distance = Math.random() * (maxMeters - minMeters) + minMeters;
+
+    // Random bearing angle in radians
+    const bearing = Math.random() * 2 * Math.PI;
+
+    // Earth radius in meters
+    const R = 6371000;
+
+    const latRad = (latitude * Math.PI) / 180;
+    const lngRad = (longitude * Math.PI) / 180;
+    const angularDistance = distance / R;
+
+    const newLatRad = Math.asin(
+        Math.sin(latRad) * Math.cos(angularDistance) +
+        Math.cos(latRad) * Math.sin(angularDistance) * Math.cos(bearing)
+    );
+
+    const newLngRad =
+        lngRad +
+        Math.atan2(
+            Math.sin(bearing) * Math.sin(angularDistance) * Math.cos(latRad),
+            Math.cos(angularDistance) - Math.sin(latRad) * Math.sin(newLatRad)
+        );
+
+    return {
+        newLatitude: (newLatRad * 180) / Math.PI,
+        newLongitude: (newLngRad * 180) / Math.PI,
+    };
+};
+
 // get distance in kilometers between two coordinates using the Haversine formula
 export const haversine = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371; // Radius of the Earth in kilometers
@@ -48,6 +85,17 @@ export const createMockLocation = (lat: number, lng: number): LocationObject => 
         timestamp: Date.now(),
         mocked: true,
     };
+}
+
+export function haversineMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371000;
+    const toRad = (d: number) => (d * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(a));
 }
 
 // convert degrees to radians
