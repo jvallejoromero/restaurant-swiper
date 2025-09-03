@@ -4,22 +4,21 @@ import StatusMessage from "./StatusMessage";
 
 
 const BusinessStatusMessage = ({ openingHours, status }: { openingHours?: PlaceOpeningHours, status: BusinessStatus}) => {
-    return (
-        <>
-            {openingHours?.open_now && (
-                <StatusMessage text={"This place is currently open"} status={"success"} />
-            )}
-            {!openingHours?.open_now && status === "OPERATIONAL" && (
-                <StatusMessage text={"This place is currently closed"} status={"error"} />
-            )}
-            {status === "CLOSED_TEMPORARILY" && (
-                <StatusMessage text={"This place is temporarily closed"} status={"warning"} />
-            )}
-            {status === "CLOSED_PERMANENTLY" && (
-                <StatusMessage text={"This place is permanently closed"} status={"warning"} />
-            )}
-        </>
-    );
-}
+    const openNow = openingHours?.open_now;
+
+    if (status === "CLOSED_PERMANENTLY") {
+        return <StatusMessage text="This place is permanently closed" status="warning" />;
+    }
+    if (status === "CLOSED_TEMPORARILY") {
+        return <StatusMessage text="This place is temporarily closed" status="warning" />;
+    }
+
+    if (status === "OPERATIONAL") {
+        if (openNow === true) return <StatusMessage text="This place is currently open" status="success" />;
+        if (openNow === false) return <StatusMessage text="This place is currently closed" status="error" />;
+        return null;
+    }
+    return null;
+};
 
 export default BusinessStatusMessage;
