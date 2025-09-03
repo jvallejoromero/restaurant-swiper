@@ -1,9 +1,10 @@
-import { initializeApp } from "firebase/app";
-import { initializeAuth } from 'firebase/auth';
+import {FirebaseApp, getApp, getApps, initializeApp} from "firebase/app";
+import {Auth, initializeAuth} from 'firebase/auth';
 import {getReactNativePersistence} from 'firebase/auth';
 
-import { initializeFirestore } from "firebase/firestore";
+import {Firestore, initializeFirestore} from "firebase/firestore";
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
+import {getStorage} from "@firebase/storage";
 
 const firebaseConfig = {
     apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -14,14 +15,23 @@ const firebaseConfig = {
     appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
+export const app: FirebaseApp =
+    getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-const app = initializeApp(firebaseConfig);
+let _auth: Auth | null = null;
+export const auth: Auth =
+    _auth ??
+    (_auth = initializeAuth(app, {
+        persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+    }));
 
-export const auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(ReactNativeAsyncStorage)
-});
 
-export const firestore = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-    experimentalAutoDetectLongPolling: false,
-})
+let _firestore: Firestore | null = null;
+export const firestore: Firestore =
+    _firestore ??
+    (_firestore = initializeFirestore(app, {
+        experimentalForceLongPolling: true,
+        experimentalAutoDetectLongPolling: false,
+    }));
+
+export const storage = getStorage(app);

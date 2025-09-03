@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { firebasePhotoCache } from "@/services/CacheService";
+import {getFirebasePhotoCache} from "@/services/CacheService";
 
 export function useFirebasePhotoUri(remoteUrl?: string) {
     const [uri, setUri] = useState<string | undefined>(remoteUrl);
@@ -19,7 +19,7 @@ export function useFirebasePhotoUri(remoteUrl?: string) {
             }
 
             try {
-                const cachedUrl = await firebasePhotoCache.getUrl(remoteUrl);
+                const cachedUrl = await getFirebasePhotoCache().getUrl(remoteUrl);
                 if (mounted) setUri(cachedUrl);
             } catch {
                 if (mounted) setUri(remoteUrl);

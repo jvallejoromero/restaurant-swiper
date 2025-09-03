@@ -1,4 +1,11 @@
-import { getStorage, ref, getDownloadURL, getMetadata, uploadBytes, uploadString } from "@firebase/storage";
+import {
+    ref,
+    getDownloadURL,
+    getMetadata,
+    uploadBytes,
+    uploadString,
+    FirebaseStorage
+} from "@firebase/storage";
 import * as ImageManipulator from "expo-image-manipulator";
 
 type Options = {
@@ -10,8 +17,7 @@ type Options = {
 };
 
 export class FirebasePhotoCache {
-    private storage = getStorage();
-
+    private readonly storage: FirebaseStorage;
     private readonly oneMonthMs = 1000 * 60 * 60 * 24 * 30;
 
     private readonly folder: string;
@@ -20,7 +26,8 @@ export class FirebasePhotoCache {
     private readonly width: number;
     private readonly quality: number;
 
-    constructor(opts: Options = {}) {
+    constructor(storage: FirebaseStorage, opts: Options = {}) {
+        this.storage = storage;
         this.folder = opts.folder ?? "placePhotos";
         this.ttlMs = opts.ttlMs ?? (this.oneMonthMs * 2);
         this.normalize = opts.normalize ?? false;
@@ -45,6 +52,7 @@ export class FirebasePhotoCache {
             const savedAt = Number(meta.customMetadata?.savedAt ?? "0");
             const fresh = Date.now() - savedAt <= this.ttlMs;
             if (fresh) {
+                console.log('hit firebase photo cache');
                 const url = await getDownloadURL(imgRef);
                 return `${url}${url.includes("?") ? "&" : "?"}v=${savedAt || 0}`;
             }
