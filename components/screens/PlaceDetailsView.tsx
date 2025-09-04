@@ -14,7 +14,8 @@ import { FONTS } from "@/constants/fonts";
 import BackNavigationHeader from "@/components/headers/BackNavigationHeader";
 import Separator from "@/components/ui/Separator";
 import { useServices } from "@/context/ServicesContext";
-import { GoogleApiService } from "@/services/GoogleApiService"; // updated service
+import { GoogleApiService } from "@/services/GoogleApiService";
+import {useActiveSwipingSession} from "@/context/SwipingSessionContext"; // updated service
 
 type PlaceDetailsProps = {
     id: string;
@@ -51,6 +52,8 @@ const PlaceMapSection = ({ lat, lng, name, address }: { lat: number; lng: number
 
 const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
     const { googleApi } = useServices();
+    const { database } = useServices();
+    const { activeSession, sessionResolved, loading } = useActiveSwipingSession();
 
     if (!(googleApi instanceof GoogleApiService)) {
         return <GenericErrorScreen message="PlaceDetailsView requires the new API service" />;
@@ -60,14 +63,22 @@ const PlaceDetailsView = ({ id }: PlaceDetailsProps) => {
     const [isFetchingData, setFetchingData] = useState<boolean>(true);
 
     useEffect(() => {
+        if (sessionResolved === null || loading) {
+            return;
+        }
         const loadDetails = async () => {
-            const details = await googleApi.fetchPlaceDetails(id);
+            let details;
+            if (activeSession) {
+                details = await database.getPlaceDetailsForSession(googleApi, activeSession.id, id);
+            } else {
+                details = await googleApi.fetchPlaceDetails(id);
+            }
             setPlaceDetails(details);
             setFetchingData(false);
         };
 
         void loadDetails();
-    }, []);
+    }, [activeSession, sessionResolved, loading, id]);
 
     if (isFetchingData) {
         return <ForkAnimation />;

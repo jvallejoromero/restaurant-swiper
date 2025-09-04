@@ -16,6 +16,7 @@ import {ToastType} from "@/hooks/useToastHook";
 import { StatusTextScreen } from "./StatusTextScreen";
 import {useDebouncedAsyncCallback} from "@/hooks/useDebouncedAsyncCallback";
 import MatchPopup from "@/components/popups/MatchPopup";
+import { router } from "expo-router";
 
 type SessionSwipingViewProps = {
     type: PlaceType;
@@ -87,7 +88,16 @@ const SessionSwipingView = ({ type }: SessionSwipingViewProps) => {
     if (!activeSession || !user) return null;
 
     const handleTopSwipe = async () => {
+        if (!places.length || !places[cardIndex].id) {
+            return;
+        }
+
         swiperRef.current?.swipeBack();
+
+        router.push({
+            pathname: '/place-details/[id]',
+            params: { id: places[cardIndex].id },
+        });
     };
 
     const handleLeftSwipe = async() => {
